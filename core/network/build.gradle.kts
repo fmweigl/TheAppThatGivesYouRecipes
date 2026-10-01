@@ -1,13 +1,8 @@
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.kotlinSerialization)
+    id("meals.kmp.data")
 }
 
 kotlin {
-    jvm()
-    iosArm64()
-    iosSimulatorArm64()
-
     sourceSets {
         commonMain.dependencies {
             api(libs.ktor.clientCore)
@@ -21,11 +16,6 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.ktor.clientDarwin)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.ktor.clientMock)
-            implementation(libs.kotlinx.coroutinesTest)
         }
     }
 }

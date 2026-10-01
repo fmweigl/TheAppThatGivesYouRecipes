@@ -23,13 +23,27 @@ No lint/format tooling (ktlint, detekt, spotless) is configured.
 
 GitHub Actions (`.github/workflows/ci.yml`) runs `./gradlew jvmTest :androidApp:assembleDebug` on pushes and pull requests to `master`. Run this command locally and make sure it passes before a task counts as done. CI doesn't build or test iOS.
 
+## Build logic
+
+Shared Gradle setup lives in convention plugins in the included build `build-logic/` (wired in through `includeBuild("build-logic")` in `pluginManagement`). It reads the root version catalog. **Every new KMP module must apply exactly one of these plugins**; its own build file then only holds the plugin, the `namespace` (UI modules) and module-specific dependencies.
+
+| Plugin | Use for | Provides |
+|---|---|---|
+| `meals.kmp.domain` | `domain` modules | KMP with the shared targets; kotlin-test in commonTest; `verifyDomainDependencies` (runs as part of `check`) |
+| `meals.kmp.data` | `data` modules (also `:core:network`) | KMP with the shared targets + kotlinx-serialization; kotlin-test, kotlinx-coroutines-test, ktor-client-mock in commonTest |
+| `meals.kmp.feature.ui` | feature `ui` modules | KMP + `com.android.kotlin.multiplatform.library` + Compose MP + Compose compiler; shared targets plus `android` (compileSdk/minSdk from the catalog, JVM target 11); Compose runtime/foundation/material3/ui, lifecycle viewmodel-compose + runtime-compose, koin-compose-viewmodel in commonMain; kotlin-test, kotlinx-coroutines-test in commonTest |
+
+- The target list (jvm, iosArm64, iosSimulatorArm64) exists once, in `sharedKmpTargets()` (`build-logic/convention/.../KmpTargets.kt`). The Android library defaults are in `androidLibraryDefaults()`. `:composeApp` calls both directly; the root `build.gradle.kts` loads the convention plugins with `apply false` so these helpers are importable from module build scripts.
+- **Domain rule:** a domain module's commonMain must not depend on Ktor (`io.ktor`), Koin (`io.insert-koin`), AndroidX (`androidx`, `org.jetbrains.androidx`) or Compose (`org.jetbrains.compose`), directly or through another module. `verifyDomainDependencies` fails `check` and names the offending dependency.
+- `build-logic` gets the Gradle plugins as `compileOnly` dependencies derived from the catalog's `[plugins]` entries; add new plugins there the same way.
+
 ## Architecture
 
 - `:composeApp` is the UI entry point for all platforms and will hold the main navigation. It owns the root composable `App()` (`io.github.fmweigl.yetanothermealsapp`), depends on the feature `ui` and `data` modules, defines `initKoin()` (`di/Koin.kt`) listing each feature's Koin modules, and produces the static iOS `Shared` framework. Each platform entry point calls `initKoin()` once at startup, then hosts `App()`:
   - `androidApp/`: `MealsApplication.onCreate()` calls `initKoin { androidContext(...) }`; `MainActivity` calls `setContent { App() }`. A plain `com.android.application` module (not KMP) that depends on `:composeApp`.
   - `desktopApp/`: `main()` calls `initKoin()`, then opens a Compose `Window` with `App()`. A `kotlin("jvm")` module (not KMP) using `compose.desktop`, depends on `:composeApp`.
   - `iosApp/`: `iOSApp.init()` calls `KoinKt.doInitKoin(config: nil)` (Kotlin `initKoin` is exported with a `do` prefix); SwiftUI wraps `MainViewController()` from `composeApp/src/iosMain`, imported in Swift as `import Shared`
-- `:composeApp` and `:randomrecipe:ui` use the newer AGP `com.android.kotlin.multiplatform.library` plugin: Android config lives inside `kotlin { android { ... } }`, not a top-level `android {}` block.
+- `:composeApp` and `:randomrecipe:ui` use the newer AGP `com.android.kotlin.multiplatform.library` plugin: Android config lives inside `kotlin { android { ... } }`, not a top-level `android {}` block. In UI modules that block only sets `namespace`; the rest comes from `meals.kmp.feature.ui`.
 - `randomrecipe/` is a feature folder with three modules, referenced through type-safe project accessors (`projects.randomrecipe.domain`):
   - `:randomrecipe:domain`: models and repository interfaces. KMP (jvm + iOS), with no Android or Compose dependencies.
   - `:randomrecipe:data`: repository implementations, depends on `domain`. Its only public declaration is the Koin module `randomRecipeDataModule`; everything else is `internal`. Same targets and constraints as `domain`. Gets its `HttpClient` from `:core:network` and decodes responses with kotlinx.serialization. Meals are decoded as raw `JsonObject`s and mapped in `MealMapper.kt` because of the numbered `strIngredientN`/`strMeasureN` fields.
@@ -42,7 +56,7 @@ GitHub Actions (`.github/workflows/ci.yml`) runs `./gradlew jvmTest :androidApp:
 - Error handling: repositories return `Result<T, DataError>` and never throw; Ktor and serialization exceptions stay inside `data`. Wrap every request in `safeApiCall` and return `DataError.InvalidResponse` for responses that parse but can't be mapped (mappers return null rather than throwing). ViewModels put the `DataError` into their UI state, and `ui` turns it into a message (`DataError.toMessage()`).
 - Platform-specific code goes in `expect`/`actual` declarations.
 - Dependency injection uses Koin (`koin-core`, `koin-compose`, `koin-compose-viewmodel`). Each feature layer exposes its own Koin module in a `di` package (e.g. `randomRecipeDataModule` binds the repository, `randomRecipeUiModule` declares ViewModels with `viewModelOf`). `:composeApp`'s `initKoin()` registers them, together with `coreNetworkModule`, via `startKoin`; Koin is not started inside Compose. Screens obtain ViewModels with `koinViewModel()`, which uses the globally started Koin. Add new feature modules to the list in `initKoin()`.
-- Lifecycle ViewModel and runtime-compose (JetBrains multiplatform artifacts) are already available in `:randomrecipe:ui` `commonMain`.
+- Lifecycle ViewModel and runtime-compose (JetBrains multiplatform artifacts) are available in every feature `ui` module's `commonMain` through `meals.kmp.feature.ui`.
 - Dependencies and versions are managed in `gradle/libs.versions.toml`, which uses bleeding-edge versions (AGP 9.x, Kotlin 2.4.x, compileSdk 37). JVM target is 11. Package/namespace: `io.github.fmweigl.yetanothermealsapp`.
 
 ## Data source

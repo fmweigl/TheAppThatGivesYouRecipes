@@ -1,0 +1,33 @@
+plugins {
+    `kotlin-dsl`
+}
+
+/** The plugin's marker artifact, so the plugins come from the existing `[plugins]` catalog entries. */
+fun Provider<PluginDependency>.asDependency(): Provider<String> =
+    map { "${it.pluginId}:${it.pluginId}.gradle.plugin:${it.version.requiredVersion}" }
+
+dependencies {
+    // compileOnly: at runtime the plugins come from the root build's classloader (see its `apply false` list).
+    compileOnly(libs.plugins.kotlinMultiplatform.asDependency())
+    compileOnly(libs.plugins.androidMultiplatformLibrary.asDependency())
+    compileOnly(libs.plugins.composeMultiplatform.asDependency())
+    compileOnly(libs.plugins.composeCompiler.asDependency())
+    compileOnly(libs.plugins.kotlinSerialization.asDependency())
+}
+
+gradlePlugin {
+    plugins {
+        register("kmpDomain") {
+            id = "meals.kmp.domain"
+            implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.KmpDomainConventionPlugin"
+        }
+        register("kmpData") {
+            id = "meals.kmp.data"
+            implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.KmpDataConventionPlugin"
+        }
+        register("kmpFeatureUi") {
+            id = "meals.kmp.feature.ui"
+            implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.KmpFeatureUiConventionPlugin"
+        }
+    }
+}

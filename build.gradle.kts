@@ -8,4 +8,9 @@ plugins {
     alias(libs.plugins.kotlinJvm) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.kotlinSerialization) apply false
+    // Convention plugins from build-logic; loading them here also makes its helpers
+    // (e.g. sharedKmpTargets()) available to every module's build script.
+    id("meals.kmp.domain") apply false
+    id("meals.kmp.data") apply false
+    id("meals.kmp.feature.ui") apply false
 }

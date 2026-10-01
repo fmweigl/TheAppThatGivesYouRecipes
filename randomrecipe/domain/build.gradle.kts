@@ -1,18 +1,11 @@
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
+    id("meals.kmp.domain")
 }
 
 kotlin {
-    jvm()
-    iosArm64()
-    iosSimulatorArm64()
-
     sourceSets {
         commonMain.dependencies {
             api(projects.core.domain)
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
         }
     }
 }

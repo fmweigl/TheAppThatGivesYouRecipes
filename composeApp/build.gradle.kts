@@ -1,4 +1,6 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import io.github.fmweigl.yetanothermealsapp.buildlogic.androidLibraryDefaults
+import io.github.fmweigl.yetanothermealsapp.buildlogic.sharedKmpTargets
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -8,26 +10,18 @@ plugins {
 }
 
 kotlin {
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
+    sharedKmpTargets()
+    androidLibraryDefaults(project)
+
+    targets.withType<KotlinNativeTarget>().configureEach {
+        binaries.framework {
             baseName = "Shared"
             isStatic = true
         }
     }
 
-    jvm()
-
     android {
         namespace = "io.github.fmweigl.yetanothermealsapp.composeapp"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
-        minSdk = libs.versions.android.minSdk.get().toInt()
-
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_11
-        }
     }
 
     sourceSets {
