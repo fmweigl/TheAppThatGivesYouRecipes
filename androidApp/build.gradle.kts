@@ -21,11 +21,11 @@ dependencies {
 }
 
 android {
-    namespace = "com.example.yetanothermealsapp"
+    namespace = "io.github.fmweigl.yetanothermealsapp"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.example.yetanothermealsapp"
+        applicationId = "io.github.fmweigl.yetanothermealsapp"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1

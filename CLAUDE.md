@@ -14,7 +14,7 @@ Kotlin Multiplatform + Compose Multiplatform app targeting Android, iOS (arm64 +
 - Tests:
   - JVM tests per module: `./gradlew :randomrecipe:domain:jvmTest` (also `:randomrecipe:data`, `:randomrecipe:ui`, `:core:domain`, `:core:data`)
   - iOS simulator tests: `./gradlew :randomrecipe:domain:iosSimulatorArm64Test`
-  - Single test: `./gradlew :randomrecipe:domain:jvmTest --tests "com.example.yetanothermealsapp.randomrecipe.domain.SomeTest.someMethod"`
+  - Single test: `./gradlew :randomrecipe:domain:jvmTest --tests "io.github.fmweigl.yetanothermealsapp.randomrecipe.domain.SomeTest.someMethod"`
   - Tests exist in `:core:domain` (`Result`), `:core:data` (`safeApiCall` error mapping), `:randomrecipe:data` (repository + mapping, via Ktor `MockEngine`) and `:randomrecipe:ui` (ViewModel).
 
 No lint/format tooling (ktlint, detekt, spotless) is configured.
@@ -25,7 +25,7 @@ GitHub Actions (`.github/workflows/ci.yml`) runs `./gradlew jvmTest :androidApp:
 
 ## Architecture
 
-- `:composeApp` is the UI entry point for all platforms and will hold the main navigation. It owns the root composable `App()` (`com.example.yetanothermealsapp`), depends on the feature `ui` and `data` modules, defines `initKoin()` (`di/Koin.kt`) listing each feature's Koin modules, and produces the static iOS `Shared` framework. Each platform entry point calls `initKoin()` once at startup, then hosts `App()`:
+- `:composeApp` is the UI entry point for all platforms and will hold the main navigation. It owns the root composable `App()` (`io.github.fmweigl.yetanothermealsapp`), depends on the feature `ui` and `data` modules, defines `initKoin()` (`di/Koin.kt`) listing each feature's Koin modules, and produces the static iOS `Shared` framework. Each platform entry point calls `initKoin()` once at startup, then hosts `App()`:
   - `androidApp/`: `MealsApplication.onCreate()` calls `initKoin { androidContext(...) }`; `MainActivity` calls `setContent { App() }`. A plain `com.android.application` module (not KMP) that depends on `:composeApp`.
   - `desktopApp/`: `main()` calls `initKoin()`, then opens a Compose `Window` with `App()`. A `kotlin("jvm")` module (not KMP) using `compose.desktop`, depends on `:composeApp`.
   - `iosApp/`: `iOSApp.init()` calls `KoinKt.doInitKoin(config: nil)` (Kotlin `initKoin` is exported with a `do` prefix); SwiftUI wraps `MainViewController()` from `composeApp/src/iosMain`, imported in Swift as `import Shared`
@@ -42,7 +42,7 @@ GitHub Actions (`.github/workflows/ci.yml`) runs `./gradlew jvmTest :androidApp:
 - Platform-specific code goes in `expect`/`actual` declarations.
 - Dependency injection uses Koin (`koin-core`, `koin-compose`, `koin-compose-viewmodel`). Each feature layer exposes its own Koin module in a `di` package (e.g. `randomRecipeDataModule` binds the `HttpClient` and repository, `randomRecipeUiModule` declares ViewModels with `viewModelOf`). `:composeApp`'s `initKoin()` registers them via `startKoin`; Koin is not started inside Compose. Screens obtain ViewModels with `koinViewModel()`, which uses the globally started Koin. Add new feature modules to the list in `initKoin()`.
 - Lifecycle ViewModel and runtime-compose (JetBrains multiplatform artifacts) are already available in `:randomrecipe:ui` `commonMain`.
-- Dependencies and versions are managed in `gradle/libs.versions.toml`, which uses bleeding-edge versions (AGP 9.x, Kotlin 2.4.x, compileSdk 37). JVM target is 11. Package/namespace: `com.example.yetanothermealsapp`.
+- Dependencies and versions are managed in `gradle/libs.versions.toml`, which uses bleeding-edge versions (AGP 9.x, Kotlin 2.4.x, compileSdk 37). JVM target is 11. Package/namespace: `io.github.fmweigl.yetanothermealsapp`.
 
 ## Data source
 

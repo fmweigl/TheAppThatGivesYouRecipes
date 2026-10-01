@@ -17,11 +17,11 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "com.example.yetanothermealsapp.MainKt"
+        mainClass = "io.github.fmweigl.yetanothermealsapp.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.example.yetanothermealsapp"
+            packageName = "io.github.fmweigl.yetanothermealsapp"
             packageVersion = "1.0.0"
         }
     }

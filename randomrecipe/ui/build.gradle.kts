@@ -14,7 +14,7 @@ kotlin {
     jvm()
 
     android {
-        namespace = "com.example.yetanothermealsapp.randomrecipe.ui"
+        namespace = "io.github.fmweigl.yetanothermealsapp.randomrecipe.ui"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 

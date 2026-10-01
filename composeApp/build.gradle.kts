@@ -21,7 +21,7 @@ kotlin {
     jvm()
 
     android {
-        namespace = "com.example.yetanothermealsapp.composeapp"
+        namespace = "io.github.fmweigl.yetanothermealsapp.composeapp"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
