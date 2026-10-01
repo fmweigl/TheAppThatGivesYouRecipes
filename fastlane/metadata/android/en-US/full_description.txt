@@ -1,4 +1,4 @@
-Not sure what to cook? YetAnotherMealsApp shows you a random recipe from TheMealDB's community collection with every tap.
+Not sure what to cook? YetAnotherMealsApp shows you a random recipe with every tap.
 
 Each recipe comes with:
 • A photo of the dish
