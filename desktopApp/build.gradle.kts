@@ -24,6 +24,10 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "io.github.fmweigl.yetanothermealsapp"
             packageVersion = "1.0.0"
+            // Rendered by art/app-icon/render_icons.py.
+            linux { iconFile.set(project.file("src/main/resources/icon.png")) }
+            macOS { iconFile.set(project.file("icons/icon.icns")) }
+            windows { iconFile.set(project.file("icons/icon.ico")) }
         }
     }
 }

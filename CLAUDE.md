@@ -76,6 +76,15 @@ Shared Gradle setup lives in convention plugins in the included build `build-log
 - Lifecycle ViewModel and runtime-compose (JetBrains multiplatform artifacts) are available in every feature `ui` module's `commonMain` through `meals.kmp.feature.ui`.
 - Dependencies and versions are managed in `gradle/libs.versions.toml`, which uses bleeding-edge versions (AGP 9.x, Kotlin 2.4.x, compileSdk 37). JVM target is 11. Package/namespace: `io.github.fmweigl.yetanothermealsapp`.
 
+## App icon
+
+A two-pronged fork shaped like a "Y" with a saffron leaf, cream on a basil-green disc and background (MealsTheme colors). The source is `art/app-icon/render_icons.py`, which holds the motif as SVG on Android's 108×108 adaptive-icon grid and renders, with Inkscape and Pillow (`python3 art/app-icon/render_icons.py`):
+- Android's legacy launcher PNGs (`mipmap-*dpi`, only used on API 24–25),
+- iOS's 1024 px light, dark and tinted icons (`iosApp/iosApp/Assets.xcassets/AppIcon.appiconset`, opaque RGB),
+- the desktop icon: `desktopApp/src/main/resources/icon.png` (the window icon, set in `main.kt`, and the Linux package icon) plus `desktopApp/icons/icon.ico` and `icon.icns` for the Windows and macOS installers.
+
+Android 8+ uses the adaptive vector icon (`drawable/ic_launcher_background.xml`, `ic_launcher_foreground.xml` and `ic_launcher_monochrome.xml` for themed icons), which is hand-written: change it together with the script's `MOTIF` and re-run the script.
+
 ## Data source
 
 Recipes come from TheMealDB JSON API, version 2 (supporter/premium). The supporter key is a secret of the maintainer: never commit it, print it or put it in docs or test fixtures; it lives in the maintainer's `local.properties` (see `theMealDbApiKeySource()` above). Being in the request URL, it does end up in the shipped app; that's accepted. The API reference is in `docs/themealdb-api.md`, and the project skill `.claude/skills/themealdb` covers using it.
