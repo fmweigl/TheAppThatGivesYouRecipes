@@ -1,0 +1,21 @@
+Not sure what to cook? YetAnotherMealsApp shows you a random recipe from TheMealDB's community collection with every tap.
+
+Each recipe comes with:
+• A photo of the dish
+• Its category and cuisine
+• The ingredients with their measures
+• Step-by-step instructions
+
+Tap Next for another idea, or Previous to go back to a recipe you've already seen.
+
+Made with care:
+• Light and dark theme that follows your system settings
+• Works with screen readers like TalkBack
+• No account, no ads, no analytics, no tracking. The app collects no personal data at all.
+
+Open source:
+YetAnotherMealsApp is free software under the Apache License 2.0. The source code is on GitHub: https://github.com/fmweigl/YetAnotherMealApp
+
+Recipe data and imagery: TheMealDB (themealdb.com). TheMealDB is an open, crowd-sourced recipe database. This app is not affiliated with or endorsed by TheMealDB.
+
+Recipes are contributed by the community. Always check ingredients yourself, especially for allergies or dietary requirements.

@@ -11,6 +11,8 @@ class MealsApplication : Application() {
         initKoin {
             androidLogger()
             androidContext(this@MealsApplication)
+            // Empty in release builds; in debug builds the optional screenshot mode.
+            modules(debugModules(this@MealsApplication))
         }
     }
 }

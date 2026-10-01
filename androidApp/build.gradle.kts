@@ -21,6 +21,8 @@ dependencies {
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
+    // The debug build's screenshot mode provides its own RandomRecipeRepository.
+    debugImplementation(projects.feature.randomrecipe.domain)
 }
 
 android {

@@ -21,3 +21,6 @@ node_modules/
 # Signing keys (the upload key lives outside the repository)
 *.jks
 *.keystore
+
+# Python bytecode (art/ scripts)
+__pycache__/
