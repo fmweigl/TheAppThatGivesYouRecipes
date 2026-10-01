@@ -32,8 +32,10 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.randomrecipe.domain)
+            implementation(projects.randomrecipe.data)
             implementation(projects.randomrecipe.ui)
+
+            api(libs.koin.core)
 
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
