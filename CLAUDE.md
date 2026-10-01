@@ -27,6 +27,8 @@ Static analysis: detekt (`./gradlew detekt`, also part of `check`). The `meals.d
 
 GitHub Actions (`.github/workflows/ci.yml`) runs `./gradlew detekt jvmTest :androidApp:assembleDebug` on pushes and pull requests to `master`. Run this command locally and make sure it passes before a task counts as done. CI doesn't build or test iOS.
 
+The second job, `publish`, runs on pushes to `master` after `build` passes, and only when the repository variable `PLAY_PUBLISHING` is `true`. It restores the upload keystore from the secret `RELEASE_KEYSTORE_BASE64` into `$RUNNER_TEMP`, builds `:androidApp:bundleRelease -PappVersionCode=<run number>` with the signing settings and TheMealDB key from secrets (as environment variables, read by `configProperty`), and uploads the bundle and R8 mapping to Google Play's production track with `r0adkll/upload-google-play`. `versionCode` comes from the Gradle property `appVersionCode` (default 1), `versionName` is `1.0.<versionCode>`. Every master build that passes CI reaches users after Play review, so keep `master` releasable. Setup steps are in the README.
+
 ## Build logic
 
 Shared Gradle setup lives in convention plugins in the included build `build-logic/` (wired in through `includeBuild("build-logic")` in `pluginManagement`). It reads the root version catalog. **Every new KMP module must apply exactly one of these plugins**; its own build file then only holds the plugin, the `namespace` and `packageOfResClass` (UI modules) and module-specific dependencies.

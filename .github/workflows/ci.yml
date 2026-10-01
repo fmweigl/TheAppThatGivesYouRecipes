@@ -41,3 +41,49 @@ jobs:
             **/build/reports/tests/
             **/build/test-results/
           if-no-files-found: ignore
+
+  # Publishes every master build that passed the job above to Google Play's production track.
+  # Off until the repository variable PLAY_PUBLISHING is "true" (see README, "Publishing to
+  # Google Play", for the secrets it needs).
+  publish:
+    name: Publish to Google Play
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && vars.PLAY_PUBLISHING == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Restore the upload key
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        run: echo "$RELEASE_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload.jks"
+
+      - name: Build the signed release bundle
+        env:
+          THE_MEAL_DB_API_KEY: ${{ secrets.THE_MEAL_DB_API_KEY }}
+          RELEASE_STORE_FILE: ${{ runner.temp }}/upload.jks
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: ./gradlew :androidApp:bundleRelease -PappVersionCode=${{ github.run_number }}
+
+      - name: Upload to Google Play (production)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: io.github.fmweigl.yetanothermealsapp
+          releaseFiles: androidApp/build/outputs/bundle/release/androidApp-release.aab
+          mappingFile: androidApp/build/outputs/mapping/release/mapping.txt
+          track: production
+          status: completed
+
+      - name: Remove the upload key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.jks"

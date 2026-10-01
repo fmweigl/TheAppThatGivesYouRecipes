@@ -31,8 +31,9 @@ android {
         applicationId = "io.github.fmweigl.yetanothermealsapp"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        // CI passes the GitHub run number (-PappVersionCode=...), so every Play upload is higher.
+        versionCode = providers.gradleProperty("appVersionCode").map(String::toInt).getOrElse(1)
+        versionName = "1.0.$versionCode"
     }
     packaging {
         resources {
