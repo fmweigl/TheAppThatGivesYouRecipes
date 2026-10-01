@@ -13,18 +13,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 
-/** The app's license; [paragraphs] is null while loading. */
+/** A text document such as the license or the privacy policy; [blocks] is null while loading. */
 @Composable
-internal fun LicenseScreen(
-    paragraphs: List<String>?,
+internal fun TextDocumentScreen(
+    title: String,
+    blocks: List<TextBlock>?,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
-        BackTopAppBar(title = "License", onBack = onBack)
-        if (paragraphs == null) {
+        BackTopAppBar(title = title, onBack = onBack)
+        if (blocks == null) {
             Box(Modifier.weight(1f).fillMaxSize()) {
                 CircularProgressIndicator(Modifier.align(Alignment.Center))
             }
@@ -34,8 +36,17 @@ internal fun LicenseScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                items(paragraphs) { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                items(blocks) { Text(it.text, style = styleFor(it.headingLevel)) }
             }
         }
+    }
+}
+
+@Composable
+private fun styleFor(headingLevel: Int): TextStyle = with(MaterialTheme.typography) {
+    when (headingLevel) {
+        0 -> bodyMedium
+        1 -> titleLarge
+        else -> titleMedium
     }
 }

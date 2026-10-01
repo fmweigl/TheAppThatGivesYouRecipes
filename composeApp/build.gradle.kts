@@ -59,7 +59,8 @@ kotlin {
 // and read at runtime with `Res.readBytes("files/...")`:
 // - files/aboutlibraries.json: the AboutLibraries plugin collects the libraries (with their
 //   licenses) from this module, which depends on all others.
-// - files/LICENSE: copied from the repository root, so the app shows the same text.
+// - files/LICENSE and files/PRIVACY.md: copied from the repository root, so the app shows the same
+//   license and privacy policy as the repository.
 aboutLibraries {
     collect {
         // Only what ships: the Android and desktop classpaths and iOS's dependencies. Leaves out the
@@ -74,6 +75,7 @@ aboutLibraries {
 val generateAppComposeResources by tasks.registering(Sync::class) {
     from(tasks.named("exportLibraryDefinitions"))
     from(rootProject.layout.projectDirectory.file("LICENSE"))
+    from(rootProject.layout.projectDirectory.file("PRIVACY.md"))
     into(layout.buildDirectory.dir("generated/appComposeResources/files"))
 }
 

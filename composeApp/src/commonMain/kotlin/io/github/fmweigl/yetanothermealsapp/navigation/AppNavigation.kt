@@ -18,9 +18,11 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import io.github.fmweigl.yetanothermealsapp.about.ui.AboutContent
 import io.github.fmweigl.yetanothermealsapp.about.ui.AboutNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.LibrariesNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.LicenseNavKey
+import io.github.fmweigl.yetanothermealsapp.about.ui.PrivacyNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.aboutEntries
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.RandomRecipeNavKey
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.randomRecipeEntry
@@ -44,10 +46,18 @@ private val navKeyConfiguration = SavedStateConfiguration {
             subclass(RandomRecipeNavKey::class)
             subclass(AboutNavKey::class)
             subclass(LicenseNavKey::class)
+            subclass(PrivacyNavKey::class)
             subclass(LibrariesNavKey::class)
         }
     }
 }
+
+/** The about screens' content: files that generateAppComposeResources copies into the resources. */
+private val aboutContent = AboutContent(
+    loadLicenseText = { Res.readBytes("files/LICENSE").decodeToString() },
+    loadPrivacyText = { Res.readBytes("files/PRIVACY.md").decodeToString() },
+    loadLibrariesJson = { Res.readBytes("files/aboutlibraries.json").decodeToString() },
+)
 
 /** The app's bottom navigation bar and the screen of the selected tab. */
 @Composable
@@ -62,10 +72,10 @@ internal fun AppNavigation(modifier: Modifier = Modifier) {
         randomRecipeEntry()
         aboutEntries(
             onLicenseClick = { navigator.navigate(LicenseNavKey) },
+            onPrivacyClick = { navigator.navigate(PrivacyNavKey) },
             onLibrariesClick = { navigator.navigate(LibrariesNavKey) },
             onBack = navigator::goBack,
-            loadLicenseText = { Res.readBytes("files/LICENSE").decodeToString() },
-            loadLibrariesJson = { Res.readBytes("files/aboutlibraries.json").decodeToString() },
+            content = aboutContent,
         )
     }
 

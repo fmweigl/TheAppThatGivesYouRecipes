@@ -12,24 +12,39 @@ data object AboutNavKey : NavKey
 @Serializable
 data object LicenseNavKey : NavKey
 
+/** Navigation key of the app's privacy policy, opened from the about screen. */
+@Serializable
+data object PrivacyNavKey : NavKey
+
 /** Navigation key of the list of libraries the app uses, opened from the about screen. */
 @Serializable
 data object LibrariesNavKey : NavKey
 
 /**
- * Registers the about screen for [AboutNavKey], the license for [LicenseNavKey] and the library
- * list for [LibrariesNavKey]. [onLicenseClick] and [onLibrariesClick] should navigate to those keys,
- * [onBack] leave them. Only the app module can provide the content: [loadLicenseText] returns the
- * app's license text, [loadLibrariesJson] the AboutLibraries JSON of the app's dependencies.
+ * Registers the about screen for [AboutNavKey] and the screens it opens: the license for
+ * [LicenseNavKey], the privacy policy for [PrivacyNavKey] and the library list for [LibrariesNavKey].
+ * [onLicenseClick], [onPrivacyClick] and [onLibrariesClick] should navigate to those keys, [onBack]
+ * leave them. [content] provides what the screens show.
  */
 fun EntryProviderScope<NavKey>.aboutEntries(
     onLicenseClick: () -> Unit,
+    onPrivacyClick: () -> Unit,
     onLibrariesClick: () -> Unit,
     onBack: () -> Unit,
-    loadLicenseText: suspend () -> String,
-    loadLibrariesJson: suspend () -> String,
+    content: AboutContent,
 ) {
-    entry<AboutNavKey> { AboutScreen(onLicenseClick = onLicenseClick, onLibrariesClick = onLibrariesClick) }
-    entry<LicenseNavKey> { LicenseRoute(loadLicenseText = loadLicenseText, onBack = onBack) }
-    entry<LibrariesNavKey> { LibrariesRoute(loadLibrariesJson = loadLibrariesJson, onBack = onBack) }
+    entry<AboutNavKey> {
+        AboutScreen(
+            onLicenseClick = onLicenseClick,
+            onPrivacyClick = onPrivacyClick,
+            onLibrariesClick = onLibrariesClick,
+        )
+    }
+    entry<LicenseNavKey> {
+        TextDocumentRoute(title = "License", loadText = content.loadLicenseText, onBack = onBack)
+    }
+    entry<PrivacyNavKey> {
+        TextDocumentRoute(title = "Privacy", loadText = content.loadPrivacyText, onBack = onBack)
+    }
+    entry<LibrariesNavKey> { LibrariesRoute(loadLibrariesJson = content.loadLibrariesJson, onBack = onBack) }
 }
