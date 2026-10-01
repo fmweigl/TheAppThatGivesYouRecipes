@@ -8,7 +8,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object AboutNavKey : NavKey
 
-/** Registers the about screen for [AboutNavKey]. */
-fun EntryProviderScope<NavKey>.aboutEntry() {
-    entry<AboutNavKey> { AboutScreen() }
+/**
+ * Registers the about screen for [AboutNavKey]. [loadLibrariesJson] returns the AboutLibraries
+ * JSON of the app's dependencies; only the app module can generate it, as it sees all of them.
+ */
+fun EntryProviderScope<NavKey>.aboutEntry(loadLibrariesJson: suspend () -> String) {
+    entry<AboutNavKey> { AboutRoute(loadLibrariesJson) }
 }

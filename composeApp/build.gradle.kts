@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.aboutLibraries)
 }
 
 kotlin {
@@ -24,6 +25,8 @@ kotlin {
 
     android {
         namespace = "io.github.fmweigl.yetanothermealsapp.composeapp"
+        // Needed to package the Compose resources (aboutlibraries.json) into the Android app.
+        androidResources.enable = true
     }
 
     sourceSets {
@@ -41,6 +44,7 @@ kotlin {
             implementation(libs.compose.materialIconsCore)
             implementation(libs.compose.ui)
             implementation(libs.compose.uiToolingPreview)
+            implementation(libs.compose.components.resources)
             implementation(libs.androidx.navigation3.ui)
             implementation(libs.androidx.lifecycle.viewmodelNavigation3)
         }
@@ -48,4 +52,28 @@ kotlin {
             implementation(libs.kotlin.test)
         }
     }
+}
+
+// The About tab lists every library the app ships with. The plugin collects them (with their
+// licenses) from this module, which depends on all others, into build/generated/aboutLibrariesResources.
+// That directory is commonMain's Compose resources directory, so the JSON is regenerated on every
+// build and read at runtime as `Res.readBytes("files/aboutlibraries.json")`.
+aboutLibraries {
+    collect {
+        // Only what ships: the Android and desktop classpaths and iOS's dependencies. Leaves out the
+        // tooling configurations (hot reload's jvmDev, ...).
+        filterVariants.addAll("android", "jvm", "metadataIosMain")
+    }
+    export {
+        outputFile = layout.buildDirectory.file("generated/aboutLibrariesResources/files/aboutlibraries.json")
+    }
+}
+
+compose.resources {
+    customDirectory(
+        sourceSetName = "commonMain",
+        directoryProvider = tasks.named("exportLibraryDefinitions").map {
+            layout.buildDirectory.dir("generated/aboutLibrariesResources").get()
+        },
+    )
 }

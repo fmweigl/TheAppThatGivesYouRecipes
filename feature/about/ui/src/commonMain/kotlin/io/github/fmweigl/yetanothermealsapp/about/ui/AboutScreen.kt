@@ -1,15 +1,13 @@
 package io.github.fmweigl.yetanothermealsapp.about.ui
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.mikepenz.aboutlibraries.Libs
+import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 
+/** The libraries the app uses with their licenses; [libraries] is null while loading. */
 @Composable
-internal fun AboutScreen(modifier: Modifier = Modifier) {
-    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Hello World")
-    }
+internal fun AboutScreen(libraries: Libs?, modifier: Modifier = Modifier) {
+    LibrariesContainer(libraries = libraries, modifier = modifier.fillMaxSize())
 }

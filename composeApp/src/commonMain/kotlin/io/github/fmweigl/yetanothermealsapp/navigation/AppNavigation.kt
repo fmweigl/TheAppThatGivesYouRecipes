@@ -24,6 +24,7 @@ import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.randomRecipeEntry
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
+import yetanothermealsapp.composeapp.generated.resources.Res
 
 private class TopLevelDestination(val icon: ImageVector, val label: String)
 
@@ -54,7 +55,7 @@ internal fun AppNavigation(modifier: Modifier = Modifier) {
     val navigator = remember(navigationState) { Navigator(navigationState) }
     val entryProvider = entryProvider {
         randomRecipeEntry()
-        aboutEntry()
+        aboutEntry(loadLibrariesJson = { Res.readBytes("files/aboutlibraries.json").decodeToString() })
     }
 
     Scaffold(
