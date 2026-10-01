@@ -54,10 +54,12 @@ kotlin {
     }
 }
 
-// The About tab lists every library the app ships with. The plugin collects them (with their
-// licenses) from this module, which depends on all others, into build/generated/aboutLibrariesResources.
-// That directory is commonMain's Compose resources directory, so the JSON is regenerated on every
-// build and read at runtime as `Res.readBytes("files/aboutlibraries.json")`.
+// The About tab shows the app's license and every library it ships with. These files are
+// commonMain's Compose resources, generated on every build into build/generated/appComposeResources
+// and read at runtime with `Res.readBytes("files/...")`:
+// - files/aboutlibraries.json: the AboutLibraries plugin collects the libraries (with their
+//   licenses) from this module, which depends on all others.
+// - files/LICENSE: copied from the repository root, so the app shows the same text.
 aboutLibraries {
     collect {
         // Only what ships: the Android and desktop classpaths and iOS's dependencies. Leaves out the
@@ -65,15 +67,19 @@ aboutLibraries {
         filterVariants.addAll("android", "jvm", "metadataIosMain")
     }
     export {
-        outputFile = layout.buildDirectory.file("generated/aboutLibrariesResources/files/aboutlibraries.json")
+        outputFile = layout.buildDirectory.file("generated/aboutLibrariesExport/aboutlibraries.json")
     }
+}
+
+val generateAppComposeResources by tasks.registering(Sync::class) {
+    from(tasks.named("exportLibraryDefinitions"))
+    from(rootProject.layout.projectDirectory.file("LICENSE"))
+    into(layout.buildDirectory.dir("generated/appComposeResources/files"))
 }
 
 compose.resources {
     customDirectory(
         sourceSetName = "commonMain",
-        directoryProvider = tasks.named("exportLibraryDefinitions").map {
-            layout.buildDirectory.dir("generated/aboutLibrariesResources").get()
-        },
+        directoryProvider = layout.dir(generateAppComposeResources.map { it.destinationDir.parentFile }),
     )
 }

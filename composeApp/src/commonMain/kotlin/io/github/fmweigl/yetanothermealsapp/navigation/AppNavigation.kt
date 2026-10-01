@@ -20,6 +20,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import io.github.fmweigl.yetanothermealsapp.about.ui.AboutNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.LibrariesNavKey
+import io.github.fmweigl.yetanothermealsapp.about.ui.LicenseNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.aboutEntries
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.RandomRecipeNavKey
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.randomRecipeEntry
@@ -42,6 +43,7 @@ private val navKeyConfiguration = SavedStateConfiguration {
         polymorphic(NavKey::class) {
             subclass(RandomRecipeNavKey::class)
             subclass(AboutNavKey::class)
+            subclass(LicenseNavKey::class)
             subclass(LibrariesNavKey::class)
         }
     }
@@ -59,8 +61,10 @@ internal fun AppNavigation(modifier: Modifier = Modifier) {
     val entryProvider = entryProvider {
         randomRecipeEntry()
         aboutEntries(
+            onLicenseClick = { navigator.navigate(LicenseNavKey) },
             onLibrariesClick = { navigator.navigate(LibrariesNavKey) },
             onBack = navigator::goBack,
+            loadLicenseText = { Res.readBytes("files/LICENSE").decodeToString() },
             loadLibrariesJson = { Res.readBytes("files/aboutlibraries.json").decodeToString() },
         )
     }
