@@ -67,22 +67,6 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
 
-## Publishing to Google Play
-
-CI (`.github/workflows/ci.yml`, job `publish`) builds a signed release bundle on every push to `master` that passes detekt, the tests and the debug build, and uploads it to Google Play's **production** track, so it reaches all users once Play's review approves it. The version code is the GitHub run number, and the version name is `1.0.<run number>`. The R8 mapping file is uploaded too, so Play Console shows readable crash stack traces.
-
-One-time setup:
-
-1. In Play Console, create the app (package `io.github.fmweigl.yetanothermealsapp`), complete the store listing, content rating, data safety form and privacy policy URL, and upload the first bundle by hand (`./gradlew :androidApp:bundleRelease`); the Play API can't create an app. Enroll in Play App Signing with your upload key.
-2. New personal developer accounts must run a closed test (at least 12 testers for 14 days) before Play grants production access; until then, uploads to production fail.
-3. Create a service account in Google Cloud, enable the Google Play Android Developer API, and invite the service account in Play Console (Users and permissions) with permission to release to production for this app. Create a JSON key for it.
-4. Add these repository secrets (Settings → Secrets and variables → Actions):
-   - `PLAY_SERVICE_ACCOUNT_JSON`: the service account's JSON key
-   - `RELEASE_KEYSTORE_BASE64`: the upload keystore, `base64 -w0 upload.jks`
-   - `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`
-   - `THE_MEAL_DB_API_KEY`: the supporter key
-5. Add the repository variable `PLAY_PUBLISHING` with the value `true`. Without it the `publish` job is skipped, so CI stays green before the setup is done. Set it to anything else to pause publishing.
-
 ## Attributions
 
 Recipe data and images come from [TheMealDB](https://www.themealdb.com). See [attributions](./ATTRIBUTIONS.md).

@@ -43,8 +43,9 @@ jobs:
           if-no-files-found: ignore
 
   # Publishes every master build that passed the job above to Google Play's production track.
-  # Off until the repository variable PLAY_PUBLISHING is "true" (see README, "Publishing to
-  # Google Play", for the secrets it needs).
+  # Off until the repository variable PLAY_PUBLISHING is "true". Needs the secrets
+  # PLAY_SERVICE_ACCOUNT_JSON, RELEASE_KEYSTORE_BASE64 (base64 of the upload keystore),
+  # RELEASE_STORE_PASSWORD, RELEASE_KEY_ALIAS, RELEASE_KEY_PASSWORD and THE_MEAL_DB_API_KEY.
   publish:
     name: Publish to Google Play
     needs: build
