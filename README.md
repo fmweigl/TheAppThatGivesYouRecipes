@@ -42,6 +42,10 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
 
+## Attributions
+
+Recipe data and images come from [TheMealDB](https://www.themealdb.com). See [attributions](./ATTRIBUTIONS.md).
+
 ## Privacy
 
 The app collects no personal data. See the [privacy policy](./PRIVACY.md).

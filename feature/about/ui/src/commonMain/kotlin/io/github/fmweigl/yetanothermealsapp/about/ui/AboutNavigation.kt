@@ -20,31 +20,37 @@ data object PrivacyNavKey : NavKey
 @Serializable
 data object LibrariesNavKey : NavKey
 
+/** Navigation key of the app's attributions (data sources), opened from the about screen. */
+@Serializable
+data object AttributionsNavKey : NavKey
+
 /**
  * Registers the about screen for [AboutNavKey] and the screens it opens: the license for
- * [LicenseNavKey], the privacy policy for [PrivacyNavKey] and the library list for [LibrariesNavKey].
- * [onLicenseClick], [onPrivacyClick] and [onLibrariesClick] should navigate to those keys, [onBack]
- * leave them. [content] provides what the screens show.
+ * [LicenseNavKey], the library list for [LibrariesNavKey], the privacy policy for [PrivacyNavKey]
+ * and the attributions for [AttributionsNavKey]. The about screen calls [onNavigate] with one of
+ * these keys to open it; [onBack] leaves it. [content] provides what the screens show.
  */
 fun EntryProviderScope<NavKey>.aboutEntries(
-    onLicenseClick: () -> Unit,
-    onPrivacyClick: () -> Unit,
-    onLibrariesClick: () -> Unit,
+    onNavigate: (NavKey) -> Unit,
     onBack: () -> Unit,
     content: AboutContent,
 ) {
     entry<AboutNavKey> {
         AboutScreen(
-            onLicenseClick = onLicenseClick,
-            onPrivacyClick = onPrivacyClick,
-            onLibrariesClick = onLibrariesClick,
+            onLicenseClick = { onNavigate(LicenseNavKey) },
+            onLibrariesClick = { onNavigate(LibrariesNavKey) },
+            onPrivacyClick = { onNavigate(PrivacyNavKey) },
+            onAttributionsClick = { onNavigate(AttributionsNavKey) },
         )
     }
     entry<LicenseNavKey> {
         TextDocumentRoute(title = "License", loadText = content.loadLicenseText, onBack = onBack)
     }
+    entry<LibrariesNavKey> { LibrariesRoute(loadLibrariesJson = content.loadLibrariesJson, onBack = onBack) }
     entry<PrivacyNavKey> {
         TextDocumentRoute(title = "Privacy", loadText = content.loadPrivacyText, onBack = onBack)
     }
-    entry<LibrariesNavKey> { LibrariesRoute(loadLibrariesJson = content.loadLibrariesJson, onBack = onBack) }
+    entry<AttributionsNavKey> {
+        TextDocumentRoute(title = "Attributions", loadText = content.loadAttributionsText, onBack = onBack)
+    }
 }

@@ -13,8 +13,9 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun AboutScreen(
     onLicenseClick: () -> Unit,
-    onPrivacyClick: () -> Unit,
     onLibrariesClick: () -> Unit,
+    onPrivacyClick: () -> Unit,
+    onAttributionsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -25,5 +26,6 @@ internal fun AboutScreen(
         Button(onClick = onLicenseClick) { Text("License") }
         Button(onClick = onLibrariesClick) { Text("Libraries") }
         Button(onClick = onPrivacyClick) { Text("Privacy") }
+        Button(onClick = onAttributionsClick) { Text("Attributions") }
     }
 }

@@ -20,6 +20,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import io.github.fmweigl.yetanothermealsapp.about.ui.AboutContent
 import io.github.fmweigl.yetanothermealsapp.about.ui.AboutNavKey
+import io.github.fmweigl.yetanothermealsapp.about.ui.AttributionsNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.LibrariesNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.LicenseNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.PrivacyNavKey
@@ -47,6 +48,7 @@ private val navKeyConfiguration = SavedStateConfiguration {
             subclass(AboutNavKey::class)
             subclass(LicenseNavKey::class)
             subclass(PrivacyNavKey::class)
+            subclass(AttributionsNavKey::class)
             subclass(LibrariesNavKey::class)
         }
     }
@@ -56,6 +58,7 @@ private val navKeyConfiguration = SavedStateConfiguration {
 private val aboutContent = AboutContent(
     loadLicenseText = { Res.readBytes("files/LICENSE").decodeToString() },
     loadPrivacyText = { Res.readBytes("files/PRIVACY.md").decodeToString() },
+    loadAttributionsText = { Res.readBytes("files/ATTRIBUTIONS.md").decodeToString() },
     loadLibrariesJson = { Res.readBytes("files/aboutlibraries.json").decodeToString() },
 )
 
@@ -71,9 +74,7 @@ internal fun AppNavigation(modifier: Modifier = Modifier) {
     val entryProvider = entryProvider {
         randomRecipeEntry()
         aboutEntries(
-            onLicenseClick = { navigator.navigate(LicenseNavKey) },
-            onPrivacyClick = { navigator.navigate(PrivacyNavKey) },
-            onLibrariesClick = { navigator.navigate(LibrariesNavKey) },
+            onNavigate = navigator::navigate,
             onBack = navigator::goBack,
             content = aboutContent,
         )
