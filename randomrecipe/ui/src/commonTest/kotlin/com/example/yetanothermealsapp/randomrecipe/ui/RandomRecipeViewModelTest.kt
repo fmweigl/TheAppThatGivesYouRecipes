@@ -1,5 +1,7 @@
 package com.example.yetanothermealsapp.randomrecipe.ui
 
+import com.example.yetanothermealsapp.core.domain.DataError
+import com.example.yetanothermealsapp.core.domain.Result
 import com.example.yetanothermealsapp.randomrecipe.domain.RandomRecipeRepository
 import com.example.yetanothermealsapp.randomrecipe.domain.Recipe
 import kotlinx.coroutines.Dispatchers
@@ -25,14 +27,14 @@ class RandomRecipeViewModelTest {
     @AfterTest
     fun tearDown() = Dispatchers.resetMain()
 
-    private class FakeRepository(var result: () -> Recipe) : RandomRecipeRepository {
-        override suspend fun getRandomRecipe(): Recipe = result()
+    private class FakeRepository(var result: Result<Recipe, DataError>) : RandomRecipeRepository {
+        override suspend fun getRandomRecipe(): Result<Recipe, DataError> = result
     }
 
     @Test
     fun loadsRecipeOnCreation() = runTest(dispatcher) {
         val recipe = Recipe(id = "1", name = "Soup")
-        val viewModel = RandomRecipeViewModel(FakeRepository { recipe })
+        val viewModel = RandomRecipeViewModel(FakeRepository(Result.Success(recipe)))
 
         assertEquals(RandomRecipeUiState.Loading, viewModel.uiState.value)
         advanceUntilIdle()
@@ -41,13 +43,13 @@ class RandomRecipeViewModelTest {
 
     @Test
     fun showsErrorAndRecoversOnRetry() = runTest(dispatcher) {
-        val repository = FakeRepository { throw IllegalStateException("offline") }
+        val repository = FakeRepository(Result.Failure(DataError.NoConnection))
         val viewModel = RandomRecipeViewModel(repository)
         advanceUntilIdle()
-        assertEquals(RandomRecipeUiState.Error, viewModel.uiState.value)
+        assertEquals(RandomRecipeUiState.Error(DataError.NoConnection), viewModel.uiState.value)
 
         val recipe = Recipe(id = "2", name = "Pie")
-        repository.result = { recipe }
+        repository.result = Result.Success(recipe)
         viewModel.loadRandomRecipe()
         advanceUntilIdle()
         assertEquals(RandomRecipeUiState.Success(recipe), viewModel.uiState.value)

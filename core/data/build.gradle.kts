@@ -10,24 +10,16 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.core.data)
-            implementation(projects.randomrecipe.domain)
+            api(projects.core.domain)
 
             implementation(libs.ktor.clientCore)
-            api(libs.koin.core)
             implementation(libs.ktor.clientContentNegotiation)
-            implementation(libs.ktor.serializationKotlinxJson)
             implementation(libs.kotlinx.serializationJson)
-        }
-        jvmMain.dependencies {
-            implementation(libs.ktor.clientOkhttp)
-        }
-        iosMain.dependencies {
-            implementation(libs.ktor.clientDarwin)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.ktor.clientMock)
+            implementation(libs.ktor.serializationKotlinxJson)
             implementation(libs.kotlinx.coroutinesTest)
         }
     }

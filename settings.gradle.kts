@@ -34,6 +34,8 @@ plugins {
 
 include(":androidApp")
 include(":composeApp")
+include(":core:data")
+include(":core:domain")
 include(":desktopApp")
 include(":randomrecipe:data")
 include(":randomrecipe:domain")

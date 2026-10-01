@@ -1,32 +1,43 @@
 package com.example.yetanothermealsapp.randomrecipe.data
 
+import com.example.yetanothermealsapp.core.domain.DataError
+import com.example.yetanothermealsapp.core.domain.Result
 import com.example.yetanothermealsapp.randomrecipe.domain.Ingredient
+import com.example.yetanothermealsapp.randomrecipe.domain.Recipe
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.MockRequestHandler
 import io.ktor.client.engine.mock.respond
-import io.ktor.client.plugins.ServerResponseException
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import kotlinx.coroutines.test.runTest
+import kotlinx.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 
 class RandomRecipeRepositoryImplTest {
 
-    private fun repository(body: String, status: HttpStatusCode = HttpStatusCode.OK): RandomRecipeRepositoryImpl {
+    private fun repository(handler: MockRequestHandler): RandomRecipeRepositoryImpl {
         val engine = MockEngine { request ->
             assertEquals("https://www.themealdb.com/api/json/v1/1/random.php", request.url.toString())
-            respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
+            handler(request)
         }
         return RandomRecipeRepositoryImpl(HttpClient(engine) { theMealDbConfig() })
     }
 
+    private fun repository(body: String, status: HttpStatusCode = HttpStatusCode.OK) = repository {
+        respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
+    }
+
+    private suspend fun RandomRecipeRepositoryImpl.loadRecipe(): Recipe =
+        assertIs<Result.Success<Recipe>>(getRandomRecipe()).data
+
     @Test
     fun mapsMealFields() = runTest {
-        val recipe = repository(MEAL_JSON).getRandomRecipe()
+        val recipe = repository(MEAL_JSON).loadRecipe()
 
         assertEquals("52923", recipe.id)
         assertEquals("Canadian Butter Tarts", recipe.name)
@@ -41,7 +52,7 @@ class RandomRecipeRepositoryImplTest {
 
     @Test
     fun pairsIngredientsWithMeasuresInOrderAndSkipsEmptySlots() = runTest {
-        val recipe = repository(MEAL_JSON).getRandomRecipe()
+        val recipe = repository(MEAL_JSON).loadRecipe()
 
         assertEquals(
             listOf(
@@ -54,17 +65,40 @@ class RandomRecipeRepositoryImplTest {
     }
 
     @Test
-    fun failsWhenNoMealIsReturned() = runTest {
-        assertFailsWith<NoSuchElementException> {
-            repository("""{"meals":null}""").getRandomRecipe()
-        }
+    fun failsWithInvalidResponseWhenNoMealIsReturned() = runTest {
+        assertEquals(
+            Result.Failure(DataError.InvalidResponse),
+            repository("""{"meals":null}""").getRandomRecipe(),
+        )
     }
 
     @Test
-    fun failsOnServerError() = runTest {
-        assertFailsWith<ServerResponseException> {
-            repository("", HttpStatusCode.InternalServerError).getRandomRecipe()
-        }
+    fun failsWithInvalidResponseWhenMealHasNoId() = runTest {
+        assertEquals(
+            Result.Failure(DataError.InvalidResponse),
+            repository("""{"meals":[{"strMeal":"Soup"}]}""").getRandomRecipe(),
+        )
+    }
+
+    @Test
+    fun failsWithInvalidResponseOnMalformedJson() = runTest {
+        assertEquals(Result.Failure(DataError.InvalidResponse), repository("""{"meals":[""").getRandomRecipe())
+    }
+
+    @Test
+    fun failsWithServerOnServerError() = runTest {
+        assertEquals(
+            Result.Failure(DataError.Server),
+            repository("", HttpStatusCode.InternalServerError).getRandomRecipe(),
+        )
+    }
+
+    @Test
+    fun failsWithNoConnectionOnNetworkError() = runTest {
+        assertEquals(
+            Result.Failure(DataError.NoConnection),
+            repository { throw IOException("offline") }.getRandomRecipe(),
+        )
     }
 
     private companion object {

@@ -1,6 +1,8 @@
 package com.example.yetanothermealsapp.randomrecipe.domain
 
+import com.example.yetanothermealsapp.core.domain.DataError
+import com.example.yetanothermealsapp.core.domain.Result
+
 interface RandomRecipeRepository {
-    /** Throws if the recipe cannot be loaded. */
-    suspend fun getRandomRecipe(): Recipe
+    suspend fun getRandomRecipe(): Result<Recipe, DataError>
 }

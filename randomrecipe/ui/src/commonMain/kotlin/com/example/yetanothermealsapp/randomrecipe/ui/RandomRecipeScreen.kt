@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.yetanothermealsapp.randomrecipe.domain.Recipe
@@ -36,12 +37,16 @@ internal fun RandomRecipeScreen(
         RandomRecipeUiState.Loading -> Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
-        RandomRecipeUiState.Error -> Column(
+        is RandomRecipeUiState.Error -> Column(
             modifier = modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("Could not load a recipe. Check your connection.", color = MaterialTheme.colorScheme.error)
+            Text(
+                uiState.error.toMessage(),
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center,
+            )
             Button(onClick = onLoadAnother) { Text("Try again") }
         }
         is RandomRecipeUiState.Success -> RecipeDetails(uiState.recipe, onLoadAnother, modifier)

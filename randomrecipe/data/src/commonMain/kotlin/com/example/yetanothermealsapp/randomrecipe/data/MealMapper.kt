@@ -7,9 +7,10 @@ import kotlinx.serialization.json.JsonPrimitive
 
 private const val MAX_INGREDIENTS = 20
 
-internal fun JsonObject.toRecipe(): Recipe = Recipe(
-    id = requireNotNull(string("idMeal")) { "Meal has no idMeal" },
-    name = requireNotNull(string("strMeal")) { "Meal has no strMeal" },
+/** Maps a TheMealDB meal to a [Recipe], or returns null when it has no id or name. */
+internal fun JsonObject.toRecipe(): Recipe? = Recipe(
+    id = string("idMeal") ?: return null,
+    name = string("strMeal") ?: return null,
     category = string("strCategory"),
     area = string("strArea"),
     instructions = string("strInstructions"),
