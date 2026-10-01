@@ -11,6 +11,8 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
   - [domain](./feature/randomrecipe/domain) and [data](./feature/randomrecipe/data) contain plain Kotlin Multiplatform code with no Android or Compose dependencies.
   - [ui](./feature/randomrecipe/ui) has the feature's Compose Multiplatform screens, which `App()` displays.
 
+* [/feature/about](./feature/about) is the about feature. So far it only has a [ui](./feature/about/ui) module with a placeholder screen.
+
 ### Running the apps
 
 Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:

@@ -29,6 +29,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.core.network)
+            implementation(projects.feature.about.ui)
             implementation(projects.feature.randomrecipe.data)
             implementation(projects.feature.randomrecipe.ui)
 

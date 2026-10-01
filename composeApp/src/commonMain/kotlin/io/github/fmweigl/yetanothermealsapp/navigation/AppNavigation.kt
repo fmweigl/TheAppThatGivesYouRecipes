@@ -2,7 +2,7 @@ package io.github.fmweigl.yetanothermealsapp.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -17,8 +17,8 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
-import io.github.fmweigl.yetanothermealsapp.helloworld.HelloWorldNavKey
-import io.github.fmweigl.yetanothermealsapp.helloworld.helloWorldEntry
+import io.github.fmweigl.yetanothermealsapp.about.ui.AboutNavKey
+import io.github.fmweigl.yetanothermealsapp.about.ui.aboutEntry
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.RandomRecipeNavKey
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.randomRecipeEntry
 import kotlinx.serialization.modules.SerializersModule
@@ -30,7 +30,7 @@ private class TopLevelDestination(val icon: ImageVector, val label: String)
 /** The tabs of the bottom navigation bar, in display order. The first one is the start route. */
 private val topLevelDestinations: Map<NavKey, TopLevelDestination> = linkedMapOf(
     RandomRecipeNavKey to TopLevelDestination(Icons.Filled.Refresh, "Random"),
-    HelloWorldNavKey to TopLevelDestination(Icons.Filled.Face, "Hello"),
+    AboutNavKey to TopLevelDestination(Icons.Filled.Info, "About"),
 )
 
 /** Registers every [NavKey] for saving the back stacks; add new keys here. */
@@ -38,7 +38,7 @@ private val navKeyConfiguration = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {
             subclass(RandomRecipeNavKey::class)
-            subclass(HelloWorldNavKey::class)
+            subclass(AboutNavKey::class)
         }
     }
 }
@@ -54,7 +54,7 @@ internal fun AppNavigation(modifier: Modifier = Modifier) {
     val navigator = remember(navigationState) { Navigator(navigationState) }
     val entryProvider = entryProvider {
         randomRecipeEntry()
-        helloWorldEntry()
+        aboutEntry()
     }
 
     Scaffold(
