@@ -6,8 +6,8 @@ import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
- * Compose Multiplatform feature UI modules: shared targets plus Android, Compose, lifecycle and Koin
- * ViewModel support. Each module sets its own `namespace` in `kotlin { android { } }`.
+ * Compose Multiplatform feature UI modules: shared targets plus Android, Compose, lifecycle, Koin
+ * ViewModel and Navigation 3 support (kotlinx.serialization for the `NavKey`s). Each module sets its own `namespace` in `kotlin { android { } }`.
  */
 class KmpFeatureUiConventionPlugin : Plugin<Project> {
     override fun apply(project: Project) = with(project) {
@@ -15,6 +15,7 @@ class KmpFeatureUiConventionPlugin : Plugin<Project> {
         pluginManager.apply("com.android.kotlin.multiplatform.library")
         pluginManager.apply("org.jetbrains.compose")
         pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+        pluginManager.apply("org.jetbrains.kotlin.plugin.serialization")
         pluginManager.apply("meals.detekt")
 
         extensions.configure<KotlinMultiplatformExtension> {
@@ -29,6 +30,7 @@ class KmpFeatureUiConventionPlugin : Plugin<Project> {
                 implementation(libs.lib("androidx-lifecycle-viewmodelCompose"))
                 implementation(libs.lib("androidx-lifecycle-runtimeCompose"))
                 implementation(libs.lib("koin-composeViewmodel"))
+                implementation(libs.lib("androidx-navigation3-runtime"))
             }
             sourceSets.commonTest.dependencies {
                 implementation(libs.lib("kotlin-test"))
