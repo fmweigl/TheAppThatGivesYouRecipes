@@ -1,4 +1,4 @@
-package com.example.yetanothermealsapp.randomrecipe.ui
+package com.example.yetanothermealsapp
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.yetanothermealsapp.randomrecipe.domain.Recipe
+import com.example.yetanothermealsapp.randomrecipe.ui.RandomRecipeScreen
 
 @Composable
 @Preview

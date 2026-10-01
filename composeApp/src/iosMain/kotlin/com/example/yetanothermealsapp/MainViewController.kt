@@ -1,4 +1,4 @@
-package com.example.yetanothermealsapp.randomrecipe.ui
+package com.example.yetanothermealsapp
 
 import androidx.compose.ui.window.ComposeUIViewController
 

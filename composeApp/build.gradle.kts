@@ -8,13 +8,20 @@ plugins {
 }
 
 kotlin {
-    iosArm64()
-    iosSimulatorArm64()
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "Shared"
+            isStatic = true
+        }
+    }
 
     jvm()
 
     android {
-        namespace = "com.example.yetanothermealsapp.randomrecipe.ui"
+        namespace = "com.example.yetanothermealsapp.composeapp"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
@@ -26,14 +33,13 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.randomrecipe.domain)
+            implementation(projects.randomrecipe.ui)
 
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
             implementation(libs.compose.ui)
             implementation(libs.compose.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

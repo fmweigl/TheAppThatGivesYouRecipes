@@ -10,7 +10,7 @@ Kotlin Multiplatform + Compose Multiplatform app targeting Android, iOS (arm64 +
 
 - Android debug build: `./gradlew :androidApp:assembleDebug`
 - Desktop run: `./gradlew :desktopApp:run` (hot reload: `./gradlew :desktopApp:hotRun --auto`)
-- iOS: open `iosApp/` in Xcode and run from there (the Xcode build phase runs `:randomrecipe:ui:embedAndSignAppleFrameworkForXcode`, which produces the static `Shared` framework)
+- iOS: open `iosApp/` in Xcode and run from there (the Xcode build phase runs `:composeApp:embedAndSignAppleFrameworkForXcode`, which produces the static `Shared` framework)
 - Tests:
   - JVM tests per module: `./gradlew :randomrecipe:domain:jvmTest` (also `:randomrecipe:data`, `:randomrecipe:ui`)
   - iOS simulator tests: `./gradlew :randomrecipe:domain:iosSimulatorArm64Test`
@@ -21,15 +21,15 @@ No lint/format tooling (ktlint, detekt, spotless) is configured.
 
 ## Architecture
 
-- There is no `shared` module. The root composable `App()` lives in `:randomrecipe:ui` (`com.example.yetanothermealsapp.randomrecipe.ui`), and each platform entry point just hosts it:
+- `:composeApp` is the UI entry point for all platforms and will hold the main navigation. It owns the root composable `App()` (`com.example.yetanothermealsapp`), depends on the feature `ui` modules, and produces the static iOS `Shared` framework. Each platform entry point just hosts `App()`:
   - `androidApp/`: `MainActivity` calls `setContent { App() }`
   - `desktopApp/`: `main.kt` opens a Compose `Window` with `App()`
-  - `iosApp/`: SwiftUI wraps `MainViewController()` from `randomrecipe/ui/src/iosMain`, imported in Swift as `import Shared`
-- `:randomrecipe:ui` uses the newer AGP `com.android.kotlin.multiplatform.library` plugin: Android config lives inside `kotlin { android { ... } }`, not a top-level `android {}` block.
+  - `iosApp/`: SwiftUI wraps `MainViewController()` from `composeApp/src/iosMain`, imported in Swift as `import Shared`
+- `:composeApp` and `:randomrecipe:ui` use the newer AGP `com.android.kotlin.multiplatform.library` plugin: Android config lives inside `kotlin { android { ... } }`, not a top-level `android {}` block.
 - `randomrecipe/` is a feature folder with three modules, referenced through type-safe project accessors (`projects.randomrecipe.domain`):
   - `:randomrecipe:domain`: models and repository interfaces. KMP (jvm + iOS), with no Android or Compose dependencies.
   - `:randomrecipe:data`: repository implementations, depends on `domain`. Same targets and constraints as `domain`.
-  - `:randomrecipe:ui`: Compose Multiplatform screens (Android, jvm, iOS), depends on `domain`.
+  - `:randomrecipe:ui`: Compose Multiplatform screens (Android, jvm, iOS), depends on `domain`. Consumed by `:composeApp`; it does not build an iOS framework itself.
   - `domain` and `data` are KMP rather than `kotlin("jvm")` so iOS can consume them. Their Android consumers resolve the `jvm()` variant.
 - Platform-specific code goes in `expect`/`actual` declarations.
 - Lifecycle ViewModel and runtime-compose (JetBrains multiplatform artifacts) are already available in `:randomrecipe:ui` `commonMain`.

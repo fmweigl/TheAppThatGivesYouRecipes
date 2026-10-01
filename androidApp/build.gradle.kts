@@ -11,7 +11,7 @@ kotlin {
     }
 }
 dependencies {
-    implementation(projects.randomrecipe.ui)
+    implementation(projects.composeApp)
 
     implementation(libs.androidx.activity.compose)
 

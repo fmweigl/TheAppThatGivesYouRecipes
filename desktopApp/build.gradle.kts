@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    implementation(projects.randomrecipe.ui)
+    implementation(projects.composeApp)
 
     implementation(compose.desktop.currentOs)
     implementation(libs.kotlinx.coroutinesSwing)

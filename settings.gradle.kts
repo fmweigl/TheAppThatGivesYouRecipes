@@ -33,6 +33,7 @@ plugins {
 }
 
 include(":androidApp")
+include(":composeApp")
 include(":desktopApp")
 include(":randomrecipe:data")
 include(":randomrecipe:domain")
