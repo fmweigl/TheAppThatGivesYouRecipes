@@ -30,6 +30,10 @@ gradlePlugin {
             id = "meals.detekt"
             implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.DetektConventionPlugin"
         }
+        register("kmpCompose") {
+            id = "meals.kmp.compose"
+            implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.KmpComposeConventionPlugin"
+        }
         register("kmpFeatureUi") {
             id = "meals.kmp.feature.ui"
             implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.KmpFeatureUiConventionPlugin"

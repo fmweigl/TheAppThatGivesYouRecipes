@@ -1,0 +1,36 @@
+package io.github.fmweigl.yetanothermealsapp.buildlogic
+
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+
+/**
+ * Compose Multiplatform library modules: shared targets plus Android, with Compose runtime,
+ * foundation, material3 and ui. Each module sets its own `namespace` in `kotlin { android { } }`.
+ * Feature `ui` modules get this through `meals.kmp.feature.ui`.
+ */
+class KmpComposeConventionPlugin : Plugin<Project> {
+    override fun apply(project: Project) = with(project) {
+        pluginManager.apply("org.jetbrains.kotlin.multiplatform")
+        pluginManager.apply("com.android.kotlin.multiplatform.library")
+        pluginManager.apply("org.jetbrains.compose")
+        pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+        pluginManager.apply("meals.detekt")
+
+        extensions.configure<KotlinMultiplatformExtension> {
+            sharedKmpTargets()
+            androidLibraryDefaults(project)
+
+            sourceSets.commonMain.dependencies {
+                implementation(libs.lib("compose-runtime"))
+                implementation(libs.lib("compose-foundation"))
+                implementation(libs.lib("compose-material3"))
+                implementation(libs.lib("compose-ui"))
+            }
+            sourceSets.commonTest.dependencies {
+                implementation(libs.lib("kotlin-test"))
+            }
+        }
+    }
+}

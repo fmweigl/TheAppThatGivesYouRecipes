@@ -6,34 +6,24 @@ import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
- * Compose Multiplatform feature UI modules: shared targets plus Android, Compose, lifecycle, Koin
- * ViewModel and Navigation 3 support (kotlinx.serialization for the `NavKey`s). Each module sets its own `namespace` in `kotlin { android { } }`.
+ * Compose Multiplatform feature UI modules: everything from `meals.kmp.compose`, plus lifecycle,
+ * Koin ViewModel and Navigation 3 support (kotlinx.serialization for the `NavKey`s) and the
+ * design system. Each module sets its own `namespace` in `kotlin { android { } }`.
  */
 class KmpFeatureUiConventionPlugin : Plugin<Project> {
     override fun apply(project: Project) = with(project) {
-        pluginManager.apply("org.jetbrains.kotlin.multiplatform")
-        pluginManager.apply("com.android.kotlin.multiplatform.library")
-        pluginManager.apply("org.jetbrains.compose")
-        pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+        pluginManager.apply("meals.kmp.compose")
         pluginManager.apply("org.jetbrains.kotlin.plugin.serialization")
-        pluginManager.apply("meals.detekt")
 
         extensions.configure<KotlinMultiplatformExtension> {
-            sharedKmpTargets()
-            androidLibraryDefaults(project)
-
             sourceSets.commonMain.dependencies {
-                implementation(libs.lib("compose-runtime"))
-                implementation(libs.lib("compose-foundation"))
-                implementation(libs.lib("compose-material3"))
-                implementation(libs.lib("compose-ui"))
+                implementation(project(":core:designsystem"))
                 implementation(libs.lib("androidx-lifecycle-viewmodelCompose"))
                 implementation(libs.lib("androidx-lifecycle-runtimeCompose"))
                 implementation(libs.lib("koin-composeViewmodel"))
                 implementation(libs.lib("androidx-navigation3-runtime"))
             }
             sourceSets.commonTest.dependencies {
-                implementation(libs.lib("kotlin-test"))
                 implementation(libs.lib("kotlinx-coroutinesTest"))
             }
         }

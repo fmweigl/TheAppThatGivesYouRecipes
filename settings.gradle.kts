@@ -36,6 +36,7 @@ plugins {
 include(":androidApp")
 include(":composeApp")
 include(":core:data")
+include(":core:designsystem")
 include(":core:domain")
 include(":core:network")
 include(":desktopApp")

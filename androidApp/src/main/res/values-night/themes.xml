@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.Meals" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/meals_background</item>
+    </style>
+    <color name="meals_background">#18120E</color>
+</resources>

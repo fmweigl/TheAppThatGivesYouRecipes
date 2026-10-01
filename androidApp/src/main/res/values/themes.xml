@@ -1,0 +1,7 @@
+<resources>
+    <!-- Only the window until Compose draws; colors match MealsTheme's background. -->
+    <style name="Theme.Meals" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/meals_background</item>
+    </style>
+    <color name="meals_background">#FFF8F0</color>
+</resources>
