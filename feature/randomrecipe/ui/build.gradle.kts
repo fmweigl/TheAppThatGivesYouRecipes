@@ -9,7 +9,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(projects.randomrecipe.domain)
+            implementation(projects.feature.randomrecipe.domain)
 
             implementation(libs.compose.uiToolingPreview)
             api(libs.koin.core)
