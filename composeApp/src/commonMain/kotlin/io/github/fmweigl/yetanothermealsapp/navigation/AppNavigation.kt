@@ -1,5 +1,6 @@
 package io.github.fmweigl.yetanothermealsapp.navigation
 
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -18,7 +19,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import io.github.fmweigl.yetanothermealsapp.about.ui.AboutNavKey
-import io.github.fmweigl.yetanothermealsapp.about.ui.aboutEntry
+import io.github.fmweigl.yetanothermealsapp.about.ui.LibrariesNavKey
+import io.github.fmweigl.yetanothermealsapp.about.ui.aboutEntries
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.RandomRecipeNavKey
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.randomRecipeEntry
 import kotlinx.serialization.modules.SerializersModule
@@ -40,6 +42,7 @@ private val navKeyConfiguration = SavedStateConfiguration {
         polymorphic(NavKey::class) {
             subclass(RandomRecipeNavKey::class)
             subclass(AboutNavKey::class)
+            subclass(LibrariesNavKey::class)
         }
     }
 }
@@ -55,7 +58,11 @@ internal fun AppNavigation(modifier: Modifier = Modifier) {
     val navigator = remember(navigationState) { Navigator(navigationState) }
     val entryProvider = entryProvider {
         randomRecipeEntry()
-        aboutEntry(loadLibrariesJson = { Res.readBytes("files/aboutlibraries.json").decodeToString() })
+        aboutEntries(
+            onLibrariesClick = { navigator.navigate(LibrariesNavKey) },
+            onBack = navigator::goBack,
+            loadLibrariesJson = { Res.readBytes("files/aboutlibraries.json").decodeToString() },
+        )
     }
 
     Scaffold(
@@ -76,7 +83,8 @@ internal fun AppNavigation(modifier: Modifier = Modifier) {
         NavDisplay(
             entries = navigationState.toDecoratedEntries(entryProvider),
             onBack = navigator::goBack,
-            modifier = Modifier.padding(innerPadding),
+            // Consumed, so screens with their own top bar don't add the status bar padding again.
+            modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding),
         )
     }
 }
