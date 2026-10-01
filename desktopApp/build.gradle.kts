@@ -1,3 +1,4 @@
+import io.github.fmweigl.yetanothermealsapp.buildlogic.requireTheMealDbProductionKey
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -32,3 +33,6 @@ compose.desktop {
         }
     }
 }
+
+// Release builds (runRelease, packageRelease*, ...) must not ship TheMealDB's test key.
+requireTheMealDbProductionKey { "Release" in it }

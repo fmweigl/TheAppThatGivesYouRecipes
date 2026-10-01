@@ -5,6 +5,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
@@ -18,6 +19,10 @@ private const val ENVIRONMENT_VARIABLE = "THE_MEAL_DB_API_KEY"
 
 /** TheMealDB's public key for development, used when no supporter key is configured. */
 private const val TEST_API_KEY = "1"
+
+/** The project (`:core:network`) that calls [theMealDbApiKeySource] and owns the check task. */
+private const val KEY_PROJECT = ":core:network"
+private const val CHECK_TASK = "checkTheMealDbProductionKey"
 
 /** Writes `TheMealDbApiKey.kt`, which holds the API key as `internal const val THE_MEAL_DB_API_KEY`. */
 // Kept out of the build cache, so the key only ends up in this project's build directory.
@@ -55,11 +60,39 @@ abstract class GenerateTheMealDbApiKey : DefaultTask() {
     }
 }
 
+/** Fails when the build would ship TheMealDB's test key; release builds depend on it. */
+@DisableCachingByDefault(because = "A check without outputs")
+abstract class CheckTheMealDbProductionKey : DefaultTask() {
+
+    // Only whether it's the test key, so the key itself isn't stored as a task input.
+    @get:Input
+    abstract val usesTestKey: Property<Boolean>
+
+    @TaskAction
+    fun check() {
+        if (usesTestKey.get()) {
+            throw GradleException(
+                "Release builds need TheMealDB's supporter key, not the test key '$TEST_API_KEY'. Set " +
+                    "'$PROPERTY_NAME' in local.properties or as a Gradle property, or $ENVIRONMENT_VARIABLE.",
+            )
+        }
+    }
+}
+
+/**
+ * Makes the tasks matching [isReleaseTask] (in this project) depend on the check that the
+ * supporter key is configured, so release builds fail with the test key.
+ */
+fun Project.requireTheMealDbProductionKey(isReleaseTask: (String) -> Boolean) {
+    tasks.matching { isReleaseTask(it.name) }.configureEach { dependsOn("$KEY_PROJECT:$CHECK_TASK") }
+}
+
 /**
  * Generates commonMain's `THE_MEAL_DB_API_KEY` constant in [packageName]. The key is taken from the
  * first of: the Gradle property `theMealDbApiKey` (e.g. in `~/.gradle/gradle.properties`), the same
  * key in the root `local.properties` (not committed), the `THE_MEAL_DB_API_KEY` environment
- * variable (CI); without any, TheMealDB's public test key `1`.
+ * variable (CI); without any, TheMealDB's public test key `1`. Also registers
+ * `checkTheMealDbProductionKey`, which release builds depend on (see [requireTheMealDbProductionKey]).
  */
 fun KotlinMultiplatformExtension.theMealDbApiKeySource(project: Project, packageName: String) {
     val providers = project.providers
@@ -68,15 +101,20 @@ fun KotlinMultiplatformExtension.theMealDbApiKeySource(project: Project, package
         Properties().apply { load(text.reader()) }.getProperty(PROPERTY_NAME).orEmpty()
     }.filter { it.isNotBlank() }
 
+    val key: Provider<String> = providers.gradleProperty(PROPERTY_NAME)
+        .orElse(fromLocalProperties)
+        .orElse(providers.environmentVariable(ENVIRONMENT_VARIABLE))
+        .map(String::trim)
+        .orElse(TEST_API_KEY)
+
+    check(project.path == KEY_PROJECT) { "theMealDbApiKeySource() belongs in $KEY_PROJECT" }
+    project.tasks.register<CheckTheMealDbProductionKey>(CHECK_TASK) {
+        description = "Fails if the TheMealDB API key is the test key '$TEST_API_KEY'."
+        usesTestKey.set(key.map { it == TEST_API_KEY })
+    }
     val generate = project.tasks.register<GenerateTheMealDbApiKey>("generateTheMealDbApiKey") {
         description = "Generates the TheMealDB API key constant from '$PROPERTY_NAME' or $ENVIRONMENT_VARIABLE."
-        apiKey.set(
-            providers.gradleProperty(PROPERTY_NAME)
-                .orElse(fromLocalProperties)
-                .orElse(providers.environmentVariable(ENVIRONMENT_VARIABLE))
-                .map(String::trim)
-                .orElse(TEST_API_KEY),
-        )
+        apiKey.set(key)
         this.packageName.set(packageName)
         outputDirectory.set(project.layout.buildDirectory.dir("generated/theMealDbApiKey/commonMain/kotlin"))
     }

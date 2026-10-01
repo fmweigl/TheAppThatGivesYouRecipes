@@ -1,4 +1,5 @@
 import io.github.fmweigl.yetanothermealsapp.buildlogic.androidLibraryDefaults
+import io.github.fmweigl.yetanothermealsapp.buildlogic.requireTheMealDbProductionKey
 import io.github.fmweigl.yetanothermealsapp.buildlogic.sharedKmpTargets
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
@@ -92,3 +93,6 @@ compose.resources {
         directoryProvider = layout.dir(generateAppComposeResources.map { it.destinationDir }),
     )
 }
+
+// iOS release frameworks (Xcode's Release configuration) must not ship TheMealDB's test key.
+requireTheMealDbProductionKey { it.startsWith("linkRelease") }

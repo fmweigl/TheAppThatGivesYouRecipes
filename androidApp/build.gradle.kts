@@ -1,3 +1,4 @@
+import io.github.fmweigl.yetanothermealsapp.buildlogic.requireTheMealDbProductionKey
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -54,3 +55,6 @@ android {
         compose = true
     }
 }
+
+// Release builds must not ship TheMealDB's test key. Every release task depends on preReleaseBuild.
+requireTheMealDbProductionKey { it == "preReleaseBuild" }

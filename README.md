@@ -15,7 +15,7 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
 
 ### Running the apps
 
-Recipes come from [TheMealDB](https://www.themealdb.com)'s V2 API. Without further setup the app uses TheMealDB's public test key `1`, which is fine for development. Release builds need a supporter key: put it in `local.properties` (not committed) as
+Recipes come from [TheMealDB](https://www.themealdb.com)'s V2 API. Without further setup the app uses TheMealDB's public test key `1`, which is fine for development. Release builds (Android `assembleRelease`/`bundleRelease`, desktop `packageRelease*`/`runRelease`, Xcode's Release configuration) need a supporter key and fail with the test key: put it in `local.properties` (not committed) as
 
 ```properties
 theMealDbApiKey=YOUR_KEY
