@@ -15,7 +15,8 @@ internal fun RandomRecipeRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     RandomRecipeScreen(
         uiState = uiState,
-        onLoadAnother = viewModel::loadRandomRecipe,
+        onShowNext = viewModel::showNext,
+        onShowPrevious = viewModel::showPrevious,
         modifier = modifier,
     )
 }
