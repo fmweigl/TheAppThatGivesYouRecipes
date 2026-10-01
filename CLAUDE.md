@@ -19,6 +19,10 @@ Kotlin Multiplatform + Compose Multiplatform app targeting Android, iOS (arm64 +
 
 No lint/format tooling (ktlint, detekt, spotless) is configured.
 
+## CI
+
+GitHub Actions (`.github/workflows/ci.yml`) runs `./gradlew jvmTest :androidApp:assembleDebug` on pushes and pull requests to `master`. Run this command locally and make sure it passes before a task counts as done. CI doesn't build or test iOS.
+
 ## Architecture
 
 - `:composeApp` is the UI entry point for all platforms and will hold the main navigation. It owns the root composable `App()` (`com.example.yetanothermealsapp`), depends on the feature `ui` and `data` modules, defines `initKoin()` (`di/Koin.kt`) listing each feature's Koin modules, and produces the static iOS `Shared` framework. Each platform entry point calls `initKoin()` once at startup, then hosts `App()`:

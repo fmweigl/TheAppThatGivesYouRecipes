@@ -5,9 +5,11 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
 * [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
   you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
 
+* [/composeApp](./composeApp) holds the root `App()` composable that the Android, desktop and iOS apps display.
+
 * [/randomrecipe](./randomrecipe) is the random-recipe feature:
   - [domain](./randomrecipe/domain) and [data](./randomrecipe/data) contain plain Kotlin Multiplatform code with no Android or Compose dependencies.
-  - [ui](./randomrecipe/ui) has the Compose Multiplatform UI, including the root `App()` composable that the Android, desktop and iOS apps display.
+  - [ui](./randomrecipe/ui) has the feature's Compose Multiplatform screens, which `App()` displays.
 
 ### Running the apps
 
