@@ -8,6 +8,8 @@ Kotlin Multiplatform + Compose Multiplatform app targeting Android, iOS (arm64 +
 
 Open source under the Apache License 2.0 (`LICENSE`), copyright "The YetAnotherMealsApp contributors".
 
+`PRIVACY.md` is the app's privacy policy and describes only what the app does today: no data collection, requests to TheMealDB, and Coil's on-device image cache. When a change affects data handling (on-device storage such as favorites or settings, opening external links, new network services, analytics or crash reporting), update the policy and its "Last updated" date in the same change.
+
 ## Commands
 
 - Android debug build: `./gradlew :androidApp:assembleDebug`
