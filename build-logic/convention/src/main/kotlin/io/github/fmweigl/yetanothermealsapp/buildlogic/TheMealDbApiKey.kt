@@ -12,7 +12,6 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.register
 import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import java.util.Properties
 
 private const val PROPERTY_NAME = "theMealDbApiKey"
 private const val ENVIRONMENT_VARIABLE = "THE_MEAL_DB_API_KEY"
@@ -88,24 +87,13 @@ fun Project.requireTheMealDbProductionKey(isReleaseTask: (String) -> Boolean) {
 }
 
 /**
- * Generates commonMain's `THE_MEAL_DB_API_KEY` constant in [packageName]. The key is taken from the
- * first of: the Gradle property `theMealDbApiKey` (e.g. in `~/.gradle/gradle.properties`), the same
- * key in the root `local.properties` (not committed), the `THE_MEAL_DB_API_KEY` environment
- * variable (CI); without any, TheMealDB's public test key `1`. Also registers
+ * Generates commonMain's `THE_MEAL_DB_API_KEY` constant in [packageName]. The key is the
+ * [configProperty] `theMealDbApiKey` (environment variable `THE_MEAL_DB_API_KEY`); without it,
+ * TheMealDB's public test key `1`. Also registers
  * `checkTheMealDbProductionKey`, which release builds depend on (see [requireTheMealDbProductionKey]).
  */
 fun KotlinMultiplatformExtension.theMealDbApiKeySource(project: Project, packageName: String) {
-    val providers = project.providers
-    val localProperties = project.rootProject.layout.projectDirectory.file("local.properties")
-    val fromLocalProperties = providers.fileContents(localProperties).asText.map { text ->
-        Properties().apply { load(text.reader()) }.getProperty(PROPERTY_NAME).orEmpty()
-    }.filter { it.isNotBlank() }
-
-    val key: Provider<String> = providers.gradleProperty(PROPERTY_NAME)
-        .orElse(fromLocalProperties)
-        .orElse(providers.environmentVariable(ENVIRONMENT_VARIABLE))
-        .map(String::trim)
-        .orElse(TEST_API_KEY)
+    val key: Provider<String> = project.configProperty(PROPERTY_NAME, ENVIRONMENT_VARIABLE).orElse(TEST_API_KEY)
 
     check(project.path == KEY_PROJECT) { "theMealDbApiKeySource() belongs in $KEY_PROJECT" }
     project.tasks.register<CheckTheMealDbProductionKey>(CHECK_TASK) {

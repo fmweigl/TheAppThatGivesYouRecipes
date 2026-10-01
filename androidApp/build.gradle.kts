@@ -1,3 +1,4 @@
+import io.github.fmweigl.yetanothermealsapp.buildlogic.releaseSigning
 import io.github.fmweigl.yetanothermealsapp.buildlogic.requireTheMealDbProductionKey
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -40,13 +41,16 @@ android {
     }
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
     }
+    // The upload key from local.properties (or Gradle properties / environment variables).
+    releaseSigning(project)
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11

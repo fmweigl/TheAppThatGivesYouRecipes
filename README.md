@@ -23,6 +23,23 @@ theMealDbApiKey=YOUR_KEY
 
 or provide it as the Gradle property `theMealDbApiKey` or the environment variable `THE_MEAL_DB_API_KEY` (e.g. a CI secret).
 
+Android release builds are shrunk with R8 and signed with the Google Play upload key. Create the key once and keep it outside the repository (and backed up):
+
+```shell
+keytool -genkeypair -keystore ~/keys/yetanothermealsapp-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000
+```
+
+Then add to `local.properties`:
+
+```properties
+releaseStoreFile=/home/you/keys/yetanothermealsapp-upload.jks
+releaseStorePassword=...
+releaseKeyAlias=upload
+releaseKeyPassword=...
+```
+
+(or the Gradle properties of the same names, or the environment variables `RELEASE_STORE_FILE`, `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS` and `RELEASE_KEY_PASSWORD`). A relative `releaseStoreFile` is resolved against the repository root. Without them, release builds fail. Build the bundle for Play with `./gradlew :androidApp:bundleRelease`.
+
 Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
 
 - Android app: `./gradlew :androidApp:assembleDebug`
