@@ -13,8 +13,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import io.github.fmweigl.yetanothermealsapp.about.ui.resources.Res
+import io.github.fmweigl.yetanothermealsapp.about.ui.resources.loading
+import org.jetbrains.compose.resources.stringResource
 
 /** A text document such as the license or the privacy policy; [blocks] is null while loading. */
 @Composable
@@ -28,7 +34,10 @@ internal fun TextDocumentScreen(
         BackTopAppBar(title = title, onBack = onBack)
         if (blocks == null) {
             Box(Modifier.weight(1f).fillMaxSize()) {
-                CircularProgressIndicator(Modifier.align(Alignment.Center))
+                val loading = stringResource(Res.string.loading)
+                CircularProgressIndicator(
+                    Modifier.align(Alignment.Center).semantics { contentDescription = loading },
+                )
             }
         } else {
             LazyColumn(
@@ -36,7 +45,13 @@ internal fun TextDocumentScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                items(blocks) { Text(it.text, style = styleFor(it.headingLevel)) }
+                items(blocks) { block ->
+                    Text(
+                        block.text,
+                        style = styleFor(block.headingLevel),
+                        modifier = if (block.headingLevel > 0) Modifier.semantics { heading() } else Modifier,
+                    )
+                }
             }
         }
     }

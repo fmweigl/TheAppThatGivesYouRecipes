@@ -32,6 +32,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -41,6 +45,7 @@ import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.RandomRecipeUiState.
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources.Res
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources.ingredients
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources.instructions
+import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources.loading
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources.next_recipe
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources.previous_recipe
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources.try_again
@@ -56,7 +61,12 @@ internal fun RandomRecipeScreen(
     Column(modifier.fillMaxSize()) {
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (val content = uiState.content) {
-                Content.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                Content.Loading -> {
+                    val loading = stringResource(Res.string.loading)
+                    CircularProgressIndicator(
+                        Modifier.align(Alignment.Center).semantics { contentDescription = loading },
+                    )
+                }
                 is Content.Error -> ErrorMessage(content, onRetry = onShowNext)
                 // A new list state per recipe, so each one starts scrolled to the top.
                 is Content.Success -> key(content.recipe.id) { RecipeDetails(content.recipe) }
@@ -74,13 +84,15 @@ internal fun RandomRecipeScreen(
 
 @Composable
 private fun ErrorMessage(error: Content.Error, onRetry: () -> Unit) {
+    val message = stringResource(error.error.toMessage())
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        // Announced by screen readers when it appears (the focus stays on the button that failed).
+        modifier = Modifier.fillMaxSize().padding(16.dp).semantics { paneTitle = message },
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            stringResource(error.error.toMessage()),
+            message,
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.Center,
         )
@@ -134,7 +146,8 @@ private fun RecipeDetails(
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        // Announced by screen readers when a recipe appears (the focus stays on "Next").
+        modifier = modifier.fillMaxSize().semantics { paneTitle = recipe.name },
         state = rememberLazyListState(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -142,7 +155,8 @@ private fun RecipeDetails(
         item {
             AsyncImage(
                 model = recipe.imageUrl,
-                contentDescription = recipe.name,
+                // Decorative: the recipe's name follows right below.
+                contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -151,7 +165,11 @@ private fun RecipeDetails(
             )
         }
         item {
-            Text(recipe.name, style = MaterialTheme.typography.headlineMedium)
+            Text(
+                recipe.name,
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.semantics { heading() },
+            )
             val subtitle = listOfNotNull(recipe.category, recipe.area).joinToString(" · ")
             if (subtitle.isNotEmpty()) {
                 Text(
@@ -164,7 +182,11 @@ private fun RecipeDetails(
         if (recipe.ingredients.isNotEmpty()) {
             item { SectionTitle(stringResource(Res.string.ingredients)) }
             items(recipe.ingredients) { ingredient ->
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // One element for screen readers: "Sushi Rice, 300ml".
+                Row(
+                    modifier = Modifier.semantics(mergeDescendants = true) {},
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     Text(ingredient.name, modifier = Modifier.weight(1f))
                     Text(ingredient.measure, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -179,5 +201,10 @@ private fun RecipeDetails(
 
 @Composable
 private fun SectionTitle(text: String) {
-    Text(text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+    Text(
+        text,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.semantics { heading() },
+    )
 }

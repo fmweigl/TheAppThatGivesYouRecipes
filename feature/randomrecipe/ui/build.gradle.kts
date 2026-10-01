@@ -17,6 +17,11 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.networkKtor)
         }
+        // Semantics tests (screen reader output) run on the JVM, with Skia from the desktop runtime.
+        jvmTest.dependencies {
+            implementation(libs.compose.uiTest)
+            implementation(compose.desktop.currentOs)
+        }
     }
 }
 

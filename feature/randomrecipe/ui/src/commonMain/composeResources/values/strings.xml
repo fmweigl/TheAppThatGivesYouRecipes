@@ -4,6 +4,7 @@
     <string name="next_recipe">Next</string>
     <string name="ingredients">Ingredients</string>
     <string name="instructions">Instructions</string>
+    <string name="loading">Loading</string>
     <string name="error_no_connection">Could not reach TheMealDB. Check your connection.</string>
     <string name="error_timeout">TheMealDB took too long to respond. Please try again.</string>
     <string name="error_server">TheMealDB is having trouble right now. Please try again later.</string>

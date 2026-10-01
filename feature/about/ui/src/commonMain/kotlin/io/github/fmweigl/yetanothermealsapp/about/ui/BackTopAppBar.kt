@@ -8,6 +8,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import io.github.fmweigl.yetanothermealsapp.about.ui.resources.Res
 import io.github.fmweigl.yetanothermealsapp.about.ui.resources.back
 import org.jetbrains.compose.resources.stringResource
@@ -17,7 +20,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun BackTopAppBar(title: String, onBack: () -> Unit) {
     TopAppBar(
-        title = { Text(title) },
+        title = { Text(title, modifier = Modifier.semantics { heading() }) },
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
