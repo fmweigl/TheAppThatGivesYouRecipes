@@ -1,7 +1,7 @@
 <resources>
     <string name="try_again">Try again</string>
-    <string name="previous_recipe">‹ Previous</string>
-    <string name="next_recipe">Next ›</string>
+    <string name="previous_recipe">Previous</string>
+    <string name="next_recipe">Next</string>
     <string name="ingredients">Ingredients</string>
     <string name="instructions">Instructions</string>
     <string name="error_no_connection">Could not reach TheMealDB. Check your connection.</string>

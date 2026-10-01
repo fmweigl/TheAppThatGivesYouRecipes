@@ -12,6 +12,7 @@ kotlin {
             implementation(projects.feature.randomrecipe.domain)
 
             implementation(libs.compose.uiToolingPreview)
+            implementation(libs.compose.materialIconsCore)
             api(libs.koin.core)
             implementation(libs.coil.compose)
             implementation(libs.coil.networkKtor)
