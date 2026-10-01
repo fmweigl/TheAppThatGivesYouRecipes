@@ -1,4 +1,12 @@
 [![CI](https://github.com/fmweigl/YetAnotherMealApp/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/fmweigl/YetAnotherMealApp/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
+![Kotlin](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffmweigl%2FYetAnotherMealApp%2Fmaster%2Fgradle%2Flibs.versions.toml&query=%24.versions.kotlin&label=Kotlin&logo=kotlin&color=7F52FF)
+![Compose Multiplatform](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffmweigl%2FYetAnotherMealApp%2Fmaster%2Fgradle%2Flibs.versions.toml&query=%24.versions.composeMultiplatform&label=Compose%20Multiplatform&logo=jetpackcompose&color=4285F4)
+![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Desktop-4C6B30)
+![API](https://img.shields.io/badge/API-24%2B-A8401E?logo=android)
+![No tracking](https://img.shields.io/badge/tracking-none-4C6B30)
+[![Recipes by TheMealDB](https://img.shields.io/badge/recipes-TheMealDB-F2BF48)](https://www.themealdb.com)
+![detekt](https://img.shields.io/badge/code%20style-detekt-orange)
 
 This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
 
