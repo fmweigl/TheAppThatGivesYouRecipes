@@ -2,9 +2,9 @@ package io.github.fmweigl.yetanothermealsapp.randomrecipe.data
 
 import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
 import io.github.fmweigl.yetanothermealsapp.core.domain.Result
+import io.github.fmweigl.yetanothermealsapp.core.network.createTheMealDbHttpClient
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.domain.Ingredient
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.domain.Recipe
-import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandler
 import io.ktor.client.engine.mock.respond
@@ -25,7 +25,7 @@ class RandomRecipeRepositoryImplTest {
             assertEquals("https://www.themealdb.com/api/json/v1/1/random.php", request.url.toString())
             handler(request)
         }
-        return RandomRecipeRepositoryImpl(HttpClient(engine) { theMealDbConfig() })
+        return RandomRecipeRepositoryImpl(createTheMealDbHttpClient(engine))
     }
 
     private fun repository(body: String, status: HttpStatusCode = HttpStatusCode.OK) = repository {

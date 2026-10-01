@@ -1,5 +1,6 @@
 package io.github.fmweigl.yetanothermealsapp.di
 
+import io.github.fmweigl.yetanothermealsapp.core.network.di.coreNetworkModule
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.data.di.randomRecipeDataModule
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.di.randomRecipeUiModule
 import org.koin.core.context.startKoin
@@ -12,6 +13,6 @@ import org.koin.dsl.KoinAppDeclaration
 fun initKoin(config: KoinAppDeclaration? = null) {
     startKoin {
         config?.invoke(this)
-        modules(randomRecipeDataModule, randomRecipeUiModule)
+        modules(coreNetworkModule, randomRecipeDataModule, randomRecipeUiModule)
     }
 }

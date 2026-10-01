@@ -10,7 +10,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 
-/** [client] must be created with [createTheMealDbHttpClient]. */
 internal class RandomRecipeRepositoryImpl(
     private val client: HttpClient,
 ) : RandomRecipeRepository {
