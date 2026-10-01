@@ -1,0 +1,7 @@
+<resources>
+    <string name="back">Back</string>
+    <string name="license">License</string>
+    <string name="libraries">Libraries</string>
+    <string name="privacy">Privacy</string>
+    <string name="attributions">Attributions</string>
+</resources>

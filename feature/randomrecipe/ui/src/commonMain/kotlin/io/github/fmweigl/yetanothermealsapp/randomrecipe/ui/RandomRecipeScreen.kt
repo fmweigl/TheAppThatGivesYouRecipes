@@ -30,6 +30,13 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.domain.Recipe
 import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.RandomRecipeUiState.Content
+import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources.Res
+import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources.ingredients
+import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources.instructions
+import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources.next_recipe
+import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources.previous_recipe
+import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources.try_again
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun RandomRecipeScreen(
@@ -65,11 +72,11 @@ private fun ErrorMessage(error: Content.Error, onRetry: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            error.error.toMessage(),
+            stringResource(error.error.toMessage()),
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.Center,
         )
-        Button(onClick = onRetry) { Text("Try again") }
+        Button(onClick = onRetry) { Text(stringResource(Res.string.try_again)) }
     }
 }
 
@@ -88,12 +95,12 @@ private fun RecipeNavigationBar(
             onClick = onShowPrevious,
             enabled = canShowPrevious,
             modifier = Modifier.weight(1f),
-        ) { Text("‹ Previous") }
+        ) { Text(stringResource(Res.string.previous_recipe)) }
         Button(
             onClick = onShowNext,
             enabled = canShowNext,
             modifier = Modifier.weight(1f),
-        ) { Text("Next ›") }
+        ) { Text(stringResource(Res.string.next_recipe)) }
     }
 }
 
@@ -131,7 +138,7 @@ private fun RecipeDetails(
             }
         }
         if (recipe.ingredients.isNotEmpty()) {
-            item { SectionTitle("Ingredients") }
+            item { SectionTitle(stringResource(Res.string.ingredients)) }
             items(recipe.ingredients) { ingredient ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(ingredient.name, modifier = Modifier.weight(1f))
@@ -140,7 +147,7 @@ private fun RecipeDetails(
             }
         }
         recipe.instructions?.let { instructions ->
-            item { SectionTitle("Instructions") }
+            item { SectionTitle(stringResource(Res.string.instructions)) }
             item { Text(instructions) }
         }
     }

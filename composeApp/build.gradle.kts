@@ -57,7 +57,8 @@ kotlin {
 
 // The About tab shows the app's license and every library it ships with. These files are
 // commonMain's Compose resources, generated on every build into build/generated/appComposeResources
-// and read at runtime with `Res.readBytes("files/...")`:
+// (together with the strings from src/commonMain/composeResources) and read at runtime with
+// `Res.readBytes("files/...")`:
 // - files/aboutlibraries.json: the AboutLibraries plugin collects the libraries (with their
 //   licenses) from this module, which depends on all others.
 // - files/LICENSE, files/PRIVACY.md and files/ATTRIBUTIONS.md: copied from the repository root, so
@@ -74,16 +75,20 @@ aboutLibraries {
 }
 
 val generateAppComposeResources by tasks.registering(Sync::class) {
-    from(tasks.named("exportLibraryDefinitions"))
-    from(rootProject.layout.projectDirectory.file("LICENSE"))
-    from(rootProject.layout.projectDirectory.file("PRIVACY.md"))
-    from(rootProject.layout.projectDirectory.file("ATTRIBUTIONS.md"))
-    into(layout.buildDirectory.dir("generated/appComposeResources/files"))
+    // The hand-written resources (strings), which the custom directory below would otherwise hide.
+    from("src/commonMain/composeResources")
+    into("files") {
+        from(tasks.named("exportLibraryDefinitions"))
+        from(rootProject.layout.projectDirectory.file("LICENSE"))
+        from(rootProject.layout.projectDirectory.file("PRIVACY.md"))
+        from(rootProject.layout.projectDirectory.file("ATTRIBUTIONS.md"))
+    }
+    into(layout.buildDirectory.dir("generated/appComposeResources"))
 }
 
 compose.resources {
     customDirectory(
         sourceSetName = "commonMain",
-        directoryProvider = layout.dir(generateAppComposeResources.map { it.destinationDir.parentFile }),
+        directoryProvider = layout.dir(generateAppComposeResources.map { it.destinationDir }),
     )
 }

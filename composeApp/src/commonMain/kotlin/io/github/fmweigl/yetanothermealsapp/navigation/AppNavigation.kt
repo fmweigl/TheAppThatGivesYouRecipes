@@ -30,14 +30,18 @@ import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.randomRecipeEntry
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import yetanothermealsapp.composeapp.generated.resources.Res
+import yetanothermealsapp.composeapp.generated.resources.tab_about
+import yetanothermealsapp.composeapp.generated.resources.tab_random
 
-private class TopLevelDestination(val icon: ImageVector, val label: String)
+private class TopLevelDestination(val icon: ImageVector, val label: StringResource)
 
 /** The tabs of the bottom navigation bar, in display order. The first one is the start route. */
 private val topLevelDestinations: Map<NavKey, TopLevelDestination> = linkedMapOf(
-    RandomRecipeNavKey to TopLevelDestination(Icons.Filled.Refresh, "Random"),
-    AboutNavKey to TopLevelDestination(Icons.Filled.Info, "About"),
+    RandomRecipeNavKey to TopLevelDestination(Icons.Filled.Refresh, Res.string.tab_random),
+    AboutNavKey to TopLevelDestination(Icons.Filled.Info, Res.string.tab_about),
 )
 
 /** Registers every [NavKey] for saving the back stacks; add new keys here. */
@@ -89,7 +93,7 @@ internal fun AppNavigation(modifier: Modifier = Modifier) {
                         selected = route == navigationState.topLevelRoute,
                         onClick = { navigator.navigate(route) },
                         icon = { Icon(destination.icon, contentDescription = null) },
-                        label = { Text(destination.label) },
+                        label = { Text(stringResource(destination.label)) },
                     )
                 }
             }

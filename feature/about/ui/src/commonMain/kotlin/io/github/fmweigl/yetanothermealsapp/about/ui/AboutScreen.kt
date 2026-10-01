@@ -9,6 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.fmweigl.yetanothermealsapp.about.ui.resources.Res
+import io.github.fmweigl.yetanothermealsapp.about.ui.resources.attributions
+import io.github.fmweigl.yetanothermealsapp.about.ui.resources.libraries
+import io.github.fmweigl.yetanothermealsapp.about.ui.resources.license
+import io.github.fmweigl.yetanothermealsapp.about.ui.resources.privacy
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun AboutScreen(
@@ -23,9 +29,9 @@ internal fun AboutScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Button(onClick = onLicenseClick) { Text("License") }
-        Button(onClick = onLibrariesClick) { Text("Libraries") }
-        Button(onClick = onPrivacyClick) { Text("Privacy") }
-        Button(onClick = onAttributionsClick) { Text("Attributions") }
+        Button(onClick = onLicenseClick) { Text(stringResource(Res.string.license)) }
+        Button(onClick = onLibrariesClick) { Text(stringResource(Res.string.libraries)) }
+        Button(onClick = onPrivacyClick) { Text(stringResource(Res.string.privacy)) }
+        Button(onClick = onAttributionsClick) { Text(stringResource(Res.string.attributions)) }
     }
 }

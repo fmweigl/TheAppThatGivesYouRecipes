@@ -14,3 +14,7 @@ kotlin {
         }
     }
 }
+
+compose.resources {
+    packageOfResClass = "io.github.fmweigl.yetanothermealsapp.about.ui.resources"
+}

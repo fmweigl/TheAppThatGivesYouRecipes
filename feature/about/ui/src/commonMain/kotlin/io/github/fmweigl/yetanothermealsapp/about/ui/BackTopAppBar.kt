@@ -8,6 +8,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import io.github.fmweigl.yetanothermealsapp.about.ui.resources.Res
+import io.github.fmweigl.yetanothermealsapp.about.ui.resources.back
+import org.jetbrains.compose.resources.stringResource
 
 /** Top bar of the screens opened from the about screen, with a back button: desktop has no system back. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -17,7 +20,7 @@ internal fun BackTopAppBar(title: String, onBack: () -> Unit) {
         title = { Text(title) },
         navigationIcon = {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back))
             }
         },
     )

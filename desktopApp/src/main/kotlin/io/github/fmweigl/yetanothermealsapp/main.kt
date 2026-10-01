@@ -5,7 +5,10 @@ import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import io.github.fmweigl.yetanothermealsapp.di.initKoin
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.skia.Image
+import yetanothermealsapp.desktopapp.generated.resources.Res
+import yetanothermealsapp.desktopapp.generated.resources.app_name
 
 fun main() {
     initKoin()
@@ -13,7 +16,7 @@ fun main() {
     application {
         Window(
             onCloseRequest = ::exitApplication,
-            title = "YetAnotherMealsApp",
+            title = stringResource(Res.string.app_name),
             icon = icon,
         ) {
             App()

@@ -2,6 +2,10 @@ package io.github.fmweigl.yetanothermealsapp.about.ui
 
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import io.github.fmweigl.yetanothermealsapp.about.ui.resources.Res
+import io.github.fmweigl.yetanothermealsapp.about.ui.resources.attributions
+import io.github.fmweigl.yetanothermealsapp.about.ui.resources.license
+import io.github.fmweigl.yetanothermealsapp.about.ui.resources.privacy
 import kotlinx.serialization.Serializable
 
 /** Navigation key of the about screen, the root of the about tab. */
@@ -44,13 +48,13 @@ fun EntryProviderScope<NavKey>.aboutEntries(
         )
     }
     entry<LicenseNavKey> {
-        TextDocumentRoute(title = "License", loadText = content.loadLicenseText, onBack = onBack)
+        TextDocumentRoute(title = Res.string.license, loadText = content.loadLicenseText, onBack = onBack)
     }
     entry<LibrariesNavKey> { LibrariesRoute(loadLibrariesJson = content.loadLibrariesJson, onBack = onBack) }
     entry<PrivacyNavKey> {
-        TextDocumentRoute(title = "Privacy", loadText = content.loadPrivacyText, onBack = onBack)
+        TextDocumentRoute(title = Res.string.privacy, loadText = content.loadPrivacyText, onBack = onBack)
     }
     entry<AttributionsNavKey> {
-        TextDocumentRoute(title = "Attributions", loadText = content.loadAttributionsText, onBack = onBack)
+        TextDocumentRoute(title = Res.string.attributions, loadText = content.loadAttributionsText, onBack = onBack)
     }
 }

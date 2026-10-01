@@ -18,3 +18,7 @@ kotlin {
         }
     }
 }
+
+compose.resources {
+    packageOfResClass = "io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.resources"
+}
