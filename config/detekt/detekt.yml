@@ -1,0 +1,6 @@
+# Overrides on top of detekt's default config (buildUponDefaultConfig = true).
+
+naming:
+  FunctionNaming:
+    # Composables are named like types (RandomRecipeScreen), per the Compose API guidelines.
+    ignoreAnnotated: ['Composable']

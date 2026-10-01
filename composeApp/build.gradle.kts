@@ -3,6 +3,7 @@ import io.github.fmweigl.yetanothermealsapp.buildlogic.sharedKmpTargets
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
+    id("meals.detekt")
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)

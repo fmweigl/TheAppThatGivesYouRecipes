@@ -10,6 +10,7 @@ class KmpDataConventionPlugin : Plugin<Project> {
     override fun apply(project: Project) = with(project) {
         pluginManager.apply("org.jetbrains.kotlin.multiplatform")
         pluginManager.apply("org.jetbrains.kotlin.plugin.serialization")
+        pluginManager.apply("meals.detekt")
 
         extensions.configure<KotlinMultiplatformExtension> {
             sharedKmpTargets()

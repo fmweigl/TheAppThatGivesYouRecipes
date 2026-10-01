@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   build:
-    name: JVM tests and Android build
+    name: detekt, JVM tests and Android build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -29,8 +29,8 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
-      - name: Run JVM tests and build the Android app
-        run: ./gradlew jvmTest :androidApp:assembleDebug
+      - name: Run detekt, JVM tests and build the Android app
+        run: ./gradlew detekt jvmTest :androidApp:assembleDebug
 
       - name: Upload test reports
         if: failure()

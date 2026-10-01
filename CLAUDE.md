@@ -17,11 +17,11 @@ Kotlin Multiplatform + Compose Multiplatform app targeting Android, iOS (arm64 +
   - Single test: `./gradlew :randomrecipe:domain:jvmTest --tests "io.github.fmweigl.yetanothermealsapp.randomrecipe.domain.SomeTest.someMethod"`
   - Tests exist in `:core:domain` (`Result`), `:core:data` (`safeApiCall` error mapping), `:core:network` (client config and Koin module), `:randomrecipe:data` (repository + mapping, via Ktor `MockEngine`) and `:randomrecipe:ui` (ViewModel).
 
-No lint/format tooling (ktlint, detekt, spotless) is configured.
+Static analysis: detekt (`./gradlew detekt`, also part of `check`). The `meals.detekt` convention plugin applies it to every module with the shared config `config/detekt/detekt.yml` on top of detekt's defaults, and analyzes all source sets under `src/`. Fix findings rather than suppressing them; suppress only with an inline comment explaining why (see `SafeApiCall.kt`). Functions annotated `@Composable` are exempt from `FunctionNaming`. No formatter (ktlint, spotless) is configured.
 
 ## CI
 
-GitHub Actions (`.github/workflows/ci.yml`) runs `./gradlew jvmTest :androidApp:assembleDebug` on pushes and pull requests to `master`. Run this command locally and make sure it passes before a task counts as done. CI doesn't build or test iOS.
+GitHub Actions (`.github/workflows/ci.yml`) runs `./gradlew detekt jvmTest :androidApp:assembleDebug` on pushes and pull requests to `master`. Run this command locally and make sure it passes before a task counts as done. CI doesn't build or test iOS.
 
 ## Build logic
 
@@ -31,6 +31,7 @@ Shared Gradle setup lives in convention plugins in the included build `build-log
 |---|---|---|
 | `meals.kmp.domain` | `domain` modules | KMP with the shared targets; kotlin-test in commonTest; `verifyDomainDependencies` (runs as part of `check`) |
 | `meals.kmp.data` | `data` modules (also `:core:network`) | KMP with the shared targets + kotlinx-serialization; kotlin-test, kotlinx-coroutines-test, ktor-client-mock in commonTest |
+| `meals.detekt` | every module (applied by the three KMP plugins; `:composeApp`, `:androidApp`, `:desktopApp` apply it directly) | detekt with the shared config, covering all source sets |
 | `meals.kmp.feature.ui` | feature `ui` modules | KMP + `com.android.kotlin.multiplatform.library` + Compose MP + Compose compiler; shared targets plus `android` (compileSdk/minSdk from the catalog, JVM target 11); Compose runtime/foundation/material3/ui, lifecycle viewmodel-compose + runtime-compose, koin-compose-viewmodel in commonMain; kotlin-test, kotlinx-coroutines-test in commonTest |
 
 - The target list (jvm, iosArm64, iosSimulatorArm64) exists once, in `sharedKmpTargets()` (`build-logic/convention/.../KmpTargets.kt`). The Android library defaults are in `androidLibraryDefaults()`. `:composeApp` calls both directly; the root `build.gradle.kts` loads the convention plugins with `apply false` so these helpers are importable from module build scripts.

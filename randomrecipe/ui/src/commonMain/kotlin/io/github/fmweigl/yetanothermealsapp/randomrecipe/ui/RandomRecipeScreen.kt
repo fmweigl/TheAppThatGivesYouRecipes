@@ -124,7 +124,11 @@ private fun RecipeDetails(
             Text(recipe.name, style = MaterialTheme.typography.headlineMedium)
             val subtitle = listOfNotNull(recipe.category, recipe.area).joinToString(" · ")
             if (subtitle.isNotEmpty()) {
-                Text(subtitle, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
         if (recipe.ingredients.isNotEmpty()) {

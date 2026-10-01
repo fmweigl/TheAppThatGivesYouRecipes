@@ -23,7 +23,8 @@ suspend inline fun <T> safeApiCall(block: () -> T): Result<T, DataError> =
         Result.Success(block())
     } catch (e: CancellationException) {
         throw e
-    } catch (e: Exception) {
+    } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+        // Catching everything is the point: any failure becomes a DataError instead of escaping the data layer.
         Result.Failure(e.toDataError())
     }
 

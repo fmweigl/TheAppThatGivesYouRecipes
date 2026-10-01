@@ -28,7 +28,10 @@ class HttpClientFactoryTest {
         val engine = respondingWith("""{"value":"ok"}""")
         createTheMealDbHttpClient(engine).get("random.php")
 
-        assertEquals("https://www.themealdb.com/api/json/v1/1/random.php", engine.requestHistory.single().url.toString())
+        assertEquals(
+            "https://www.themealdb.com/api/json/v1/1/random.php",
+            engine.requestHistory.single().url.toString(),
+        )
     }
 
     @Test

@@ -15,6 +15,7 @@ class KmpFeatureUiConventionPlugin : Plugin<Project> {
         pluginManager.apply("com.android.kotlin.multiplatform.library")
         pluginManager.apply("org.jetbrains.compose")
         pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+        pluginManager.apply("meals.detekt")
 
         extensions.configure<KotlinMultiplatformExtension> {
             sharedKmpTargets()

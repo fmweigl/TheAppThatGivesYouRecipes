@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
+    id("meals.detekt")
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
 }
