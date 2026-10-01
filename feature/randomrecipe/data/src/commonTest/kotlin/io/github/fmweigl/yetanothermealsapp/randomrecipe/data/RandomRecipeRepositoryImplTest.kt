@@ -22,7 +22,7 @@ class RandomRecipeRepositoryImplTest {
 
     private fun repository(handler: MockRequestHandler): RandomRecipeRepositoryImpl {
         val engine = MockEngine { request ->
-            assertEquals("https://www.themealdb.com/api/json/v1/1/random.php", request.url.toString())
+            assertEquals("https://www.themealdb.com/api/json/v2/1/random.php", request.url.toString())
             handler(request)
         }
         return RandomRecipeRepositoryImpl(createTheMealDbHttpClient(engine))

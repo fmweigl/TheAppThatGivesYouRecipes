@@ -1,8 +1,12 @@
+import io.github.fmweigl.yetanothermealsapp.buildlogic.theMealDbApiKeySource
+
 plugins {
     id("meals.kmp.data")
 }
 
 kotlin {
+    theMealDbApiKeySource(project, packageName = "io.github.fmweigl.yetanothermealsapp.core.network")
+
     sourceSets {
         commonMain.dependencies {
             api(libs.ktor.clientCore)

@@ -14,6 +14,12 @@ Base URL:
 https://www.themealdb.com/api/json/v1/{API_KEY}/
 ```
 
+Supporters (Premium) use version 2 with their own key, `https://www.themealdb.com/api/json/v2/{API_KEY}/`.
+Requests and responses are the same as in V1; V2 additionally offers `randomselection.php` (10 random
+meals), `latest.php` (10 newest meals) and multi-ingredient filtering
+(`filter.php?i=chicken_breast,garlic,salt`), and larger limits. V2 also accepts the development key `1`.
+This app uses V2 (see `core/network`).
+
 Use development key `1` only for development or educational work. Direct production
 and publicly released application users to the current access options at
 https://www.themealdb.com/documentation.
