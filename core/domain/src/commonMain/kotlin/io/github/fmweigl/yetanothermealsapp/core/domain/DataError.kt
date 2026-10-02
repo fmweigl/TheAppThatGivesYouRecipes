@@ -14,5 +14,8 @@ enum class DataError : Error {
     /** The request was rejected (HTTP 4xx) or the response could not be understood. */
     InvalidResponse,
 
+    /** The server has nothing for the request, such as a recipe id it doesn't know. */
+    NotFound,
+
     Unknown,
 }

@@ -1,6 +1,9 @@
 package io.github.fmweigl.yetanothermealsapp.recipe.data.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
 /**
@@ -9,5 +12,12 @@ import kotlinx.serialization.json.JsonObject
  */
 @Serializable
 internal data class MealsResponse(
-    val meals: List<JsonObject>? = null,
-)
+    @SerialName("meals") private val mealsJson: JsonElement? = null,
+) {
+    /**
+     * The meals; empty if there are none. TheMealDB then sends `null` or a message instead of an
+     * array (`lookup.php` with an id that isn't a number answers `"Invalid ID"`).
+     */
+    val meals: List<JsonObject>
+        get() = (mealsJson as? JsonArray)?.filterIsInstance<JsonObject>().orEmpty()
+}

@@ -20,15 +20,19 @@ import kotlin.test.assertNull
 
 class RecipeRepositoryImplTest {
 
-    private fun repository(handler: MockRequestHandler): RecipeRepositoryImpl {
+    private fun repository(expectedUrl: String = RANDOM_URL, handler: MockRequestHandler): RecipeRepositoryImpl {
         val engine = MockEngine { request ->
-            assertEquals("https://www.themealdb.com/api/json/v2/1/random.php", request.url.toString())
+            assertEquals(expectedUrl, request.url.toString())
             handler(request)
         }
         return RecipeRepositoryImpl(createTheMealDbHttpClient(engine))
     }
 
-    private fun repository(body: String, status: HttpStatusCode = HttpStatusCode.OK) = repository {
+    private fun repository(
+        body: String,
+        status: HttpStatusCode = HttpStatusCode.OK,
+        expectedUrl: String = RANDOM_URL,
+    ) = repository(expectedUrl) {
         respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
     }
 
@@ -73,6 +77,14 @@ class RecipeRepositoryImplTest {
     }
 
     @Test
+    fun failsWithInvalidResponseWhenMealsIsAMessage() = runTest {
+        assertEquals(
+            Result.Failure(DataError.InvalidResponse),
+            repository("""{"meals":"no data found"}""").getRandomRecipe(),
+        )
+    }
+
+    @Test
     fun failsWithInvalidResponseWhenMealHasNoId() = runTest {
         assertEquals(
             Result.Failure(DataError.InvalidResponse),
@@ -101,7 +113,52 @@ class RecipeRepositoryImplTest {
         )
     }
 
+    @Test
+    fun getRecipeLooksUpTheIdAndMapsTheMeal() = runTest {
+        val result = repository(MEAL_JSON, expectedUrl = "$LOOKUP_URL?i=52923").getRecipe("52923")
+
+        val recipe = assertIs<Result.Success<Recipe>>(result).data
+        assertEquals("52923", recipe.id)
+        assertEquals("Canadian Butter Tarts", recipe.name)
+        assertEquals(3, recipe.ingredients.size)
+    }
+
+    @Test
+    fun getRecipeFailsWithNotFoundWhenNoMealIsReturned() = runTest {
+        assertEquals(
+            Result.Failure(DataError.NotFound),
+            repository("""{"meals":null}""", expectedUrl = "$LOOKUP_URL?i=1").getRecipe("1"),
+        )
+    }
+
+    @Test
+    fun getRecipeFailsWithNotFoundWhenTheIdIsInvalid() = runTest {
+        assertEquals(
+            Result.Failure(DataError.NotFound),
+            repository("""{"meals":"Invalid ID"}""", expectedUrl = "$LOOKUP_URL?i=abc").getRecipe("abc"),
+        )
+    }
+
+    @Test
+    fun getRecipeFailsWithInvalidResponseWhenMealHasNoId() = runTest {
+        assertEquals(
+            Result.Failure(DataError.InvalidResponse),
+            repository("""{"meals":[{"strMeal":"Soup"}]}""", expectedUrl = "$LOOKUP_URL?i=1").getRecipe("1"),
+        )
+    }
+
+    @Test
+    fun getRecipeFailsWithNoConnectionOnNetworkError() = runTest {
+        assertEquals(
+            Result.Failure(DataError.NoConnection),
+            repository("$LOOKUP_URL?i=1") { throw IOException("offline") }.getRecipe("1"),
+        )
+    }
+
     private companion object {
+        const val RANDOM_URL = "https://www.themealdb.com/api/json/v2/1/random.php"
+        const val LOOKUP_URL = "https://www.themealdb.com/api/json/v2/1/lookup.php"
+
         val MEAL_JSON = """
             {"meals":[{
               "idMeal":"52923",

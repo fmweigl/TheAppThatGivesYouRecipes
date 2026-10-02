@@ -39,6 +39,8 @@ class RandomRecipeViewModelTest {
             loadedCount++
             return Result.Success(recipe(loadedCount))
         }
+
+        override suspend fun getRecipe(id: String): Result<Recipe, DataError> = error("Not used by the random screen")
     }
 
     private val repository = FakeRepository()

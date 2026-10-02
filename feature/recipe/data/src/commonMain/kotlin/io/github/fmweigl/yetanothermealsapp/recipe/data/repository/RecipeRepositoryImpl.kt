@@ -11,6 +11,7 @@ import io.github.fmweigl.yetanothermealsapp.recipe.domain.repository.RecipeRepos
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 
 internal class RecipeRepositoryImpl(
     private val client: HttpClient,
@@ -20,7 +21,19 @@ internal class RecipeRepositoryImpl(
         safeApiCall { client.get("random.php").body<MealsResponse>() }
             .flatMap { response ->
                 // random.php always returns a meal, so a missing or unmappable one means a broken response.
-                val recipe = response.meals?.firstOrNull()?.toRecipe()
+                val recipe = response.meals.firstOrNull()?.toRecipe()
                 if (recipe != null) Result.Success(recipe) else Result.Failure(DataError.InvalidResponse)
+            }
+
+    override suspend fun getRecipe(id: String): Result<Recipe, DataError> =
+        safeApiCall { client.get("lookup.php") { parameter("i", id) }.body<MealsResponse>() }
+            .flatMap { response ->
+                val meal = response.meals.firstOrNull()
+                val recipe = meal?.toRecipe()
+                when {
+                    meal == null -> Result.Failure(DataError.NotFound)
+                    recipe == null -> Result.Failure(DataError.InvalidResponse)
+                    else -> Result.Success(recipe)
+                }
             }
 }
