@@ -10,7 +10,6 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.aboutlibraries.composeM3)
-            implementation(libs.compose.materialIconsCore)
         }
     }
 }
