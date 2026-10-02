@@ -9,5 +9,6 @@
     <string name="error_timeout">TheMealDB took too long to respond. Please try again.</string>
     <string name="error_not_found">This recipe could not be found on TheMealDB.</string>
     <string name="error_server">TheMealDB is having trouble right now. Please try again later.</string>
+    <string name="error_storage">Your saved recipes could not be read or saved on this device.</string>
     <string name="error_unknown">Something went wrong while loading the recipe.</string>
 </resources>

@@ -3,6 +3,9 @@ package io.github.fmweigl.yetanothermealsapp.recipe.data.repository
 import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
 import io.github.fmweigl.yetanothermealsapp.core.domain.Result
 import io.github.fmweigl.yetanothermealsapp.core.network.createTheMealDbHttpClient
+import io.github.fmweigl.yetanothermealsapp.recipe.data.database.inMemoryRecipeDatabase
+import io.github.fmweigl.yetanothermealsapp.recipe.data.database.testRecipe
+import io.github.fmweigl.yetanothermealsapp.recipe.data.database.toFavoriteRecipeEntity
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Ingredient
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
 import io.ktor.client.engine.mock.MockEngine
@@ -13,19 +16,26 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.IOException
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.fail
 
 class RecipeRepositoryImplTest {
+
+    private val database = inMemoryRecipeDatabase()
+
+    @AfterTest
+    fun closeDatabase() = database.close()
 
     private fun repository(expectedUrl: String = RANDOM_URL, handler: MockRequestHandler): RecipeRepositoryImpl {
         val engine = MockEngine { request ->
             assertEquals(expectedUrl, request.url.toString())
             handler(request)
         }
-        return RecipeRepositoryImpl(createTheMealDbHttpClient(engine))
+        return RecipeRepositoryImpl(createTheMealDbHttpClient(engine), database.favoriteRecipeDao())
     }
 
     private fun repository(
@@ -121,6 +131,24 @@ class RecipeRepositoryImplTest {
         assertEquals("52923", recipe.id)
         assertEquals("Canadian Butter Tarts", recipe.name)
         assertEquals(3, recipe.ingredients.size)
+    }
+
+    @Test
+    fun getRecipeReturnsASavedFavoriteWithoutARequest() = runTest {
+        val saved = testRecipe("52923")
+        database.favoriteRecipeDao().upsert(saved.toFavoriteRecipeEntity(savedAt = 1))
+        val repository = repository(expectedUrl = "none") { fail("A saved recipe needs no request") }
+
+        assertEquals(Result.Success(saved), repository.getRecipe("52923"))
+    }
+
+    @Test
+    fun getRecipeLooksUpRecipesThatAreNotSaved() = runTest {
+        database.favoriteRecipeDao().upsert(testRecipe("1").toFavoriteRecipeEntity(savedAt = 1))
+
+        val result = repository(MEAL_JSON, expectedUrl = "$LOOKUP_URL?i=52923").getRecipe("52923")
+
+        assertEquals("Canadian Butter Tarts", assertIs<Result.Success<Recipe>>(result).data.name)
     }
 
     @Test

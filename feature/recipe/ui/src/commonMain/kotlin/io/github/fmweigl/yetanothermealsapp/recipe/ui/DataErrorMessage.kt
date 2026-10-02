@@ -5,6 +5,7 @@ import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.Res
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.error_no_connection
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.error_not_found
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.error_server
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.error_storage
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.error_timeout
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.error_unknown
 import org.jetbrains.compose.resources.StringResource
@@ -15,5 +16,6 @@ internal fun DataError.toMessage(): StringResource = when (this) {
     DataError.Timeout -> Res.string.error_timeout
     DataError.Server -> Res.string.error_server
     DataError.NotFound -> Res.string.error_not_found
+    DataError.Storage -> Res.string.error_storage
     DataError.InvalidResponse, DataError.Unknown -> Res.string.error_unknown
 }
