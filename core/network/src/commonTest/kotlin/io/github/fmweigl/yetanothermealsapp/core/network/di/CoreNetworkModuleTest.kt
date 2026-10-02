@@ -1,6 +1,5 @@
-package io.github.fmweigl.yetanothermealsapp.core.network
+package io.github.fmweigl.yetanothermealsapp.core.network.di
 
-import io.github.fmweigl.yetanothermealsapp.core.network.di.coreNetworkModule
 import io.ktor.client.HttpClient
 import org.koin.dsl.koinApplication
 import kotlin.test.Test
