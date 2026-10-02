@@ -1,6 +1,6 @@
 # Plan: "Favorites" feature
 
-Branch: `feature/favorites`. Status: steps 1–9 of the commit order done; final checks before merging open (see below).
+Branch: `feature/favorites`. Status: steps 1–9 of the commit order done. Signed release checked on the Android emulator (2026-10-02: heart, favorites tab, open, process death, remove/undo, offline). Open before merging: iOS build and run in Xcode; push (`--force-with-lease`, the branch was rebased) and a pull request.
 
 Goal: the user marks recipes as favorites with a button; favorites are saved in a Room database; a new bottom
 navigation tab "Favorites" lists teasers of them; a teaser can be removed (deleted from the database); clicking a
