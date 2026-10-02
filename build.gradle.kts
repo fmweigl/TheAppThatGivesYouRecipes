@@ -10,6 +10,8 @@ plugins {
     alias(libs.plugins.kotlinSerialization) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.aboutLibraries) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.room3) apply false
     // Convention plugins from build-logic; loading them here also makes its helpers
     // (e.g. sharedKmpTargets()) available to every module's build script.
     id("meals.kmp.domain") apply false

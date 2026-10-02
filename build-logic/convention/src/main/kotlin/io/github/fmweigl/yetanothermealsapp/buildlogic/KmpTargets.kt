@@ -1,5 +1,6 @@
 package io.github.fmweigl.yetanothermealsapp.buildlogic
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 /**
@@ -7,7 +8,13 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  * UI modules add `android` on top through [androidLibraryDefaults].
  */
 fun KotlinMultiplatformExtension.sharedKmpTargets() {
-    jvm()
+    jvm {
+        // Android uses the jvm variant of modules without an android target, and an android
+        // compilation (JVM 11) can't inline functions compiled for a newer JVM.
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
+    }
     iosArm64()
     iosSimulatorArm64()
 }

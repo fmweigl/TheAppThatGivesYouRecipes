@@ -1,8 +1,12 @@
 plugins {
-    id("meals.kmp.data")
+    id("meals.kmp.room")
 }
 
 kotlin {
+    android {
+        namespace = "io.github.fmweigl.yetanothermealsapp.recipe.data"
+    }
+
     sourceSets {
         commonMain.dependencies {
             implementation(projects.core.data)

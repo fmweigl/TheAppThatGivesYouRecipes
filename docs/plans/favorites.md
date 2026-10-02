@@ -1,6 +1,6 @@
 # Plan: "Favorites" feature
 
-Branch: `feature/favorites`. Status: steps 1–3 of the commit order done.
+Branch: `feature/favorites`. Status: steps 1–4 of the commit order done.
 
 Goal: the user marks recipes as favorites with a button; favorites are saved in a Room database; a new bottom
 navigation tab "Favorites" lists teasers of them; a teaser can be removed (deleted from the database); clicking a
@@ -80,7 +80,7 @@ feature/favorites/
 
 ## 4. Build logic for Room
 
-- Catalog: versions `room3` (latest stable 3.0.3), `sqlite` (androidx.sqlite), `ksp` (check which KSP works with
+- Catalog: versions `room3` (3.0.3), `sqlite` (2.7.1, the version room3 depends on), `ksp` (2.3.12; works with
   Kotlin 2.4.20 and AGP 9.1); libraries `room3-runtime`, `room3-compiler`, `sqlite-bundled`; plugins `ksp`,
   `room3`. Both plugins also go into `build-logic` as `compileOnly`.
 - New convention plugin `meals.kmp.room` (a module still applies exactly one plugin):
