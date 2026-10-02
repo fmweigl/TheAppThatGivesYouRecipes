@@ -6,11 +6,16 @@ Goal: the user marks recipes from `randomrecipe` as favorites with a button; fav
 Room database; a new bottom navigation tab "Favorites" lists teasers of them; a teaser can be removed
 (deleted from the database); clicking a teaser shows the full recipe.
 
-## Open decisions (confirm before implementing)
+Since `master` releases every build (GitHub Release + optional Play upload), rebase onto `master` before starting
+and merge only once the whole feature is done and verified.
 
-- Removal: undo snackbar (proposed, removes immediately) or a confirmation dialog?
-- Un-favoriting on the detail screen: screen stays open and the heart can re-add it (proposed), or close it?
-- Android backup (`android:allowBackup="true"`): mention favorites in `PRIVACY.md` (proposed) or exclude the database with backup rules?
+## Decisions (confirmed 2026-10-02)
+
+- Removal: deletes immediately, with an undo snackbar (no confirmation dialog).
+- Un-favoriting on the detail screen: the screen stays open and the heart can re-add the recipe; it's gone from
+  the list after going back.
+- Android backup: the favorites database is **excluded** from Android's backup; favorites stay strictly on the
+  device (see section 6, "Backup").
 
 ## 1. Main decisions
 
@@ -100,6 +105,13 @@ interface FavoritesRepository {
 - `FavoriteRecipeMapper.kt`: `Recipe` ↔ entity.
 - `FavoritesRepositoryImpl`: writes wrapped in a `safeDbCall` mapping `SQLiteException` to `DataError.Storage`,
   rethrowing `CancellationException`.
+- Backup: exclude the database from Android's backup in `androidApp`, keeping `allowBackup="true"` for the rest:
+  - `android:dataExtractionRules="@xml/data_extraction_rules"` (API 31+; exclude in both `<cloud-backup>` and
+    `<device-transfer>`) and `android:fullBackupContent="@xml/backup_rules"` (API 24–30);
+  - exclude `domain="database"` paths `favorites.db`, `favorites.db-wal`, `favorites.db-shm` (WAL files of the
+    bundled driver);
+  - verify with `adb shell bmgr backupnow io.github.fmweigl.yetanothermealsapp` and a restore, or by checking the
+    backup's file list.
 - Only public declaration: `favoritesDataModule` (database `single`, DAO, `FavoritesRepository` binding).
 - Tests (jvmTest, in-memory Room with `Room.inMemoryDatabaseBuilder` + `BundledSQLiteDriver`): round trip with
   ingredients and tags, ordering, `observeIsFavorite` updates, remove, upsert of an existing id; Koin module test
@@ -151,8 +163,8 @@ interface FavoritesRepository {
 
 ## 10. Docs and listing (same change, per CLAUDE.md)
 
-- `PRIVACY.md`: favorites stored only on the device, deleted with app data or on uninstall; mention Android backup
-  (see open decisions); update "Last updated".
+- `PRIVACY.md`: favorites are stored only on the device, are not part of Android's backup, never leave the device
+  and are deleted with the app data or on uninstall; update "Last updated".
 - `CLAUDE.md`: new modules, `meals.kmp.room`, `:core:ui`, the `randomrecipe:ui → favorites:domain` dependency,
   schema export, test commands.
 - Store listing (needs the user's sign-off): `TAGLINE` in `render_store_graphics.py` (re-render),
@@ -174,5 +186,5 @@ interface FavoritesRepository {
 3. `favorites:domain` and `favorites:data` with tests.
 4. `favorites:ui` with tests.
 5. Favorite toggle in `randomrecipe`.
-6. Navigation and Koin wiring in `composeApp`.
+6. Navigation and Koin wiring in `composeApp`; backup rules in `androidApp`.
 7. Privacy policy, CLAUDE.md, and (after sign-off) the store listing.
