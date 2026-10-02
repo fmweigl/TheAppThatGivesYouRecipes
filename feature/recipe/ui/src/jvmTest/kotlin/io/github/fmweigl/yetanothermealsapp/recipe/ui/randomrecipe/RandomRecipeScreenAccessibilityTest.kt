@@ -1,12 +1,17 @@
 package io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -69,6 +74,17 @@ class RandomRecipeScreenAccessibilityTest {
     }
 
     @Test
+    fun favoriteButtonIsLabeledAndReportsItsState() = runComposeUiTest {
+        var isFavorite by mutableStateOf(false)
+        setContent { Screen(Content.Success(recipe), isFavorite = isFavorite) }
+
+        scrollTo(recipe.name)
+        onNodeWithContentDescription("Favorite").assertIsOff()
+        isFavorite = true
+        onNodeWithContentDescription("Favorite").assertIsOn()
+    }
+
+    @Test
     fun recipeIsAnnouncedWhenItAppears() = runComposeUiTest {
         setContent { Screen(Content.Success(recipe)) }
 
@@ -95,11 +111,12 @@ class RandomRecipeScreenAccessibilityTest {
     }
 
     @Composable
-    private fun Screen(content: Content) {
+    private fun Screen(content: Content, isFavorite: Boolean = false) {
         RandomRecipeScreen(
-            uiState = RandomRecipeUiState(content = content),
+            uiState = RandomRecipeUiState(content = content, isFavorite = isFavorite),
             onShowNext = {},
             onShowPrevious = {},
+            onToggleFavorite = {},
         )
     }
 }

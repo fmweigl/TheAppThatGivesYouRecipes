@@ -1,22 +1,25 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe
+package io.github.fmweigl.yetanothermealsapp.recipe.ui.recipedetail
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
-/** Connects [RandomRecipeViewModel] to [RandomRecipeScreen]. */
+/** Connects [RecipeViewModel] for [recipeId] to [RecipeScreen]. */
 @Composable
-internal fun RandomRecipeRoute(
+internal fun RecipeRoute(
+    recipeId: String,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: RandomRecipeViewModel = koinViewModel(),
+    viewModel: RecipeViewModel = koinViewModel { parametersOf(recipeId) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    RandomRecipeScreen(
+    RecipeScreen(
         uiState = uiState,
-        onShowNext = viewModel::showNext,
-        onShowPrevious = viewModel::showPrevious,
+        onBack = onBack,
+        onRetry = viewModel::retry,
         onToggleFavorite = viewModel::toggleFavorite,
         modifier = modifier,
     )

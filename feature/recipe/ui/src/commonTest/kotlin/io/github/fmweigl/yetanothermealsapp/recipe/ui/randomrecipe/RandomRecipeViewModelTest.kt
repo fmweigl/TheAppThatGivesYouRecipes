@@ -4,6 +4,7 @@ import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
 import io.github.fmweigl.yetanothermealsapp.core.domain.Result
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.repository.RecipeRepository
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.FakeFavoritesRepository
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe.RandomRecipeUiState.Content
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,6 +18,8 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RandomRecipeViewModelTest {
@@ -45,7 +48,10 @@ class RandomRecipeViewModelTest {
 
     private val repository = FakeRepository()
 
-    private fun TestScope.createViewModel() = RandomRecipeViewModel(repository).also { advanceUntilIdle() }
+    private val favorites = FakeFavoritesRepository()
+
+    private fun TestScope.createViewModel() =
+        RandomRecipeViewModel(repository, favorites).also { advanceUntilIdle() }
 
     private fun TestScope.showNext(viewModel: RandomRecipeViewModel) {
         viewModel.showNext()
@@ -57,7 +63,7 @@ class RandomRecipeViewModelTest {
 
     @Test
     fun loadsRecipeOnCreation() = runTest(dispatcher) {
-        val viewModel = RandomRecipeViewModel(repository)
+        val viewModel = RandomRecipeViewModel(repository, favorites)
 
         assertEquals(RandomRecipeUiState(Content.Loading, canShowPrevious = false), viewModel.uiState.value)
         advanceUntilIdle()
@@ -150,6 +156,64 @@ class RandomRecipeViewModelTest {
 
         repeat(MAX_HISTORY_SIZE - 1) { viewModel.showPrevious() }
         assertEquals(showing(2, canShowPrevious = false), viewModel.uiState.value)
+    }
+
+    @Test
+    fun showsWhetherTheShownRecipeIsAFavorite() = runTest(dispatcher) {
+        favorites.favorites.value = listOf(recipe(2))
+        val viewModel = createViewModel()
+        assertFalse(viewModel.uiState.value.isFavorite)
+
+        showNext(viewModel)
+        assertTrue(viewModel.uiState.value.isFavorite)
+
+        viewModel.showPrevious()
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.isFavorite)
+    }
+
+    @Test
+    fun toggleFavoriteSavesAndRemovesTheShownRecipe() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+
+        viewModel.toggleFavorite()
+        advanceUntilIdle()
+        assertEquals(listOf(recipe(1)), favorites.favorites.value)
+        assertTrue(viewModel.uiState.value.isFavorite)
+
+        viewModel.toggleFavorite()
+        advanceUntilIdle()
+        assertEquals(emptyList(), favorites.favorites.value)
+        assertFalse(viewModel.uiState.value.isFavorite)
+    }
+
+    @Test
+    fun followsFavoritesChangedElsewhere() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+
+        favorites.favorites.value = listOf(recipe(1))
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.isFavorite)
+    }
+
+    @Test
+    fun failedToggleLeavesTheHeartUnchanged() = runTest(dispatcher) {
+        val viewModel = createViewModel()
+        favorites.writeError = DataError.Storage
+
+        viewModel.toggleFavorite()
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.isFavorite)
+    }
+
+    @Test
+    fun toggleFavoriteDoesNothingWithoutARecipe() = runTest(dispatcher) {
+        repository.error = DataError.NoConnection
+        val viewModel = createViewModel()
+
+        viewModel.toggleFavorite()
+        advanceUntilIdle()
+        assertEquals(emptyList(), favorites.favorites.value)
     }
 
     private companion object {

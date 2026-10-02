@@ -26,7 +26,8 @@ import io.github.fmweigl.yetanothermealsapp.about.ui.LicenseNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.PrivacyNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.aboutEntries
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.RandomRecipeNavKey
-import io.github.fmweigl.yetanothermealsapp.recipe.ui.randomRecipeEntry
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.RecipeNavKey
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.recipeEntries
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -49,6 +50,7 @@ private val navKeyConfiguration = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {
             subclass(RandomRecipeNavKey::class)
+            subclass(RecipeNavKey::class)
             subclass(AboutNavKey::class)
             subclass(LicenseNavKey::class)
             subclass(PrivacyNavKey::class)
@@ -76,7 +78,7 @@ internal fun AppNavigation(modifier: Modifier = Modifier) {
     )
     val navigator = remember(navigationState) { Navigator(navigationState) }
     val entryProvider = entryProvider {
-        randomRecipeEntry()
+        recipeEntries(onBack = navigator::goBack)
         aboutEntries(
             onNavigate = navigator::navigate,
             onBack = navigator::goBack,

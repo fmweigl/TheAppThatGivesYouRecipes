@@ -1,12 +1,10 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe
+package io.github.fmweigl.yetanothermealsapp.recipe.ui.recipedetail
 
 import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
 
-/** [isFavorite] refers to the recipe in [content] and is false while there is none. */
-internal data class RandomRecipeUiState(
+internal data class RecipeUiState(
     val content: Content = Content.Loading,
-    val canShowPrevious: Boolean = false,
     val isFavorite: Boolean = false,
 ) {
     sealed interface Content {
