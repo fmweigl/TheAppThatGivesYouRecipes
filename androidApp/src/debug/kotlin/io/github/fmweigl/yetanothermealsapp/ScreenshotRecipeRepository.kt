@@ -2,11 +2,11 @@ package io.github.fmweigl.yetanothermealsapp
 
 import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
 import io.github.fmweigl.yetanothermealsapp.core.domain.Result
-import io.github.fmweigl.yetanothermealsapp.randomrecipe.domain.RandomRecipeRepository
-import io.github.fmweigl.yetanothermealsapp.randomrecipe.domain.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.RecipeRepository
 
 /** Returns [recipes] in turn, starting over after the last one. */
-internal class ScreenshotRecipeRepository(private val recipes: List<Recipe>) : RandomRecipeRepository {
+internal class ScreenshotRecipeRepository(private val recipes: List<Recipe>) : RecipeRepository {
 
     private var next = 0
 

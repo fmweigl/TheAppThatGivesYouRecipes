@@ -25,8 +25,8 @@ import io.github.fmweigl.yetanothermealsapp.about.ui.LibrariesNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.LicenseNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.PrivacyNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.aboutEntries
-import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.RandomRecipeNavKey
-import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.randomRecipeEntry
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.RandomRecipeNavKey
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.randomRecipeEntry
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass

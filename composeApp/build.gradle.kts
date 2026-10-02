@@ -35,8 +35,8 @@ kotlin {
             implementation(projects.core.designsystem)
             implementation(projects.core.network)
             implementation(projects.feature.about.ui)
-            implementation(projects.feature.randomrecipe.data)
-            implementation(projects.feature.randomrecipe.ui)
+            implementation(projects.feature.recipe.data)
+            implementation(projects.feature.recipe.ui)
 
             api(libs.koin.core)
 

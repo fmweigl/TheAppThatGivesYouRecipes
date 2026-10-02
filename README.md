@@ -15,9 +15,9 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
 
 * [/composeApp](./composeApp) holds the root `App()` composable that the Android, desktop and iOS apps display.
 
-* [/feature/randomrecipe](./feature/randomrecipe) is the random-recipe feature:
-  - [domain](./feature/randomrecipe/domain) and [data](./feature/randomrecipe/data) contain plain Kotlin Multiplatform code with no Android or Compose dependencies.
-  - [ui](./feature/randomrecipe/ui) has the feature's Compose Multiplatform screens, which `App()` displays.
+* [/feature/recipe](./feature/recipe) is the recipe feature (its tab shows random recipes):
+  - [domain](./feature/recipe/domain) and [data](./feature/recipe/data) contain plain Kotlin Multiplatform code with no Android or Compose dependencies.
+  - [ui](./feature/recipe/ui) has the feature's Compose Multiplatform screens, which `App()` displays.
 
 * [/feature/about](./feature/about) is the about feature. So far it only has a [ui](./feature/about/ui) module, which lists the app's libraries and their licenses (generated with [AboutLibraries](https://github.com/mikepenz/AboutLibraries)).
 
@@ -43,8 +43,8 @@ Use the run configurations provided by the run widget in your IDE's toolbar. You
 
 Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
-- JVM tests: `./gradlew :feature:randomrecipe:domain:jvmTest` (likewise for `data` and `ui`)
-- iOS tests: `./gradlew :feature:randomrecipe:domain:iosSimulatorArm64Test`
+- JVM tests: `./gradlew :feature:recipe:domain:jvmTest` (likewise for `data` and `ui`)
+- iOS tests: `./gradlew :feature:recipe:domain:iosSimulatorArm64Test`
 
 ---
 

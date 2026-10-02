@@ -1,6 +1,6 @@
 # Plan: "Favorites" feature
 
-Branch: `feature/favorites`. Status: planned, nothing implemented yet.
+Branch: `feature/favorites`. Status: step 1 of the commit order (rename) done.
 
 Goal: the user marks recipes as favorites with a button; favorites are saved in a Room database; a new bottom
 navigation tab "Favorites" lists teasers of them; a teaser can be removed (deleted from the database); clicking a
