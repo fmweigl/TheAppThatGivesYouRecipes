@@ -1,7 +1,7 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.data
+package io.github.fmweigl.yetanothermealsapp.recipe.data.model
 
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.Ingredient
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Ingredient
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 

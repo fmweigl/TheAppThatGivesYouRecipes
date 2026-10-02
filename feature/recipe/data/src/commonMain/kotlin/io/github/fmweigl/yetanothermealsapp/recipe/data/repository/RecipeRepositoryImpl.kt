@@ -1,11 +1,13 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.data
+package io.github.fmweigl.yetanothermealsapp.recipe.data.repository
 
 import io.github.fmweigl.yetanothermealsapp.core.data.safeApiCall
 import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
 import io.github.fmweigl.yetanothermealsapp.core.domain.Result
 import io.github.fmweigl.yetanothermealsapp.core.domain.flatMap
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.Recipe
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.RecipeRepository
+import io.github.fmweigl.yetanothermealsapp.recipe.data.model.MealsResponse
+import io.github.fmweigl.yetanothermealsapp.recipe.data.model.toRecipe
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.repository.RecipeRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get

@@ -1,4 +1,4 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.ui
+package io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,8 +40,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.Recipe
-import io.github.fmweigl.yetanothermealsapp.recipe.ui.RandomRecipeUiState.Content
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe.RandomRecipeUiState.Content
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.Res
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.ingredients
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.instructions
@@ -49,6 +49,7 @@ import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.loading
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.next_recipe
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.previous_recipe
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.try_again
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.toMessage
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

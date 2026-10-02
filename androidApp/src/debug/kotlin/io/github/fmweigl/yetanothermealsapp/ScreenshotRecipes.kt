@@ -1,7 +1,7 @@
 package io.github.fmweigl.yetanothermealsapp
 
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.Ingredient
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Ingredient
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
 import java.io.File
 
 /**

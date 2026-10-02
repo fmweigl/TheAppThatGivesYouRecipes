@@ -1,7 +1,7 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.ui
+package io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe
 
 import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
 
 internal data class RandomRecipeUiState(
     val content: Content = Content.Loading,

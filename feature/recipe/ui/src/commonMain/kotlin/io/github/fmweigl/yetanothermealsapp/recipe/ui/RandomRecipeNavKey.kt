@@ -2,6 +2,7 @@ package io.github.fmweigl.yetanothermealsapp.recipe.ui
 
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe.RandomRecipeRoute
 import kotlinx.serialization.Serializable
 
 /** Navigation key of the random recipe screen. */

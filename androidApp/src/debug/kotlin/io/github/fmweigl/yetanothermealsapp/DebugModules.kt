@@ -1,7 +1,7 @@
 package io.github.fmweigl.yetanothermealsapp
 
 import android.content.Context
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.RecipeRepository
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.repository.RecipeRepository
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import java.io.File
@@ -16,6 +16,10 @@ internal fun debugModules(context: Context): List<Module> {
     val directory = File(context.filesDir, "screenshot-mode")
     if (!directory.isDirectory) return emptyList()
     return listOf(
-        module { single<RecipeRepository> { ScreenshotRecipeRepository(screenshotRecipes(directory)) } },
+        module {
+            single<RecipeRepository> {
+                ScreenshotRecipeRepository(screenshotRecipes(directory))
+            }
+        },
     )
 }

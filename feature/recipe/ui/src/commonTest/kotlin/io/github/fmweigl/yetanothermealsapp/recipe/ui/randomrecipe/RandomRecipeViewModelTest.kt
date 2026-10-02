@@ -1,10 +1,10 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.ui
+package io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe
 
 import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
 import io.github.fmweigl.yetanothermealsapp.core.domain.Result
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.Recipe
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.RecipeRepository
-import io.github.fmweigl.yetanothermealsapp.recipe.ui.RandomRecipeUiState.Content
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.repository.RecipeRepository
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe.RandomRecipeUiState.Content
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher

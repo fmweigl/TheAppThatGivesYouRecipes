@@ -1,4 +1,4 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.ui
+package io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -16,9 +16,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.runComposeUiTest
 import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.Ingredient
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.Recipe
-import io.github.fmweigl.yetanothermealsapp.recipe.ui.RandomRecipeUiState.Content
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Ingredient
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe.RandomRecipeUiState.Content
 import kotlin.test.Test
 
 /** What screen readers get from [RandomRecipeScreen] (the merged semantics tree). */

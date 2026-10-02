@@ -1,10 +1,10 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.data
+package io.github.fmweigl.yetanothermealsapp.recipe.data.repository
 
 import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
 import io.github.fmweigl.yetanothermealsapp.core.domain.Result
 import io.github.fmweigl.yetanothermealsapp.core.network.createTheMealDbHttpClient
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.Ingredient
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Ingredient
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandler
 import io.ktor.client.engine.mock.respond

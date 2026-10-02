@@ -1,4 +1,4 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.domain
+package io.github.fmweigl.yetanothermealsapp.recipe.domain.model
 
 data class Ingredient(
     val name: String,

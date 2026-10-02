@@ -1,4 +1,4 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.data
+package io.github.fmweigl.yetanothermealsapp.recipe.data.model
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject

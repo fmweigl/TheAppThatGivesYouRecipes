@@ -1,11 +1,11 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.ui
+package io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fmweigl.yetanothermealsapp.core.domain.Result
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.Recipe
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.RecipeRepository
-import io.github.fmweigl.yetanothermealsapp.recipe.ui.RandomRecipeUiState.Content
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.repository.RecipeRepository
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe.RandomRecipeUiState.Content
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

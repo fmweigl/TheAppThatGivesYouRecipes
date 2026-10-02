@@ -1,7 +1,7 @@
 package io.github.fmweigl.yetanothermealsapp.recipe.data.di
 
-import io.github.fmweigl.yetanothermealsapp.recipe.data.RecipeRepositoryImpl
-import io.github.fmweigl.yetanothermealsapp.recipe.domain.RecipeRepository
+import io.github.fmweigl.yetanothermealsapp.recipe.data.repository.RecipeRepositoryImpl
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.repository.RecipeRepository
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module

@@ -1,4 +1,4 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.ui
+package io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
