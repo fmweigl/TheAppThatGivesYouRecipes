@@ -35,6 +35,7 @@ kotlin {
             implementation(projects.core.designsystem)
             implementation(projects.core.network)
             implementation(projects.feature.about.ui)
+            implementation(projects.feature.favorites.ui)
             implementation(projects.feature.recipe.data)
             implementation(projects.feature.recipe.ui)
 

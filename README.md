@@ -15,9 +15,12 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
 
 * [/composeApp](./composeApp) holds the root `App()` composable that the Android, desktop and iOS apps display.
 
-* [/feature/recipe](./feature/recipe) is the recipe feature (its tab shows random recipes):
-  - [domain](./feature/recipe/domain) and [data](./feature/recipe/data) contain plain Kotlin Multiplatform code with no Android or Compose dependencies.
+* [/feature/recipe](./feature/recipe) is the recipe feature: random recipes, a recipe opened by id, and saving favorites:
+  - [domain](./feature/recipe/domain) has the models and repository interfaces, plain Kotlin Multiplatform code with no Android or Compose dependencies.
+  - [data](./feature/recipe/data) loads recipes from TheMealDB and stores favorites on the device in a [Room](https://developer.android.com/kotlin/multiplatform/room) database.
   - [ui](./feature/recipe/ui) has the feature's Compose Multiplatform screens, which `App()` displays.
+
+* [/feature/favorites](./feature/favorites) is the favorites tab. Its [ui](./feature/favorites/ui) module lists the saved recipes; they open in the recipe feature's screen.
 
 * [/feature/about](./feature/about) is the about feature. So far it only has a [ui](./feature/about/ui) module, which lists the app's libraries and their licenses (generated with [AboutLibraries](https://github.com/mikepenz/AboutLibraries)).
 
