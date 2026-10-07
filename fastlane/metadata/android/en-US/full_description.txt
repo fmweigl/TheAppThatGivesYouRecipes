@@ -1,4 +1,4 @@
-Not sure what to cook? YetAnotherMealsApp shows you a random recipe with every tap.
+Not sure what to cook? YetAnotherMealsApp shows you a random recipe with every tap, and keeps the ones you like.
 
 Each recipe comes with:
 • A photo of the dish
@@ -8,10 +8,13 @@ Each recipe comes with:
 
 Tap Next for another idea, or Previous to go back to a recipe you've already seen.
 
+Found one you like? Tap the heart to save it. Your favorites have their own tab and open even without an internet connection. Removed one by mistake? Tap Undo.
+
 Made with care:
 • Light and dark theme that follows your system settings
 • Works with screen readers like TalkBack
 • No account, no ads, no analytics, no tracking. The app collects no personal data at all.
+• Your favorites are stored only on your device.
 
 Open source:
 YetAnotherMealsApp is free software under the Apache License 2.0. The source code is on GitHub: https://github.com/fmweigl/YetAnotherMealApp

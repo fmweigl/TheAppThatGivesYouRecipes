@@ -24,8 +24,8 @@ icons = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(icons)
 
 TITLE = "YetAnotherMealsApp"
-# Describes the app's only feature so far. Revisit it (and the listing texts) when features are added.
-TAGLINE = "A random recipe, one tap away"
+# Describes the app's features (random recipes, favorites). Revisit it (and the listing texts) when features are added.
+TAGLINE = "Find a recipe. Keep your favorites."
 FOOTER = "Open source. No ads. No tracking."
 
 WIDTH, HEIGHT = 1024, 500

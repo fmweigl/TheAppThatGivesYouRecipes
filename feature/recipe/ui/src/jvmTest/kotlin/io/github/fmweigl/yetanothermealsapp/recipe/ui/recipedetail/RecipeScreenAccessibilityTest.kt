@@ -1,0 +1,96 @@
+package io.github.fmweigl.yetanothermealsapp.recipe.ui.recipedetail
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.runComposeUiTest
+import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.recipedetail.RecipeUiState.Content
+import kotlin.test.Test
+
+/** What screen readers get from [RecipeScreen] (the merged semantics tree). */
+@OptIn(ExperimentalTestApi::class)
+class RecipeScreenAccessibilityTest {
+
+    private val recipe = Recipe(id = "52923", name = "Canadian Butter Tarts", category = "Dessert", imageUrl = null)
+
+    private val isHeading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
+
+    private fun paneTitle(title: String) = SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, title)
+
+    @Test
+    fun topBarTitleAndRecipeNameAreHeadingsReadOnceEach() = runComposeUiTest {
+        setContent { Screen(Content.Success(recipe)) }
+
+        onNodeWithText("Recipe").assert(isHeading)
+        scrollTo(recipe.name)
+        onAllNodesWithText(recipe.name).assertCountEquals(1)
+        onNodeWithText(recipe.name).assert(isHeading)
+    }
+
+    @Test
+    fun backButtonIsLabeled() = runComposeUiTest {
+        setContent { Screen(Content.Loading) }
+
+        onNodeWithContentDescription("Back").assertHasClickAction()
+    }
+
+    @Test
+    fun favoriteButtonReportsItsState() = runComposeUiTest {
+        setContent { Screen(Content.Success(recipe), isFavorite = true) }
+
+        scrollTo(recipe.name)
+        onNodeWithContentDescription("Favorite").assertIsOn()
+    }
+
+    @Test
+    fun errorIsAnnouncedWithRetry() = runComposeUiTest {
+        setContent { Screen(Content.Error(DataError.NoConnection)) }
+
+        onNode(paneTitle("Could not reach TheMealDB. Check your connection.")).assertExists()
+        onNodeWithText("Try again").assertHasClickAction()
+    }
+
+    @Test
+    fun notFoundIsAnnouncedWithoutRetry() = runComposeUiTest {
+        setContent { Screen(Content.Error(DataError.NotFound)) }
+
+        onNode(paneTitle("This recipe could not be found on TheMealDB.")).assertExists()
+        onAllNodesWithText("Try again").assertCountEquals(0)
+    }
+
+    @Test
+    fun loadingIndicatorIsDescribed() = runComposeUiTest {
+        setContent { Screen(Content.Loading) }
+
+        onNodeWithContentDescription("Loading").assertExists()
+    }
+
+    /** The recipe's image fills the test window, so the lazy list only composes what's scrolled to. */
+    private fun ComposeUiTest.scrollTo(text: String) {
+        onNode(hasScrollAction()).performScrollToNode(hasText(text))
+    }
+
+    @Composable
+    private fun Screen(content: Content, isFavorite: Boolean = false) {
+        RecipeScreen(
+            uiState = RecipeUiState(content = content, isFavorite = isFavorite),
+            onBack = {},
+            onRetry = {},
+            onToggleFavorite = {},
+        )
+    }
+}

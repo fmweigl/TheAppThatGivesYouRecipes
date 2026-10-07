@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 12 and newer: backup and device-to-device transfer of everything except the
+    recipe database, whose favorites stay on the device (see PRIVACY.md).
+    backup_rules.xml has the same rules for Android 11 and older.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="database" path="recipes.db" />
+        <exclude domain="database" path="recipes.db-wal" />
+        <exclude domain="database" path="recipes.db-shm" />
+        <exclude domain="database" path="recipes.db.lck" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="database" path="recipes.db" />
+        <exclude domain="database" path="recipes.db-wal" />
+        <exclude domain="database" path="recipes.db-shm" />
+        <exclude domain="database" path="recipes.db.lck" />
+    </device-transfer>
+</data-extraction-rules>

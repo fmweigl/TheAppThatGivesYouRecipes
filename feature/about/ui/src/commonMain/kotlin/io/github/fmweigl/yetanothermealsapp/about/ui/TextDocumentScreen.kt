@@ -20,6 +20,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import io.github.fmweigl.yetanothermealsapp.about.ui.resources.Res
 import io.github.fmweigl.yetanothermealsapp.about.ui.resources.loading
+import io.github.fmweigl.yetanothermealsapp.core.designsystem.component.BackTopAppBar
 import org.jetbrains.compose.resources.stringResource
 
 /** A text document such as the license or the privacy policy; [blocks] is null while loading. */

@@ -14,6 +14,8 @@ dependencies {
     compileOnly(libs.plugins.composeCompiler.asDependency())
     compileOnly(libs.plugins.kotlinSerialization.asDependency())
     compileOnly(libs.plugins.detekt.asDependency())
+    compileOnly(libs.plugins.ksp.asDependency())
+    compileOnly(libs.plugins.room3.asDependency())
 }
 
 gradlePlugin {
@@ -25,6 +27,10 @@ gradlePlugin {
         register("kmpData") {
             id = "meals.kmp.data"
             implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.KmpDataConventionPlugin"
+        }
+        register("kmpRoom") {
+            id = "meals.kmp.room"
+            implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.KmpRoomConventionPlugin"
         }
         register("detekt") {
             id = "meals.detekt"

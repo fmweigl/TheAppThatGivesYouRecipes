@@ -3,6 +3,7 @@ package io.github.fmweigl.yetanothermealsapp.navigation
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
@@ -25,8 +26,11 @@ import io.github.fmweigl.yetanothermealsapp.about.ui.LibrariesNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.LicenseNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.PrivacyNavKey
 import io.github.fmweigl.yetanothermealsapp.about.ui.aboutEntries
-import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.RandomRecipeNavKey
-import io.github.fmweigl.yetanothermealsapp.randomrecipe.ui.randomRecipeEntry
+import io.github.fmweigl.yetanothermealsapp.favorites.ui.FavoritesNavKey
+import io.github.fmweigl.yetanothermealsapp.favorites.ui.favoritesEntry
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.RandomRecipeNavKey
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.RecipeNavKey
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.recipeEntries
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -34,6 +38,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import yetanothermealsapp.composeapp.generated.resources.Res
 import yetanothermealsapp.composeapp.generated.resources.tab_about
+import yetanothermealsapp.composeapp.generated.resources.tab_favorites
 import yetanothermealsapp.composeapp.generated.resources.tab_random
 
 private class TopLevelDestination(val icon: ImageVector, val label: StringResource)
@@ -41,6 +46,7 @@ private class TopLevelDestination(val icon: ImageVector, val label: StringResour
 /** The tabs of the bottom navigation bar, in display order. The first one is the start route. */
 private val topLevelDestinations: Map<NavKey, TopLevelDestination> = linkedMapOf(
     RandomRecipeNavKey to TopLevelDestination(Icons.Filled.Refresh, Res.string.tab_random),
+    FavoritesNavKey to TopLevelDestination(Icons.Filled.Favorite, Res.string.tab_favorites),
     AboutNavKey to TopLevelDestination(Icons.Filled.Info, Res.string.tab_about),
 )
 
@@ -49,6 +55,8 @@ private val navKeyConfiguration = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {
             subclass(RandomRecipeNavKey::class)
+            subclass(RecipeNavKey::class)
+            subclass(FavoritesNavKey::class)
             subclass(AboutNavKey::class)
             subclass(LicenseNavKey::class)
             subclass(PrivacyNavKey::class)
@@ -76,7 +84,8 @@ internal fun AppNavigation(modifier: Modifier = Modifier) {
     )
     val navigator = remember(navigationState) { Navigator(navigationState) }
     val entryProvider = entryProvider {
-        randomRecipeEntry()
+        recipeEntries(onBack = navigator::goBack)
+        favoritesEntry(onOpenRecipe = { recipeId -> navigator.navigate(RecipeNavKey(recipeId)) })
         aboutEntries(
             onNavigate = navigator::navigate,
             onBack = navigator::goBack,

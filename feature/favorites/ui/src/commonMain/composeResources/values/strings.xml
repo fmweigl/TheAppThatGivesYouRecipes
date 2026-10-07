@@ -1,0 +1,9 @@
+<resources>
+    <string name="favorites">Favorites</string>
+    <string name="loading">Loading</string>
+    <string name="no_favorites">No favorites yet. Tap the heart on a recipe to save it.</string>
+    <string name="favorites_error">Your favorites could not be loaded from this device.</string>
+    <string name="remove_favorite">Remove %1$s from favorites</string>
+    <string name="favorite_removed">Removed %1$s</string>
+    <string name="undo">Undo</string>
+</resources>

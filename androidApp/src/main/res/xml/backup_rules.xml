@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 11 and older: back up everything except the recipe database, whose favorites stay on
+    the device (see PRIVACY.md). data_extraction_rules.xml has the same rules for Android 12+.
+-->
+<full-backup-content>
+    <exclude domain="database" path="recipes.db" />
+    <exclude domain="database" path="recipes.db-wal" />
+    <exclude domain="database" path="recipes.db-shm" />
+    <exclude domain="database" path="recipes.db.lck" />
+</full-backup-content>
