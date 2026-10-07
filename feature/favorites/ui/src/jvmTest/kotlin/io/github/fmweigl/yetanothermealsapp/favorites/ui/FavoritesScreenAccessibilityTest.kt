@@ -1,12 +1,14 @@
 package io.github.fmweigl.yetanothermealsapp.favorites.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -16,6 +18,8 @@ import androidx.compose.ui.test.runComposeUiTest
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.FavoritesUiState.Content
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /** What screen readers get from [FavoritesScreen] (the merged semantics tree). */
 @OptIn(ExperimentalTestApi::class)
@@ -24,6 +28,9 @@ class FavoritesScreenAccessibilityTest {
     private val tarts = RecipeTeaser("52923", "Canadian Butter Tarts", "Dessert · Canadian", imageUrl = null)
 
     private val isHeading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
+
+    private val isPoliteLiveRegion =
+        SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite)
 
     private fun paneTitle(title: String) = SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, title)
 
@@ -84,26 +91,37 @@ class FavoritesScreenAccessibilityTest {
     }
 
     @Test
-    fun failedRestoreIsReported() = runComposeUiTest {
+    fun failedRestoreIsReportedPolitelyAndClosesAfterTheTimeout() = runComposeUiTest {
+        var closed = false
         setContent {
-            FavoritesScreen(
-                uiState = FavoritesUiState(Content.Empty, restoreFailed = tarts),
-                onOpenRecipe = {},
-                onRemove = {},
-                onRemovalMessageClosed = {},
+            Screen(
+                FavoritesUiState(Content.Empty, restoreFailed = tarts),
+                onRestoreFailureMessageClosed = { closed = true },
             )
         }
 
-        onNodeWithText("Couldn't restore Canadian Butter Tarts").assertExists()
+        val message = "Couldn't restore Canadian Butter Tarts"
+        onNodeWithText(message).assertExists()
+        onNode(hasText(message) and hasAnyAncestor(isPoliteLiveRegion)).assertExists()
+        assertFalse(closed)
+
+        mainClock.advanceTimeBy(15_000)
+        waitForIdle()
+        assertTrue(closed)
     }
 
     @Composable
-    private fun Screen(uiState: FavoritesUiState, onRemovalMessageClosed: (Boolean) -> Unit = {}) {
+    private fun Screen(
+        uiState: FavoritesUiState,
+        onRemovalMessageClosed: (Boolean) -> Unit = {},
+        onRestoreFailureMessageClosed: () -> Unit = {},
+    ) {
         FavoritesScreen(
             uiState = uiState,
             onOpenRecipe = {},
             onRemove = {},
             onRemovalMessageClosed = onRemovalMessageClosed,
+            onRestoreFailureMessageClosed = onRestoreFailureMessageClosed,
         )
     }
 }

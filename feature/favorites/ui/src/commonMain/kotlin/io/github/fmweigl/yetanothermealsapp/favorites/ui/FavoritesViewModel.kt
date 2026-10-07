@@ -43,6 +43,7 @@ internal class FavoritesViewModel(
         viewModelScope.launch {
             val result = favoritesRepository.removeFavorite(recipeId)
             if (result is Result.Success) {
+                restoreFailed.value = null
                 removedFavorite = result.data
                 removed.value = result.data.recipe.toTeaser()
             }

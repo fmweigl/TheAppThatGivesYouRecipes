@@ -61,8 +61,8 @@ internal fun FavoritesScreen(
     onOpenRecipe: (recipeId: String) -> Unit,
     onRemove: (recipeId: String) -> Unit,
     onRemovalMessageClosed: (undo: Boolean) -> Unit,
+    onRestoreFailureMessageClosed: () -> Unit,
     modifier: Modifier = Modifier,
-    onRestoreFailureMessageClosed: () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     RemovalMessage(uiState.removed, snackbarHostState, onRemovalMessageClosed)
@@ -124,7 +124,7 @@ private fun RestoreFailureMessage(
         if (failed == null) return@LaunchedEffect
         snackbarHostState.showSnackbar(
             message = getString(Res.string.favorite_restore_failed, failed.name),
-            duration = SnackbarDuration.Short,
+            duration = SnackbarDuration.Long,
         )
         onClosed()
     }

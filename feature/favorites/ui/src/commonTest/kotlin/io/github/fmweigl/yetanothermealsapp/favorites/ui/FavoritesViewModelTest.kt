@@ -116,6 +116,22 @@ class FavoritesViewModelTest {
     }
 
     @Test
+    fun aNewRemovalClearsAStaleRestoreFailure() = runTest(dispatcher) {
+        repository.favorites = listOf(TARTS, SOUP)
+        val viewModel = createViewModel()
+        viewModel.remove(SOUP.id)
+        advanceUntilIdle()
+        repository.restoreError = DataError.Storage
+        viewModel.removalMessageClosed(undo = true)
+        advanceUntilIdle()
+
+        viewModel.remove(TARTS.id)
+        advanceUntilIdle()
+        assertNull(viewModel.uiState.value.restoreFailed)
+        assertEquals("Canadian Butter Tarts", viewModel.uiState.value.removed?.name)
+    }
+
+    @Test
     fun removingTheSameRecipeTwiceKeepsTheUndo() = runTest(dispatcher) {
         repository.favorites = listOf(TARTS, SOUP)
         val viewModel = createViewModel()

@@ -42,11 +42,9 @@ internal class ScreenshotFavoritesRepository(initial: List<Recipe>) : FavoritesR
     }
 
     override suspend fun restoreFavorite(removed: RemovedFavorite): Result<Unit, DataError> {
+        if (favorites.value.any { it.id == removed.recipe.id }) return Result.Success(Unit)
         savedAt[removed.recipe.id] = removed.savedAt.toEpochMilliseconds()
-        favorites.update { recipes ->
-            (recipes.filter { it.id != removed.recipe.id } + removed.recipe)
-                .sortedByDescending { savedAt.getValue(it.id) }
-        }
+        favorites.update { recipes -> (recipes + removed.recipe).sortedByDescending { savedAt.getValue(it.id) } }
         return Result.Success(Unit)
     }
 }
