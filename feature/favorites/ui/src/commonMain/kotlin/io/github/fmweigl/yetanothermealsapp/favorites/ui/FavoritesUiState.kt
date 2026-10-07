@@ -1,9 +1,13 @@
 package io.github.fmweigl.yetanothermealsapp.favorites.ui
 
-/** [removed] is the favorite just removed, offered for "Undo" until the message closes. */
+/**
+ * [removed] is the favorite just removed, offered for "Undo" until the message closes;
+ * [restoreFailed] is one whose "Undo" failed, reported until that message closes.
+ */
 internal data class FavoritesUiState(
     val content: Content = Content.Loading,
     val removed: RecipeTeaser? = null,
+    val restoreFailed: RecipeTeaser? = null,
 ) {
     sealed interface Content {
         data object Loading : Content

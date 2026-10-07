@@ -3,6 +3,7 @@ package io.github.fmweigl.yetanothermealsapp.recipe.domain.repository
 import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
 import io.github.fmweigl.yetanothermealsapp.core.domain.Result
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.RemovedFavorite
 import kotlinx.coroutines.flow.Flow
 
 /** The recipes the user saved as favorites, stored on the device. */
@@ -16,5 +17,15 @@ interface FavoritesRepository {
     /** Saves [recipe] as a favorite, or updates it if it already is one. */
     suspend fun addFavorite(recipe: Recipe): Result<Unit, DataError>
 
-    suspend fun removeFavorite(recipeId: String): Result<Unit, DataError>
+    /**
+     * Removes the favorite and returns it for [restoreFavorite];
+     * [DataError.NotFound] if the recipe is no favorite (callers that only toggle can ignore it).
+     */
+    suspend fun removeFavorite(recipeId: String): Result<RemovedFavorite, DataError>
+
+    /**
+     * Saves a [removed] favorite again with its original save time, so it returns to its old position.
+     * Does nothing (and succeeds) if the recipe was added as a favorite again in the meantime.
+     */
+    suspend fun restoreFavorite(removed: RemovedFavorite): Result<Unit, DataError>
 }
