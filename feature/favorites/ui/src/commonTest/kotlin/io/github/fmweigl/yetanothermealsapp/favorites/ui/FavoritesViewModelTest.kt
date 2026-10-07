@@ -83,16 +83,17 @@ class FavoritesViewModelTest {
     }
 
     @Test
-    fun undoSavesTheRecipeAgainAsTheNewest() = runTest(dispatcher) {
-        repository.favorites.value = listOf(TARTS, SOUP)
+    fun undoRestoresTheRecipeAtItsOldPosition() = runTest(dispatcher) {
+        val stew = Recipe(id = "2", name = "Stew")
+        repository.favorites.value = listOf(TARTS, SOUP, stew)
         val viewModel = createViewModel()
         viewModel.remove(SOUP.id)
         advanceUntilIdle()
 
         viewModel.removalMessageClosed(undo = true)
         advanceUntilIdle()
-        assertEquals(listOf(SOUP, TARTS), repository.favorites.value)
-        assertEquals(listOf(SOUP.id, TARTS.id), viewModel.shownIds())
+        assertEquals(listOf(TARTS, SOUP, stew), repository.favorites.value)
+        assertEquals(listOf(TARTS.id, SOUP.id, stew.id), viewModel.shownIds())
         assertNull(viewModel.uiState.value.removed)
     }
 

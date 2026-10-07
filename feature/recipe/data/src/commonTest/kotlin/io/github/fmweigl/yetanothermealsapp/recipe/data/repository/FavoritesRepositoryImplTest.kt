@@ -1,9 +1,11 @@
 package io.github.fmweigl.yetanothermealsapp.recipe.data.repository
 
+import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
 import io.github.fmweigl.yetanothermealsapp.core.domain.Result
 import io.github.fmweigl.yetanothermealsapp.recipe.data.database.inMemoryRecipeDatabase
 import io.github.fmweigl.yetanothermealsapp.recipe.data.database.testRecipe
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.RemovedFavorite
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -76,18 +78,44 @@ class FavoritesRepositoryImplTest {
         repository.addFavorite(testRecipe("1"))
         repository.addFavorite(testRecipe("2"))
 
-        assertEquals(Result.Success(Unit), repository.removeFavorite("1"))
+        val removed = assertIs<Result.Success<RemovedFavorite>>(repository.removeFavorite("1")).data
 
+        assertEquals(testRecipe("1"), removed.recipe)
         assertEquals(listOf("2"), favorites().map { it.id })
     }
 
     @Test
-    fun removingARecipeThatIsNoFavoriteDoesNothing() = runTest {
+    fun removingARecipeThatIsNoFavoriteFailsAndChangesNothing() = runTest {
         repository.addFavorite(testRecipe("1"))
 
-        assertEquals(Result.Success(Unit), repository.removeFavorite("2"))
+        assertEquals(Result.Failure(DataError.NotFound), repository.removeFavorite("2"))
 
         assertEquals(listOf("1"), favorites().map { it.id })
+    }
+
+    @Test
+    fun aRestoredFavoriteReturnsToItsOldPosition() = runTest {
+        repository.addFavorite(testRecipe("1"))
+        repository.addFavorite(testRecipe("2"))
+        repository.addFavorite(testRecipe("3"))
+        val removed = assertIs<Result.Success<RemovedFavorite>>(repository.removeFavorite("2")).data
+        repository.addFavorite(testRecipe("4"))
+
+        assertEquals(Result.Success(Unit), repository.restoreFavorite(removed))
+
+        assertEquals(listOf("4", "3", "2", "1"), favorites().map { it.id })
+        assertEquals(testRecipe("2"), favorites()[2])
+    }
+
+    @Test
+    fun addingARemovedFavoriteAgainPutsItOnTop() = runTest {
+        repository.addFavorite(testRecipe("1"))
+        repository.addFavorite(testRecipe("2"))
+        repository.removeFavorite("1")
+
+        repository.addFavorite(testRecipe("1"))
+
+        assertEquals(listOf("1", "2"), favorites().map { it.id })
     }
 
     @Test

@@ -8,11 +8,13 @@ import io.github.fmweigl.yetanothermealsapp.recipe.data.database.safeDbCall
 import io.github.fmweigl.yetanothermealsapp.recipe.data.database.toFavoriteRecipeEntity
 import io.github.fmweigl.yetanothermealsapp.recipe.data.database.toRecipe
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.RemovedFavorite
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.repository.FavoritesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlin.time.Clock
+import kotlin.time.Instant
 
 internal class FavoritesRepositoryImpl(
     private val dao: FavoriteRecipeDao,
@@ -32,7 +34,19 @@ internal class FavoritesRepositoryImpl(
         dao.upsert(recipe.toFavoriteRecipeEntity(savedAt = clock.now().toEpochMilliseconds()))
     }
 
-    override suspend fun removeFavorite(recipeId: String): Result<Unit, DataError> = safeDbCall {
-        dao.delete(recipeId)
+    override suspend fun removeFavorite(recipeId: String): Result<RemovedFavorite, DataError> {
+        val result = safeDbCall {
+            dao.getById(recipeId)?.also { dao.delete(recipeId) }
+        }
+        return when (result) {
+            is Result.Success -> result.data
+                ?.let { Result.Success(RemovedFavorite(it.toRecipe(), Instant.fromEpochMilliseconds(it.savedAt))) }
+                ?: Result.Failure(DataError.NotFound)
+            is Result.Failure -> result
+        }
+    }
+
+    override suspend fun restoreFavorite(removed: RemovedFavorite): Result<Unit, DataError> = safeDbCall {
+        dao.upsert(removed.recipe.toFavoriteRecipeEntity(savedAt = removed.savedAt.toEpochMilliseconds()))
     }
 }
