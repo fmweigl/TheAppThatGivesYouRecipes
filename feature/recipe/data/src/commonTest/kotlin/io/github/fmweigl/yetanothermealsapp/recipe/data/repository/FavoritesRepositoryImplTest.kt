@@ -108,6 +108,31 @@ class FavoritesRepositoryImplTest {
     }
 
     @Test
+    fun restoringAFavoriteThatWasAddedAgainKeepsTheNewerOne() = runTest {
+        repository.addFavorite(testRecipe("1"))
+        repository.addFavorite(testRecipe("2"))
+        val removed = assertIs<Result.Success<RemovedFavorite>>(repository.removeFavorite("1")).data
+        repository.addFavorite(testRecipe("1", name = "Newer"))
+
+        assertEquals(Result.Success(Unit), repository.restoreFavorite(removed))
+
+        assertEquals(listOf("Newer", "Recipe 2"), favorites().map { it.name })
+    }
+
+    @Test
+    fun removingAndRestoringMapStorageFailures() = runTest {
+        repository.addFavorite(testRecipe("1"))
+        val removed = assertIs<Result.Success<RemovedFavorite>>(repository.removeFavorite("1")).data
+        // The table is gone, so every statement fails with an SQLiteException.
+        database.useConnection(isReadOnly = false) {
+            it.usePrepared("DROP TABLE favorite_recipe") { statement -> statement.step() }
+        }
+
+        assertEquals(Result.Failure(DataError.Storage), repository.removeFavorite("1"))
+        assertEquals(Result.Failure(DataError.Storage), repository.restoreFavorite(removed))
+    }
+
+    @Test
     fun addingARemovedFavoriteAgainPutsItOnTop() = runTest {
         repository.addFavorite(testRecipe("1"))
         repository.addFavorite(testRecipe("2"))

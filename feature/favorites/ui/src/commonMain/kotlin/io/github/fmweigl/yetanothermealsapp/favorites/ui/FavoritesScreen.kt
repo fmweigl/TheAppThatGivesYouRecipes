@@ -43,6 +43,7 @@ import coil3.compose.AsyncImage
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.FavoritesUiState.Content
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.Res
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.favorite_removed
+import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.favorite_restore_failed
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.favorites
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.favorites_error
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.loading
@@ -61,9 +62,11 @@ internal fun FavoritesScreen(
     onRemove: (recipeId: String) -> Unit,
     onRemovalMessageClosed: (undo: Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    onRestoreFailureMessageClosed: () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     RemovalMessage(uiState.removed, snackbarHostState, onRemovalMessageClosed)
+    RestoreFailureMessage(uiState.restoreFailed, snackbarHostState, onRestoreFailureMessageClosed)
 
     Scaffold(
         modifier = modifier,
@@ -107,6 +110,23 @@ private fun RemovalMessage(
             duration = SnackbarDuration.Long,
         )
         onClosed(result == SnackbarResult.ActionPerformed)
+    }
+}
+
+/** "Couldn't restore ‹name›" while [failed] is set. */
+@Composable
+private fun RestoreFailureMessage(
+    failed: RecipeTeaser?,
+    snackbarHostState: SnackbarHostState,
+    onClosed: () -> Unit,
+) {
+    LaunchedEffect(failed) {
+        if (failed == null) return@LaunchedEffect
+        snackbarHostState.showSnackbar(
+            message = getString(Res.string.favorite_restore_failed, failed.name),
+            duration = SnackbarDuration.Short,
+        )
+        onClosed()
     }
 }
 

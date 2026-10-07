@@ -19,10 +19,13 @@ interface FavoritesRepository {
 
     /**
      * Removes the favorite and returns it for [restoreFavorite];
-     * [DataError.NotFound] if the recipe is no favorite.
+     * [DataError.NotFound] if the recipe is no favorite (callers that only toggle can ignore it).
      */
     suspend fun removeFavorite(recipeId: String): Result<RemovedFavorite, DataError>
 
-    /** Saves a [removed] favorite again with its original save time, so it returns to its old position. */
+    /**
+     * Saves a [removed] favorite again with its original save time, so it returns to its old position.
+     * Does nothing (and succeeds) if the recipe was added as a favorite again in the meantime.
+     */
     suspend fun restoreFavorite(removed: RemovedFavorite): Result<Unit, DataError>
 }

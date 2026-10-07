@@ -35,9 +35,7 @@ internal class FavoritesRepositoryImpl(
     }
 
     override suspend fun removeFavorite(recipeId: String): Result<RemovedFavorite, DataError> {
-        val result = safeDbCall {
-            dao.getById(recipeId)?.also { dao.delete(recipeId) }
-        }
+        val result = safeDbCall { dao.deleteAndGet(recipeId) }
         return when (result) {
             is Result.Success -> result.data
                 ?.let { Result.Success(RemovedFavorite(it.toRecipe(), Instant.fromEpochMilliseconds(it.savedAt))) }
@@ -47,6 +45,6 @@ internal class FavoritesRepositoryImpl(
     }
 
     override suspend fun restoreFavorite(removed: RemovedFavorite): Result<Unit, DataError> = safeDbCall {
-        dao.upsert(removed.recipe.toFavoriteRecipeEntity(savedAt = removed.savedAt.toEpochMilliseconds()))
+        dao.insertIfAbsent(removed.recipe.toFavoriteRecipeEntity(savedAt = removed.savedAt.toEpochMilliseconds()))
     }
 }

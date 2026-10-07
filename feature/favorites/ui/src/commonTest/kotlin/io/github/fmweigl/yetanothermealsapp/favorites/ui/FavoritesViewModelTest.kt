@@ -37,7 +37,7 @@ class FavoritesViewModelTest {
 
     @Test
     fun showsTheFavoritesAsTeasers() = runTest(dispatcher) {
-        repository.favorites.value = listOf(TARTS, SOUP)
+        repository.favorites = listOf(TARTS, SOUP)
         val viewModel = FavoritesViewModel(repository)
         assertEquals(Content.Loading, viewModel.uiState.value.content)
 
@@ -72,12 +72,12 @@ class FavoritesViewModelTest {
 
     @Test
     fun removeDeletesTheFavoriteAndOffersUndo() = runTest(dispatcher) {
-        repository.favorites.value = listOf(TARTS, SOUP)
+        repository.favorites = listOf(TARTS, SOUP)
         val viewModel = createViewModel()
 
         viewModel.remove(SOUP.id)
         advanceUntilIdle()
-        assertEquals(listOf(TARTS), repository.favorites.value)
+        assertEquals(listOf(TARTS), repository.favorites)
         assertEquals(listOf(TARTS.id), viewModel.shownIds())
         assertEquals("Soup", viewModel.uiState.value.removed?.name)
     }
@@ -85,35 +85,68 @@ class FavoritesViewModelTest {
     @Test
     fun undoRestoresTheRecipeAtItsOldPosition() = runTest(dispatcher) {
         val stew = Recipe(id = "2", name = "Stew")
-        repository.favorites.value = listOf(TARTS, SOUP, stew)
+        repository.favorites = listOf(TARTS, SOUP, stew)
         val viewModel = createViewModel()
         viewModel.remove(SOUP.id)
         advanceUntilIdle()
 
         viewModel.removalMessageClosed(undo = true)
         advanceUntilIdle()
-        assertEquals(listOf(TARTS, SOUP, stew), repository.favorites.value)
+        assertEquals(listOf(TARTS, SOUP, stew), repository.favorites)
         assertEquals(listOf(TARTS.id, SOUP.id, stew.id), viewModel.shownIds())
         assertNull(viewModel.uiState.value.removed)
     }
 
     @Test
+    fun failedUndoIsReportedUntilItsMessageCloses() = runTest(dispatcher) {
+        repository.favorites = listOf(TARTS, SOUP)
+        val viewModel = createViewModel()
+        viewModel.remove(SOUP.id)
+        advanceUntilIdle()
+        repository.restoreError = DataError.Storage
+
+        viewModel.removalMessageClosed(undo = true)
+        advanceUntilIdle()
+        assertEquals(listOf(TARTS), repository.favorites)
+        assertEquals("Soup", viewModel.uiState.value.restoreFailed?.name)
+
+        viewModel.restoreFailureMessageClosed()
+        advanceUntilIdle()
+        assertNull(viewModel.uiState.value.restoreFailed)
+    }
+
+    @Test
+    fun removingTheSameRecipeTwiceKeepsTheUndo() = runTest(dispatcher) {
+        repository.favorites = listOf(TARTS, SOUP)
+        val viewModel = createViewModel()
+
+        viewModel.remove(SOUP.id)
+        viewModel.remove(SOUP.id)
+        advanceUntilIdle()
+        assertEquals("Soup", viewModel.uiState.value.removed?.name)
+
+        viewModel.removalMessageClosed(undo = true)
+        advanceUntilIdle()
+        assertEquals(listOf(TARTS, SOUP), repository.favorites)
+    }
+
+    @Test
     fun closingTheMessageWithoutUndoKeepsTheFavoriteDeleted() = runTest(dispatcher) {
-        repository.favorites.value = listOf(TARTS)
+        repository.favorites = listOf(TARTS)
         val viewModel = createViewModel()
         viewModel.remove(TARTS.id)
         advanceUntilIdle()
 
         viewModel.removalMessageClosed(undo = false)
         advanceUntilIdle()
-        assertEquals(emptyList(), repository.favorites.value)
+        assertEquals(emptyList(), repository.favorites)
         assertEquals(Content.Empty, viewModel.uiState.value.content)
         assertNull(viewModel.uiState.value.removed)
     }
 
     @Test
     fun failedRemoveKeepsTheFavoriteAndOffersNoUndo() = runTest(dispatcher) {
-        repository.favorites.value = listOf(TARTS)
+        repository.favorites = listOf(TARTS)
         val viewModel = createViewModel()
         repository.writeError = DataError.Storage
 

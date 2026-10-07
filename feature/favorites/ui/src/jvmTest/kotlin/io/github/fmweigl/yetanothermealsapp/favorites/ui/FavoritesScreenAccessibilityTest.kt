@@ -83,6 +83,20 @@ class FavoritesScreenAccessibilityTest {
         assertEquals(true, closedWithUndo)
     }
 
+    @Test
+    fun failedRestoreIsReported() = runComposeUiTest {
+        setContent {
+            FavoritesScreen(
+                uiState = FavoritesUiState(Content.Empty, restoreFailed = tarts),
+                onOpenRecipe = {},
+                onRemove = {},
+                onRemovalMessageClosed = {},
+            )
+        }
+
+        onNodeWithText("Couldn't restore Canadian Butter Tarts").assertExists()
+    }
+
     @Composable
     private fun Screen(uiState: FavoritesUiState, onRemovalMessageClosed: (Boolean) -> Unit = {}) {
         FavoritesScreen(

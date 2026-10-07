@@ -14,43 +14,63 @@ import kotlinx.coroutines.flow.update
 import kotlin.time.Instant
 
 /**
- * Keeps the favorites in [favorites], newest first. Reading fails while [readFails] is set
- * (when the flow is collected), writing while [writeError] is set.
+ * Keeps the favorites newest first, each with its save time. Reading fails while [readFails] is
+ * set (when the flow is collected), writing while [writeError] is set, restoring while
+ * [restoreError] is set.
  */
 internal class FakeFavoritesRepository : FavoritesRepository {
-    val favorites = MutableStateFlow<List<Recipe>>(emptyList())
+    private class Entry(val recipe: Recipe, val savedAt: Instant)
+
+    private val entries = MutableStateFlow<List<Entry>>(emptyList())
+    private var clock = 0L
+
+    /** The favorites, newest first; setting them gives them save times in that order. */
+    var favorites: List<Recipe>
+        get() = entries.value.map { it.recipe }
+        set(value) {
+            val base = clock
+            clock += value.size
+            entries.value = value.mapIndexed { index, recipe ->
+                Entry(recipe, Instant.fromEpochMilliseconds(base + value.size - index))
+            }
+        }
+
     var readFails = false
     var writeError: DataError? = null
-
-    private var clock = 0L
-    private val savedAt = mutableMapOf<String, Instant>()
+    var restoreError: DataError? = null
 
     override fun observeFavorites(): Flow<Result<List<Recipe>, DataError>> =
-        if (readFails) flowOf(Result.Failure(DataError.Storage)) else favorites.map { Result.Success(it) }
+        if (readFails) {
+            flowOf(Result.Failure(DataError.Storage))
+        } else {
+            entries.map { list -> Result.Success(list.map { it.recipe }) }
+        }
 
     override fun observeIsFavorite(recipeId: String): Flow<Boolean> =
-        favorites.map { recipes -> recipes.any { it.id == recipeId } }.distinctUntilChanged()
+        entries.map { list -> list.any { it.recipe.id == recipeId } }.distinctUntilChanged()
 
     override suspend fun addFavorite(recipe: Recipe): Result<Unit, DataError> = write {
-        savedAt[recipe.id] = Instant.fromEpochMilliseconds(++clock)
-        favorites.update { recipes -> listOf(recipe) + recipes.filter { it.id != recipe.id } }
+        val entry = Entry(recipe, Instant.fromEpochMilliseconds(++clock))
+        entries.update { list -> listOf(entry) + list.filter { it.recipe.id != recipe.id } }
     }
 
     override suspend fun removeFavorite(recipeId: String): Result<RemovedFavorite, DataError> {
-        val recipes = favorites.value
-        val recipe = recipes.find { it.id == recipeId }
-        if (writeError != null || recipe == null) return Result.Failure(writeError ?: DataError.NotFound)
-        // Recipes put in directly by a test get a save time from their position.
-        recipes.forEachIndexed { index, r -> savedAt.getOrPut(r.id) { Instant.fromEpochMilliseconds(-1L - index) } }
-        favorites.value = recipes.filter { it.id != recipeId }
-        return Result.Success(RemovedFavorite(recipe, savedAt.getValue(recipeId)))
+        val entry = entries.value.find { it.recipe.id == recipeId }
+        if (writeError != null || entry == null) return Result.Failure(writeError ?: DataError.NotFound)
+        entries.update { list -> list.filter { it.recipe.id != recipeId } }
+        return Result.Success(RemovedFavorite(entry.recipe, entry.savedAt))
     }
 
-    override suspend fun restoreFavorite(removed: RemovedFavorite): Result<Unit, DataError> = write {
-        savedAt[removed.recipe.id] = removed.savedAt
-        favorites.update { recipes ->
-            (recipes.filter { it.id != removed.recipe.id } + removed.recipe)
-                .sortedByDescending { savedAt.getValue(it.id) }
+    override suspend fun restoreFavorite(removed: RemovedFavorite): Result<Unit, DataError> {
+        restoreError?.let { return Result.Failure(it) }
+        return write {
+            entries.update { list ->
+                if (list.any { it.recipe.id == removed.recipe.id }) {
+                    list
+                } else {
+                    (list + Entry(removed.recipe, removed.savedAt)).sortedByDescending { it.savedAt }
+                }
+            }
         }
     }
 

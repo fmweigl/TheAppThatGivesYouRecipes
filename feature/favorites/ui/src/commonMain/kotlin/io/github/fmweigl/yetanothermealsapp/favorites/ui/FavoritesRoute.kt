@@ -19,6 +19,7 @@ internal fun FavoritesRoute(
         onOpenRecipe = onOpenRecipe,
         onRemove = viewModel::remove,
         onRemovalMessageClosed = viewModel::removalMessageClosed,
+        onRestoreFailureMessageClosed = viewModel::restoreFailureMessageClosed,
         modifier = modifier,
     )
 }

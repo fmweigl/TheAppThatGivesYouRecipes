@@ -27,11 +27,14 @@ internal class FavoritesViewModel(
 
     private val removed = MutableStateFlow<RecipeTeaser?>(null)
 
+    private val restoreFailed = MutableStateFlow<RecipeTeaser?>(null)
+
     val uiState: StateFlow<FavoritesUiState> =
         combine(
             favoritesRepository.observeFavorites()
                 .map { result -> result.toContent() },
             removed,
+            restoreFailed,
             ::FavoritesUiState,
         ).stateIn(viewModelScope, SharingStarted.Eagerly, FavoritesUiState())
 
@@ -52,8 +55,17 @@ internal class FavoritesViewModel(
         removedFavorite = null
         removed.value = null
         if (undo && favorite != null) {
-            viewModelScope.launch { favoritesRepository.restoreFavorite(favorite) }
+            viewModelScope.launch {
+                if (favoritesRepository.restoreFavorite(favorite) is Result.Failure) {
+                    restoreFailed.value = favorite.recipe.toTeaser()
+                }
+            }
         }
+    }
+
+    /** The "Couldn't restore" message closed. */
+    fun restoreFailureMessageClosed() {
+        restoreFailed.value = null
     }
 }
 

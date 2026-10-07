@@ -17,34 +17,26 @@ internal class FakeFavoritesRepository : FavoritesRepository {
     val favorites = MutableStateFlow<List<Recipe>>(emptyList())
     var writeError: DataError? = null
 
-    private var clock = 0L
-    private val savedAt = mutableMapOf<String, Instant>()
-
     override fun observeFavorites(): Flow<Result<List<Recipe>, DataError>> = favorites.map { Result.Success(it) }
 
     override fun observeIsFavorite(recipeId: String): Flow<Boolean> =
         favorites.map { recipes -> recipes.any { it.id == recipeId } }.distinctUntilChanged()
 
     override suspend fun addFavorite(recipe: Recipe): Result<Unit, DataError> = write {
-        savedAt[recipe.id] = Instant.fromEpochMilliseconds(++clock)
         favorites.update { recipes -> listOf(recipe) + recipes.filter { it.id != recipe.id } }
     }
 
     override suspend fun removeFavorite(recipeId: String): Result<RemovedFavorite, DataError> {
-        val recipes = favorites.value
-        val recipe = recipes.find { it.id == recipeId }
+        val recipe = favorites.value.find { it.id == recipeId }
         if (writeError != null || recipe == null) return Result.Failure(writeError ?: DataError.NotFound)
-        // Recipes put in directly by a test get a save time from their position.
-        recipes.forEachIndexed { index, r -> savedAt.getOrPut(r.id) { Instant.fromEpochMilliseconds(-1L - index) } }
-        favorites.value = recipes.filter { it.id != recipeId }
-        return Result.Success(RemovedFavorite(recipe, savedAt.getValue(recipeId)))
+        favorites.update { recipes -> recipes.filter { it.id != recipeId } }
+        return Result.Success(RemovedFavorite(recipe, Instant.fromEpochMilliseconds(0)))
     }
 
+    /** Simple: no recipe screen restores favorites, so the position doesn't matter. */
     override suspend fun restoreFavorite(removed: RemovedFavorite): Result<Unit, DataError> = write {
-        savedAt[removed.recipe.id] = removed.savedAt
         favorites.update { recipes ->
-            (recipes.filter { it.id != removed.recipe.id } + removed.recipe)
-                .sortedByDescending { savedAt.getValue(it.id) }
+            if (recipes.any { it.id == removed.recipe.id }) recipes else recipes + removed.recipe
         }
     }
 
