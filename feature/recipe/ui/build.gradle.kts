@@ -11,7 +11,6 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.feature.recipe.domain)
 
-            implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.materialIconsCore)
             api(libs.koin.core)
             implementation(libs.coil.compose)
