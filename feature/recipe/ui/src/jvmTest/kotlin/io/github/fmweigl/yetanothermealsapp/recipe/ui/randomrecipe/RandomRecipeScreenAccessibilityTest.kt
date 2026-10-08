@@ -19,7 +19,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollToNode
-import androidx.compose.ui.test.runComposeUiTest
+import androidx.compose.ui.test.runDesktopComposeUiTest
 import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Ingredient
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
@@ -45,7 +45,7 @@ class RandomRecipeScreenAccessibilityTest {
     private fun paneTitle(title: String) = SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, title)
 
     @Test
-    fun recipeNameIsReadOnceAsHeading() = runComposeUiTest {
+    fun recipeNameIsReadOnceAsHeading() = runPhoneTest {
         setContent { Screen(Content.Success(recipe)) }
 
         scrollTo(recipe.name)
@@ -55,7 +55,7 @@ class RandomRecipeScreenAccessibilityTest {
     }
 
     @Test
-    fun sectionTitlesAreHeadings() = runComposeUiTest {
+    fun sectionTitlesAreHeadings() = runPhoneTest {
         setContent { Screen(Content.Success(recipe)) }
 
         scrollTo("Ingredients")
@@ -65,7 +65,7 @@ class RandomRecipeScreenAccessibilityTest {
     }
 
     @Test
-    fun eachIngredientIsOneElement() = runComposeUiTest {
+    fun eachIngredientIsOneElement() = runPhoneTest {
         setContent { Screen(Content.Success(recipe)) }
 
         scrollTo("Clotted Cream")
@@ -74,7 +74,7 @@ class RandomRecipeScreenAccessibilityTest {
     }
 
     @Test
-    fun favoriteButtonIsLabeledAndReportsItsState() = runComposeUiTest {
+    fun favoriteButtonIsLabeledAndReportsItsState() = runPhoneTest {
         var isFavorite by mutableStateOf(false)
         setContent { Screen(Content.Success(recipe), isFavorite = isFavorite) }
 
@@ -85,25 +85,46 @@ class RandomRecipeScreenAccessibilityTest {
     }
 
     @Test
-    fun recipeIsAnnouncedWhenItAppears() = runComposeUiTest {
+    fun recipeIsAnnouncedWhenItAppears() = runPhoneTest {
         setContent { Screen(Content.Success(recipe)) }
 
         onNode(paneTitle(recipe.name)).assertExists()
     }
 
     @Test
-    fun errorIsAnnouncedWhenItAppears() = runComposeUiTest {
+    fun errorIsAnnouncedWhenItAppears() = runPhoneTest {
         setContent { Screen(Content.Error(DataError.NoConnection)) }
 
         onNode(paneTitle("Could not reach TheMealDB. Check your connection.")).assertExists()
     }
 
     @Test
-    fun loadingIndicatorIsDescribed() = runComposeUiTest {
+    fun loadingIndicatorIsDescribed() = runPhoneTest {
         setContent { Screen(Content.Loading) }
 
         onNodeWithContentDescription("Loading").assertExists()
     }
+
+    @Test
+    fun twoPanesKeepHeadingsAndIngredients() = runTabletLandscapeTest {
+        setContent { Screen(Content.Success(recipe)) }
+
+        onNode(paneTitle(recipe.name)).assertExists()
+        onAllNodesWithText(recipe.name).assertCountEquals(1)
+        onNodeWithText(recipe.name).assert(isHeading)
+        onNodeWithText("Ingredients").assert(isHeading)
+        onNodeWithText("Instructions").assert(isHeading)
+        onNodeWithText("Clotted Cream").assert(hasText("227g"))
+        onNodeWithContentDescription("Favorite").assertIsOff()
+    }
+
+    /** A phone in portrait: the compact layout, one column. */
+    private fun runPhoneTest(block: suspend ComposeUiTest.() -> Unit) =
+        runDesktopComposeUiTest(width = 411, height = 891) { block() }
+
+    /** A 10-inch tablet in landscape: the expanded layout, two panes. */
+    private fun runTabletLandscapeTest(block: suspend ComposeUiTest.() -> Unit) =
+        runDesktopComposeUiTest(width = 1280, height = 800) { block() }
 
     /** The recipe's image fills the test window, so the lazy list only composes what's scrolled to. */
     private fun ComposeUiTest.scrollTo(text: String) {

@@ -5,13 +5,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +29,7 @@ import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import coil3.compose.AsyncImage
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.Res
@@ -29,7 +37,22 @@ import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.ingredients
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.instructions
 import org.jetbrains.compose.resources.stringResource
 
-/** The whole recipe: image, name with the [FavoriteButton], ingredients and instructions. */
+/** Medium windows (tablets in portrait) show the single column at most this wide, centered. */
+private val MaxColumnWidth = 640.dp
+
+/** The image on medium windows and in the two-pane layout: wider than tall, so the name stays in view. */
+private const val WIDE_IMAGE_ASPECT_RATIO = 4f / 3f
+
+/** Share of the window's width the image pane gets in the two-pane layout. */
+private const val IMAGE_PANE_WEIGHT = 0.4f
+
+/**
+ * The whole recipe: image, name with the [FavoriteButton], ingredients and instructions. Its layout
+ * follows the window's width class: one column on compact windows (phones in portrait), the same
+ * column centered and with a wider image on medium ones (tablets in portrait), and on expanded ones
+ * (tablets and phones in landscape) two panes, image and name next to ingredients and instructions,
+ * each scrolling on its own.
+ */
 @Composable
 internal fun RecipeDetails(
     recipe: Recipe,
@@ -37,71 +60,147 @@ internal fun RecipeDetails(
     onToggleFavorite: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    // Announced by screen readers when the recipe appears (the focus stays where it was, e.g. on "Next").
+    val paneModifier = modifier.fillMaxSize().semantics { paneTitle = recipe.name }
+    when {
+        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) ->
+            TwoPaneRecipe(recipe, isFavorite, onToggleFavorite, paneModifier)
+        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) ->
+            SingleColumnRecipe(
+                recipe,
+                isFavorite,
+                onToggleFavorite,
+                imageAspectRatio = WIDE_IMAGE_ASPECT_RATIO,
+                modifier = paneModifier,
+                itemModifier = Modifier.widthIn(max = MaxColumnWidth),
+            )
+        else -> SingleColumnRecipe(recipe, isFavorite, onToggleFavorite, imageAspectRatio = 1f, paneModifier)
+    }
+}
+
+/** One scrolling column. [itemModifier] goes on every item, before it fills the width. */
+@Composable
+private fun SingleColumnRecipe(
+    recipe: Recipe,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit,
+    imageAspectRatio: Float,
+    modifier: Modifier,
+    itemModifier: Modifier = Modifier,
+) {
     LazyColumn(
-        // Announced by screen readers when the recipe appears (the focus stays where it was, e.g. on "Next").
-        modifier = modifier.fillMaxSize().semantics { paneTitle = recipe.name },
+        modifier = modifier,
         state = rememberLazyListState(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        item {
-            AsyncImage(
-                model = recipe.imageUrl,
-                // Decorative: the recipe's name follows right below.
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .clip(MaterialTheme.shapes.large),
-            )
+        val fullWidth = itemModifier.fillMaxWidth()
+        item { RecipeImage(recipe, imageAspectRatio, fullWidth) }
+        item { RecipeTitle(recipe, isFavorite, onToggleFavorite, fullWidth) }
+        recipeBody(recipe, fullWidth)
+    }
+}
+
+/** Image and name on the start side, ingredients and instructions on the end side. */
+@Composable
+private fun TwoPaneRecipe(
+    recipe: Recipe,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit,
+    modifier: Modifier,
+) {
+    Row(modifier) {
+        Column(
+            modifier = Modifier
+                .weight(IMAGE_PANE_WEIGHT)
+                .fillMaxHeight()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            RecipeImage(recipe, WIDE_IMAGE_ASPECT_RATIO, Modifier.fillMaxWidth())
+            RecipeTitle(recipe, isFavorite, onToggleFavorite)
         }
-        item {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        recipe.name,
-                        style = MaterialTheme.typography.headlineMedium,
-                        modifier = Modifier.semantics { heading() },
-                    )
-                    val subtitle = listOfNotNull(recipe.category, recipe.area).joinToString(" · ")
-                    if (subtitle.isNotEmpty()) {
-                        Text(
-                            subtitle,
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                FavoriteButton(isFavorite = isFavorite, onToggle = onToggleFavorite)
-            }
-        }
-        if (recipe.ingredients.isNotEmpty()) {
-            item { SectionTitle(stringResource(Res.string.ingredients)) }
-            items(recipe.ingredients) { ingredient ->
-                // One element for screen readers: "Sushi Rice, 300ml".
-                Row(
-                    modifier = Modifier.semantics(mergeDescendants = true) {},
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(ingredient.name, modifier = Modifier.weight(1f))
-                    Text(ingredient.measure, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-        }
-        recipe.instructions?.let { instructions ->
-            item { SectionTitle(stringResource(Res.string.instructions)) }
-            item { Text(instructions) }
+        LazyColumn(
+            modifier = Modifier.weight(1f - IMAGE_PANE_WEIGHT).fillMaxHeight(),
+            state = rememberLazyListState(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            recipeBody(recipe, Modifier.fillMaxWidth())
         }
     }
 }
 
 @Composable
-private fun SectionTitle(text: String) {
+private fun RecipeImage(recipe: Recipe, aspectRatio: Float, modifier: Modifier) {
+    AsyncImage(
+        model = recipe.imageUrl,
+        // Decorative: the recipe's name follows right below.
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = modifier
+            .aspectRatio(aspectRatio)
+            .clip(MaterialTheme.shapes.large),
+    )
+}
+
+@Composable
+private fun RecipeTitle(
+    recipe: Recipe,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            Text(
+                recipe.name,
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.semantics { heading() },
+            )
+            val subtitle = listOfNotNull(recipe.category, recipe.area).joinToString(" · ")
+            if (subtitle.isNotEmpty()) {
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        FavoriteButton(isFavorite = isFavorite, onToggle = onToggleFavorite)
+    }
+}
+
+/** Ingredients and instructions, each item with [itemModifier]. */
+private fun LazyListScope.recipeBody(recipe: Recipe, itemModifier: Modifier) {
+    if (recipe.ingredients.isNotEmpty()) {
+        item { SectionTitle(stringResource(Res.string.ingredients), itemModifier) }
+        items(recipe.ingredients) { ingredient ->
+            // One element for screen readers: "Sushi Rice, 300ml".
+            Row(
+                modifier = itemModifier.semantics(mergeDescendants = true) {},
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(ingredient.name, modifier = Modifier.weight(1f))
+                Text(ingredient.measure, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+    recipe.instructions?.let { instructions ->
+        item { SectionTitle(stringResource(Res.string.instructions), itemModifier) }
+        item { Text(instructions, itemModifier) }
+    }
+}
+
+@Composable
+private fun SectionTitle(text: String, modifier: Modifier) {
     Text(
         text,
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold,
-        modifier = Modifier.semantics { heading() },
+        modifier = modifier.semantics { heading() },
     )
 }
