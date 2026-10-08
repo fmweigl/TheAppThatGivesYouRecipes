@@ -2,15 +2,18 @@ package io.github.fmweigl.yetanothermealsapp.favorites.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
@@ -33,11 +36,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.CollectionInfo
+import androidx.compose.ui.semantics.CollectionItemInfo
+import androidx.compose.ui.semantics.collectionInfo
+import androidx.compose.ui.semantics.collectionItemInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.FavoritesUiState.Content
@@ -142,29 +151,65 @@ private fun Message(text: StringResource, isError: Boolean = false) {
     )
 }
 
+/** Cards are at least this wide (at the default font size): one column on phones in portrait. */
+private val MinCardWidth = 320.dp
+
+private val ListPadding = 16.dp
+private val CardSpacing = 12.dp
+
+/**
+ * As many columns as cards of [MinCardWidth] fit, e.g. one on phones and 7-inch tablets in
+ * portrait, two on 10-inch tablets in portrait and larger phones in landscape, three on tablets in
+ * landscape. Cards grow with the font size, so large text gets fewer, wider columns.
+ *
+ * The column count is computed here rather than with `GridCells.Adaptive` so the grid can tell
+ * screen readers its size: a lazy grid, unlike a lazy column, reports no item count of its own.
+ */
 @Composable
 private fun FavoritesList(
     teasers: List<RecipeTeaser>,
     onOpenRecipe: (recipeId: String) -> Unit,
     onRemove: (recipeId: String) -> Unit,
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        items(teasers, key = { it.id }) { teaser ->
-            TeaserCard(
-                teaser = teaser,
-                onClick = { onOpenRecipe(teaser.id) },
-                onRemove = { onRemove(teaser.id) },
-                modifier = Modifier.animateItem(),
-            )
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val minCardWidth = MinCardWidth * LocalDensity.current.fontScale.coerceAtLeast(1f)
+        val columns = ((maxWidth - ListPadding * 2 + CardSpacing) / (minCardWidth + CardSpacing)).toInt()
+            .coerceAtLeast(1)
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(columns),
+            modifier = Modifier.fillMaxSize().semantics {
+                val rows = (teasers.size + columns - 1) / columns
+                collectionInfo = CollectionInfo(rowCount = rows, columnCount = columns)
+            },
+            contentPadding = PaddingValues(ListPadding),
+            verticalArrangement = Arrangement.spacedBy(CardSpacing),
+            horizontalArrangement = Arrangement.spacedBy(CardSpacing),
+        ) {
+            itemsIndexed(teasers, key = { _, teaser -> teaser.id }) { index, teaser ->
+                TeaserCard(
+                    teaser = teaser,
+                    onClick = { onOpenRecipe(teaser.id) },
+                    onRemove = { onRemove(teaser.id) },
+                    modifier = Modifier.animateItem().semantics {
+                        collectionItemInfo = CollectionItemInfo(
+                            rowIndex = index / columns,
+                            rowSpan = 1,
+                            columnIndex = index % columns,
+                            columnSpan = 1,
+                        )
+                    },
+                )
+            }
         }
     }
 }
 
-/** One element for screen readers ("‹name›, ‹category · area›"), with the remove button as a separate one. */
+/**
+ * One element for screen readers ("‹name›, ‹category · area›"), with the remove button as a separate
+ * one. The name takes at most two lines and the subtitle one (cut off with "…" if longer; screen
+ * readers still get the whole text), and the text always gets room for all three lines, centered,
+ * so every card is equally tall.
+ */
 @Composable
 private fun TeaserCard(
     teaser: RecipeTeaser,
@@ -185,13 +230,29 @@ private fun TeaserCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.size(72.dp).clip(MaterialTheme.shapes.medium),
             )
-            Column(Modifier.weight(1f)) {
-                Text(teaser.name, style = MaterialTheme.typography.titleMedium)
+            val nameStyle = MaterialTheme.typography.titleMedium
+            val subtitleStyle = MaterialTheme.typography.bodyMedium
+            // Two lines of name and one of subtitle (in dp, so it follows the font size).
+            val fixedTextHeight = with(LocalDensity.current) {
+                (nameStyle.lineHeight * 2).toDp() + subtitleStyle.lineHeight.toDp()
+            }
+            Column(
+                modifier = Modifier.weight(1f).heightIn(min = fixedTextHeight),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    teaser.name,
+                    style = nameStyle,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
                 teaser.subtitle?.let {
                     Text(
                         it,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = subtitleStyle,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
