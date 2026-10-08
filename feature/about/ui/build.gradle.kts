@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "io.github.fmweigl.yetanothermealsapp.about.ui"
+        namespace = "io.github.fmweigl.theappthatgivesyourecipes.about.ui"
     }
 
     sourceSets {
@@ -15,5 +15,5 @@ kotlin {
 }
 
 compose.resources {
-    packageOfResClass = "io.github.fmweigl.yetanothermealsapp.about.ui.resources"
+    packageOfResClass = "io.github.fmweigl.theappthatgivesyourecipes.about.ui.resources"
 }

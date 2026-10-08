@@ -1,11 +1,11 @@
-import io.github.fmweigl.yetanothermealsapp.buildlogic.theMealDbApiKeySource
+import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.theMealDbApiKeySource
 
 plugins {
     id("meals.kmp.data")
 }
 
 kotlin {
-    theMealDbApiKeySource(project, packageName = "io.github.fmweigl.yetanothermealsapp.core.network")
+    theMealDbApiKeySource(project, packageName = "io.github.fmweigl.theappthatgivesyourecipes.core.network")
 
     sourceSets {
         commonMain.dependencies {

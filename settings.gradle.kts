@@ -1,4 +1,4 @@
-rootProject.name = "YetAnotherMealsApp"
+rootProject.name = "TheAppThatGivesYouRecipes"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

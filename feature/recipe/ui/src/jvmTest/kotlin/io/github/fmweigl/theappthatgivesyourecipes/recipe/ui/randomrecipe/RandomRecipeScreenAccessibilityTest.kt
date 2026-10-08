@@ -1,0 +1,178 @@
+package io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.randomrecipe
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.requestFocus
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollToNode
+import io.github.fmweigl.theappthatgivesyourecipes.core.domain.DataError
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.domain.model.Ingredient
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.domain.model.Recipe
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.randomrecipe.RandomRecipeUiState.Content
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runPhoneTest
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runSmallPhoneLandscapeTest
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runTabletLandscapeTest
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runTabletPortraitTest
+import kotlin.test.Test
+
+/** What screen readers get from [RandomRecipeScreen] (the merged semantics tree). */
+@OptIn(ExperimentalTestApi::class)
+class RandomRecipeScreenAccessibilityTest {
+
+    private val recipe = Recipe(
+        id = "1",
+        name = "Fettucine alfredo",
+        category = "Pasta",
+        area = "Italian",
+        instructions = "Cook the pasta.",
+        imageUrl = null,
+        ingredients = listOf(Ingredient("Clotted Cream", "227g"), Ingredient("Butter", "25g")),
+    )
+
+    private val isHeading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
+
+    private fun paneTitle(title: String) = SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, title)
+
+    @Test
+    fun recipeNameIsReadOnceAsHeading() = runPhoneTest {
+        setContent { Screen(Content.Success(recipe)) }
+
+        scrollTo(recipe.name)
+        onAllNodesWithText(recipe.name).assertCountEquals(1)
+        onAllNodesWithContentDescription(recipe.name).assertCountEquals(0)
+        onNodeWithText(recipe.name).assert(isHeading)
+    }
+
+    @Test
+    fun sectionTitlesAreHeadings() = runPhoneTest {
+        setContent { Screen(Content.Success(recipe)) }
+
+        scrollTo("Ingredients")
+        onNodeWithText("Ingredients").assert(isHeading)
+        scrollTo("Instructions")
+        onNodeWithText("Instructions").assert(isHeading)
+    }
+
+    @Test
+    fun eachIngredientIsOneElement() = runPhoneTest {
+        setContent { Screen(Content.Success(recipe)) }
+
+        scrollTo("Clotted Cream")
+        onAllNodesWithText("Clotted Cream").assertCountEquals(1)
+        onNodeWithText("Clotted Cream").assert(hasText("227g"))
+    }
+
+    @Test
+    fun favoriteButtonIsLabeledAndReportsItsState() = runPhoneTest {
+        var isFavorite by mutableStateOf(false)
+        setContent { Screen(Content.Success(recipe), isFavorite = isFavorite) }
+
+        scrollTo(recipe.name)
+        onNodeWithContentDescription("Favorite").assertIsOff()
+        isFavorite = true
+        onNodeWithContentDescription("Favorite").assertIsOn()
+    }
+
+    @Test
+    fun recipeIsAnnouncedWhenItAppears() = runPhoneTest {
+        setContent { Screen(Content.Success(recipe)) }
+
+        onNode(paneTitle(recipe.name)).assertExists()
+    }
+
+    @Test
+    fun errorIsAnnouncedWhenItAppears() = runPhoneTest {
+        setContent { Screen(Content.Error(DataError.NoConnection)) }
+
+        onNode(paneTitle("Could not reach TheMealDB. Check your connection.")).assertExists()
+    }
+
+    @Test
+    fun loadingIndicatorIsDescribed() = runPhoneTest {
+        setContent { Screen(Content.Loading) }
+
+        onNodeWithContentDescription("Loading").assertExists()
+    }
+
+    @Test
+    fun twoPanesKeepHeadingsAndIngredients() = runTabletLandscapeTest {
+        setContent { Screen(Content.Success(recipe)) }
+
+        onNode(paneTitle(recipe.name)).assertExists()
+        onAllNodesWithText(recipe.name).assertCountEquals(1)
+        onNodeWithText(recipe.name).assert(isHeading)
+        onNodeWithText("Ingredients").assert(isHeading)
+        onNodeWithText("Instructions").assert(isHeading)
+        onNodeWithText("Clotted Cream").assert(hasText("227g"))
+        onNodeWithContentDescription("Favorite").assertIsOff()
+    }
+
+    @Test
+    fun centeredColumnKeepsHeadingsAndIngredients() = runTabletPortraitTest {
+        setContent { Screen(Content.Success(recipe)) }
+
+        onNode(paneTitle(recipe.name)).assertExists()
+        scrollTo(recipe.name)
+        onAllNodesWithText(recipe.name).assertCountEquals(1)
+        onNodeWithText(recipe.name).assert(isHeading)
+        scrollTo("Ingredients")
+        onNodeWithText("Ingredients").assert(isHeading)
+        scrollTo("Clotted Cream")
+        onNodeWithText("Clotted Cream").assert(hasText("227g"))
+    }
+
+    @Test
+    fun shortWindowShowsNameAndFavoriteWithoutScrolling() = runSmallPhoneLandscapeTest {
+        setContent { Screen(Content.Success(recipe)) }
+
+        onNodeWithText(recipe.name).assertIsDisplayed()
+        onNodeWithContentDescription("Favorite").assertIsDisplayed()
+    }
+
+    @Test
+    fun ingredientsPaneScrollsWithTheKeyboard() = runTabletLandscapeTest {
+        val longRecipe = recipe.copy(ingredients = List(40) { Ingredient("Ingredient $it", "$it g") })
+        setContent { Screen(Content.Success(longRecipe)) }
+        onNodeWithText("Instructions").assertDoesNotExist()
+
+        val ingredientsPane = onNode(hasScrollAction() and SemanticsMatcher.keyIsDefined(SemanticsProperties.Focused))
+        ingredientsPane.requestFocus()
+        repeat(times = 6) { ingredientsPane.performKeyInput { pressKey(Key.PageDown) } }
+
+        onNodeWithText("Instructions").assertIsDisplayed()
+    }
+
+    /** The recipe's image fills the test window, so the lazy list only composes what's scrolled to. */
+    private fun ComposeUiTest.scrollTo(text: String) {
+        onNode(hasScrollAction()).performScrollToNode(hasText(text))
+    }
+
+    @Composable
+    private fun Screen(content: Content, isFavorite: Boolean = false) {
+        RandomRecipeScreen(
+            uiState = RandomRecipeUiState(content = content, isFavorite = isFavorite),
+            onShowNext = {},
+            onShowPrevious = {},
+            onToggleFavorite = {},
+        )
+    }
+}

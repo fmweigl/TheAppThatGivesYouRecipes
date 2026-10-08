@@ -1,14 +1,16 @@
-[![CI](https://github.com/fmweigl/YetAnotherMealApp/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/fmweigl/YetAnotherMealApp/actions/workflows/ci.yml)
+[![CI](https://github.com/fmweigl/TheAppThatGivesYouRecipes/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/fmweigl/TheAppThatGivesYouRecipes/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
-![Kotlin](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffmweigl%2FYetAnotherMealApp%2Fmaster%2Fgradle%2Flibs.versions.toml&query=%24.versions.kotlin&label=Kotlin&logo=kotlin&color=7F52FF)
-![Compose Multiplatform](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffmweigl%2FYetAnotherMealApp%2Fmaster%2Fgradle%2Flibs.versions.toml&query=%24.versions.composeMultiplatform&label=Compose%20Multiplatform&logo=jetpackcompose&color=4285F4)
+![Kotlin](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffmweigl%2FTheAppThatGivesYouRecipes%2Fmaster%2Fgradle%2Flibs.versions.toml&query=%24.versions.kotlin&label=Kotlin&logo=kotlin&color=7F52FF)
+![Compose Multiplatform](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffmweigl%2FTheAppThatGivesYouRecipes%2Fmaster%2Fgradle%2Flibs.versions.toml&query=%24.versions.composeMultiplatform&label=Compose%20Multiplatform&logo=jetpackcompose&color=4285F4)
 ![Platforms](https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Desktop-4C6B30)
 ![API](https://img.shields.io/badge/API-24%2B-A8401E?logo=android)
 ![No tracking](https://img.shields.io/badge/tracking-none-4C6B30)
 [![Recipes by TheMealDB](https://img.shields.io/badge/recipes-TheMealDB-F2BF48)](https://www.themealdb.com)
 ![detekt](https://img.shields.io/badge/code%20style-detekt-orange)
 
-This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
+# The App That Gives You Recipes
+
+Random recipe ideas from TheMealDB, with favorites saved on your device. A Kotlin Multiplatform project targeting Android, iOS and Desktop (JVM).
 
 * [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
   you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
@@ -66,7 +68,7 @@ The app collects no personal data. See the [privacy policy](./PRIVACY.md).
 This app is open source, licensed under the [Apache License 2.0](./LICENSE).
 
 ```
-Copyright 2026 The YetAnotherMealsApp contributors
+Copyright 2026 The App That Gives You Recipes contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

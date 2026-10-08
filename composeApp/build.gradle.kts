@@ -1,6 +1,6 @@
-import io.github.fmweigl.yetanothermealsapp.buildlogic.androidLibraryDefaults
-import io.github.fmweigl.yetanothermealsapp.buildlogic.requireTheMealDbProductionKey
-import io.github.fmweigl.yetanothermealsapp.buildlogic.sharedKmpTargets
+import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.androidLibraryDefaults
+import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.requireTheMealDbProductionKey
+import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.sharedKmpTargets
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
@@ -25,7 +25,7 @@ kotlin {
     }
 
     android {
-        namespace = "io.github.fmweigl.yetanothermealsapp.composeapp"
+        namespace = "io.github.fmweigl.theappthatgivesyourecipes.composeapp"
         // Needed to package the Compose resources (aboutlibraries.json) into the Android app.
         androidResources.enable = true
     }

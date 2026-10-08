@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">YetAnotherMealsApp</string>
+    <string name="app_name">The App That Gives You Recipes</string>
+    <!-- The full name doesn't fit under the launcher icon. -->
+    <string name="launcher_label">TATGYR</string>
 </resources>

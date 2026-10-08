@@ -5,22 +5,13 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group
-        android:pivotX="54"
-        android:pivotY="54"
-        android:scaleX="0.85"
-        android:scaleY="0.85">
-        <path
-            android:pathData="M54,80V61C54,50 39,49 39,31M54,61C54,50 69,49 69,31"
-            android:strokeColor="#FFF8F0"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round"
-            android:strokeWidth="7.5" />
+    <group android:translateY="1.25">
         <path
             android:fillColor="#FFF8F0"
-            android:pathData="M54,55.5a5.5,5.5 0,1 1,0 11a5.5,5.5 0,1 1,0 -11z" />
+            android:fillType="evenOdd"
+            android:pathData="M43,57A9,9 0,0 1,42.898 39.001A11.5,11.5 0,0 1,65.102 39.001A9,9 0,0 1,65 57V64Q65,66 63,66H45Q43,66 43,64Z M48.4,56A1.1,1.1 0,0 1,50.6 56V63A1.1,1.1 0,0 1,48.4 63Z M57.4,56A1.1,1.1 0,0 1,59.6 56V63A1.1,1.1 0,0 1,57.4 63Z" />
         <path
             android:fillColor="#F2BF48"
-            android:pathData="M69,31c4.5,-4.5 10,-4 12,0c-4,3 -8.5,3 -12,0z" />
+            android:pathData="M44,68H64A2,2 0,0 1,66 70V73A2,2 0,0 1,64 75H44A2,2 0,0 1,42 73V70A2,2 0,0 1,44 68Z" />
     </group>
 </vector>

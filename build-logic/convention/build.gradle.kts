@@ -22,27 +22,27 @@ gradlePlugin {
     plugins {
         register("kmpDomain") {
             id = "meals.kmp.domain"
-            implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.KmpDomainConventionPlugin"
+            implementationClass = "io.github.fmweigl.theappthatgivesyourecipes.buildlogic.KmpDomainConventionPlugin"
         }
         register("kmpData") {
             id = "meals.kmp.data"
-            implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.KmpDataConventionPlugin"
+            implementationClass = "io.github.fmweigl.theappthatgivesyourecipes.buildlogic.KmpDataConventionPlugin"
         }
         register("kmpRoom") {
             id = "meals.kmp.room"
-            implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.KmpRoomConventionPlugin"
+            implementationClass = "io.github.fmweigl.theappthatgivesyourecipes.buildlogic.KmpRoomConventionPlugin"
         }
         register("detekt") {
             id = "meals.detekt"
-            implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.DetektConventionPlugin"
+            implementationClass = "io.github.fmweigl.theappthatgivesyourecipes.buildlogic.DetektConventionPlugin"
         }
         register("kmpCompose") {
             id = "meals.kmp.compose"
-            implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.KmpComposeConventionPlugin"
+            implementationClass = "io.github.fmweigl.theappthatgivesyourecipes.buildlogic.KmpComposeConventionPlugin"
         }
         register("kmpFeatureUi") {
             id = "meals.kmp.feature.ui"
-            implementationClass = "io.github.fmweigl.yetanothermealsapp.buildlogic.KmpFeatureUiConventionPlugin"
+            implementationClass = "io.github.fmweigl.theappthatgivesyourecipes.buildlogic.KmpFeatureUiConventionPlugin"
         }
     }
 }

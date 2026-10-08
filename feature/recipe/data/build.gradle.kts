@@ -4,7 +4,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "io.github.fmweigl.yetanothermealsapp.recipe.data"
+        namespace = "io.github.fmweigl.theappthatgivesyourecipes.recipe.data"
     }
 
     sourceSets {
