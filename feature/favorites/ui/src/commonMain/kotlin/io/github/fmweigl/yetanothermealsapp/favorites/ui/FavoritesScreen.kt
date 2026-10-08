@@ -1,6 +1,8 @@
 package io.github.fmweigl.yetanothermealsapp.favorites.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -96,7 +98,7 @@ internal fun FavoritesScreen(
                         Modifier.align(Alignment.Center).semantics { contentDescription = loading },
                     )
                 }
-                Content.Empty -> Message(Res.string.no_favorites)
+                Content.Empty -> EmptyMessage()
                 Content.Error -> Message(Res.string.favorites_error, isError = true)
                 is Content.Favorites -> FavoritesList(content.teasers, onOpenRecipe, onRemove)
             }
@@ -149,6 +151,40 @@ private fun Message(text: StringResource, isError: Boolean = false) {
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxSize().padding(32.dp).semantics { paneTitle = message },
     )
+}
+
+/** Room for the illustration (about 164dp), the gap, two lines of text and the padding. */
+private val MinIllustratedHeight = 360.dp
+
+/**
+ * [EmptyFavoritesIllustration] above the "No favorites yet" text, announced like [Message],
+ * centered. The illustration is decorative, so a window shorter than [MinIllustratedHeight] (a
+ * phone in landscape) shows only the text; with very large text the column scrolls, so nothing
+ * gets squeezed away.
+ */
+@Composable
+private fun EmptyMessage() {
+    val message = stringResource(Res.string.no_favorites)
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val showIllustration = maxHeight >= MinIllustratedHeight
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .heightIn(min = maxHeight)
+                .padding(32.dp)
+                .semantics { paneTitle = message },
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically),
+        ) {
+            if (showIllustration) EmptyFavoritesIllustration()
+            Text(
+                message,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
 }
 
 /** Cards are at least this wide (at the default font size): one column on phones in portrait. */
