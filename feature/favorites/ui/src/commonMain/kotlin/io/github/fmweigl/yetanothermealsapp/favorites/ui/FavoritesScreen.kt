@@ -9,8 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
@@ -142,16 +143,25 @@ private fun Message(text: StringResource, isError: Boolean = false) {
     )
 }
 
+/** Cards are at least this wide: one column on phones in portrait, more where they fit. */
+private val MinCardWidth = 320.dp
+
+/**
+ * As many columns as cards of [MinCardWidth] fit: one on phones and 7-inch tablets in portrait, two
+ * on 10-inch tablets in portrait and phones in landscape, three on tablets in landscape.
+ */
 @Composable
 private fun FavoritesList(
     teasers: List<RecipeTeaser>,
     onOpenRecipe: (recipeId: String) -> Unit,
     onRemove: (recipeId: String) -> Unit,
 ) {
-    LazyColumn(
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = MinCardWidth),
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(teasers, key = { it.id }) { teaser ->
             TeaserCard(

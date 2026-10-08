@@ -15,6 +15,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
+import androidx.compose.ui.test.runDesktopComposeUiTest
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.FavoritesUiState.Content
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -33,6 +34,30 @@ class FavoritesScreenAccessibilityTest {
         SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite)
 
     private fun paneTitle(title: String) = SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, title)
+
+    private val teasers = listOf(
+        tarts,
+        RecipeTeaser("1", "Shakshuka", "Vegetarian · Tunisian", imageUrl = null),
+        RecipeTeaser("2", "Spaghetti al pomodoro", "Pasta · Italian", imageUrl = null),
+    )
+
+    @Test
+    fun phoneStacksTheCards() = runDesktopComposeUiTest(width = 411, height = 891) {
+        setContent { Screen(FavoritesUiState(Content.Favorites(teasers))) }
+
+        val tops = teasers.map { onNodeWithText(it.name).fetchSemanticsNode().boundsInRoot.top }
+        assertEquals(tops.sorted(), tops)
+        assertEquals(teasers.size, tops.distinct().size)
+    }
+
+    @Test
+    fun tabletInLandscapeShowsThreeCardsPerRowInReadingOrder() = runDesktopComposeUiTest(width = 1280, height = 800) {
+        setContent { Screen(FavoritesUiState(Content.Favorites(teasers))) }
+
+        val bounds = teasers.map { onNodeWithText(it.name).fetchSemanticsNode().boundsInRoot }
+        assertEquals(1, bounds.map { it.top }.distinct().size)
+        assertEquals(bounds.sortedBy { it.left }, bounds)
+    }
 
     @Test
     fun titleIsHeading() = runComposeUiTest {
