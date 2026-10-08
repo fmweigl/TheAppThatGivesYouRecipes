@@ -121,9 +121,9 @@ class FavoritesScreenAccessibilityTest {
     fun emptyStateIllustrationIsSkippedByScreenReaders() = runComposeUiTest {
         setContent { Screen(FavoritesUiState(Content.Empty)) }
 
-        // Only the title: the illustration's "Favorites" tab label isn't read.
-        onAllNodesWithText("Favorites").assertCountEquals(1)
+        // The illustration's heart isn't read; the text is.
         onAllNodesWithContentDescription("Favorite", substring = true).assertCountEquals(0)
+        onNodeWithText("No favorites yet. Tap the heart on a recipe to save it.").assertExists()
     }
 
     @Test
