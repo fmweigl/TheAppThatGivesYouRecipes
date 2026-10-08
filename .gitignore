@@ -24,3 +24,6 @@ node_modules/
 
 # Python bytecode (art/ scripts)
 __pycache__/
+
+# Git worktrees created by Claude Code agents
+.claude/worktrees/
