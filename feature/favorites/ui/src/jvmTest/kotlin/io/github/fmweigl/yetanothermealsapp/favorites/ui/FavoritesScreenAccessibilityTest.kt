@@ -1,6 +1,7 @@
 package io.github.fmweigl.yetanothermealsapp.favorites.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -33,6 +34,16 @@ class FavoritesScreenAccessibilityTest {
     private val isPoliteLiveRegion =
         SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite)
 
+    private fun collection(rows: Int, columns: Int) = SemanticsMatcher("$rows×$columns collection") {
+        val info = it.config.getOrNull(SemanticsProperties.CollectionInfo)
+        info?.rowCount == rows && info.columnCount == columns
+    }
+
+    private fun collectionItem(row: Int, column: Int) = SemanticsMatcher("collection item ($row, $column)") {
+        val info = it.config.getOrNull(SemanticsProperties.CollectionItemInfo)
+        info?.rowIndex == row && info.columnIndex == column
+    }
+
     private fun paneTitle(title: String) = SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, title)
 
     private val teasers = listOf(
@@ -57,6 +68,23 @@ class FavoritesScreenAccessibilityTest {
         val bounds = teasers.map { onNodeWithText(it.name).fetchSemanticsNode().boundsInRoot }
         assertEquals(1, bounds.map { it.top }.distinct().size)
         assertEquals(bounds.sortedBy { it.left }, bounds)
+    }
+
+    @Test
+    fun gridTellsScreenReadersItsSize() = runDesktopComposeUiTest(width = 1280, height = 800) {
+        val more = teasers.map { it.copy(id = it.id + "b", name = it.name + " II") }
+        setContent { Screen(FavoritesUiState(Content.Favorites(teasers + more))) }
+
+        onNode(collection(rows = 2, columns = 3)).assertExists()
+        onNodeWithText("Shakshuka").assert(collectionItem(row = 0, column = 1))
+        onNodeWithText("Shakshuka II").assert(collectionItem(row = 1, column = 1))
+    }
+
+    @Test
+    fun phoneListTellsScreenReadersItsSize() = runDesktopComposeUiTest(width = 411, height = 891) {
+        setContent { Screen(FavoritesUiState(Content.Favorites(teasers))) }
+
+        onNode(collection(rows = 3, columns = 1)).assertExists()
     }
 
     @Test
