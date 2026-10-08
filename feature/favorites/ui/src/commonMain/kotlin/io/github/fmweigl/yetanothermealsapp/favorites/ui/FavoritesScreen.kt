@@ -17,7 +17,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -242,9 +242,10 @@ private fun FavoritesList(
 
 /**
  * One element for screen readers ("‹name›, ‹category · area›"), with the remove button as a separate
- * one. The name takes at most two lines and the subtitle one (cut off with "…" if longer; screen
- * readers still get the whole text), and the text always gets room for all three lines, centered,
- * so every card is equally tall.
+ * one: a filled heart, as on a saved recipe, that removes the recipe from favorites. The name takes
+ * at most two lines and the subtitle one (cut off with "…" if longer; screen readers still get the
+ * whole text), and the text always gets room for all three lines, centered, so every card is
+ * equally tall.
  */
 @Composable
 private fun TeaserCard(
@@ -293,7 +294,11 @@ private fun TeaserCard(
                 }
             }
             IconButton(onClick = onRemove) {
-                Icon(Icons.Filled.Delete, contentDescription = stringResource(Res.string.remove_favorite, teaser.name))
+                Icon(
+                    Icons.Filled.Favorite,
+                    contentDescription = stringResource(Res.string.remove_favorite, teaser.name),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
             }
         }
     }
