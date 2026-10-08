@@ -29,6 +29,8 @@ Static analysis: detekt (`./gradlew detekt`, also part of `check`). The `meals.d
 
 GitHub Actions (`.github/workflows/ci.yml`) runs `./gradlew detekt jvmTest :androidApp:assembleDebug` on pushes and pull requests to `master`. Run this command locally and make sure it passes before a task counts as done. CI doesn't build or test iOS.
 
+Never commit directly to `master`: start every feature, fix or docs change on a new branch from `master` (`feature/…`, `fix/…`, `chore/…`, `docs/…`) and merge it through a pull request, since every push to `master` is released (see below).
+
 The second job, `release`, runs on every push to `master` after `build` passes. It restores the upload keystore from the secret `RELEASE_KEYSTORE_BASE64` into `$RUNNER_TEMP`, builds `:androidApp:assembleRelease :androidApp:bundleRelease -PappVersionCode=<run number>` with the signing settings and TheMealDB key from secrets (as environment variables, read by `configProperty`), and creates the GitHub Release `v1.0.<run number>` (with `gh release create --generate-notes`) with the signed APK attached as `yetanothermealsapp-1.0.<run number>.apk`. When the repository variable `PLAY_PUBLISHING` is `true`, it also uploads the bundle and R8 mapping to Google Play's production track with `r0adkll/upload-google-play`. `versionCode` comes from the Gradle property `appVersionCode` (default 1), `versionName` is `1.0.<versionCode>`, so both go up with every master build. Every master build that passes CI is released, so keep `master` releasable. The required secrets are listed in the job's comment in `ci.yml`.
 
 ## Build logic
