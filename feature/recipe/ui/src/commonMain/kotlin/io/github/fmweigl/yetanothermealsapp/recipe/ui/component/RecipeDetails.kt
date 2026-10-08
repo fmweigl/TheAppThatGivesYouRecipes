@@ -167,7 +167,9 @@ private fun RecipeTitle(
     onToggleFavorite: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+    // The heart stays at the top, next to the name's first line, so it doesn't move from recipe to
+    // recipe when a name takes two lines.
+    Row(modifier, verticalAlignment = Alignment.Top) {
         Column(Modifier.weight(1f)) {
             Text(
                 recipe.name,
