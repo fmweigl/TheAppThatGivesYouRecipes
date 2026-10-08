@@ -21,6 +21,20 @@ private val previewTeasers = listOf(
     RecipeTeaser("5", "Fish tacos", "Seafood · Mexican", imageUrl = null),
 )
 
+@DevicePreviews
+@Composable
+private fun EmptyFavoritesScreenPreview() {
+    MealsPreview {
+        FavoritesScreen(
+            uiState = FavoritesUiState(Content.Empty),
+            onOpenRecipe = {},
+            onRemove = {},
+            onRemovalMessageClosed = {},
+            onRestoreFailureMessageClosed = {},
+        )
+    }
+}
+
 @OptIn(ExperimentalCoilApi::class)
 @DevicePreviews
 @Composable

@@ -96,7 +96,7 @@ internal fun FavoritesScreen(
                         Modifier.align(Alignment.Center).semantics { contentDescription = loading },
                     )
                 }
-                Content.Empty -> Message(Res.string.no_favorites)
+                Content.Empty -> EmptyMessage()
                 Content.Error -> Message(Res.string.favorites_error, isError = true)
                 is Content.Favorites -> FavoritesList(content.teasers, onOpenRecipe, onRemove)
             }
@@ -149,6 +149,24 @@ private fun Message(text: StringResource, isError: Boolean = false) {
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxSize().padding(32.dp).semantics { paneTitle = message },
     )
+}
+
+/** [EmptyFavoritesIllustration] above the "No favorites yet" text, announced like [Message]. */
+@Composable
+private fun EmptyMessage() {
+    val message = stringResource(Res.string.no_favorites)
+    Column(
+        modifier = Modifier.fillMaxSize().padding(32.dp).semantics { paneTitle = message },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically),
+    ) {
+        EmptyFavoritesIllustration()
+        Text(
+            message,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
 }
 
 /** Cards are at least this wide (at the default font size): one column on phones in portrait. */

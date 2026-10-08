@@ -11,6 +11,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -114,6 +115,15 @@ class FavoritesScreenAccessibilityTest {
         setContent { Screen(FavoritesUiState(Content.Empty)) }
 
         onNode(paneTitle("No favorites yet. Tap the heart on a recipe to save it.")).assertExists()
+    }
+
+    @Test
+    fun emptyStateIllustrationIsSkippedByScreenReaders() = runComposeUiTest {
+        setContent { Screen(FavoritesUiState(Content.Empty)) }
+
+        // Only the title: the illustration's "Favorites" tab label isn't read.
+        onAllNodesWithText("Favorites").assertCountEquals(1)
+        onAllNodesWithContentDescription("Favorite", substring = true).assertCountEquals(0)
     }
 
     @Test
