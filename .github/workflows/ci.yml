@@ -90,8 +90,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           apk="$RUNNER_TEMP/theappthatgivesyourecipes-$VERSION_NAME.apk"
+          aab="$RUNNER_TEMP/theappthatgivesyourecipes-$VERSION_NAME.aab"
           cp androidApp/build/outputs/apk/release/androidApp-release.apk "$apk"
-          gh release create "v$VERSION_NAME" "$apk" \
+          # Google Play only takes bundles; attached for uploading by hand in Play Console.
+          cp androidApp/build/outputs/bundle/release/androidApp-release.aab "$aab"
+          gh release create "v$VERSION_NAME" "$apk" "$aab" \
             --target "$GITHUB_SHA" \
             --title "$VERSION_NAME" \
             --generate-notes
