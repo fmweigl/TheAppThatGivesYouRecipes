@@ -37,8 +37,11 @@ import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.ingredients
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.instructions
 import org.jetbrains.compose.resources.stringResource
 
-/** Medium windows (tablets in portrait) show the single column at most this wide, centered. */
-private val MaxColumnWidth = 640.dp
+/**
+ * The widest a column of recipe text gets: the single column on medium windows, the ingredients and
+ * instructions pane, and the Previous/Next row. Longer lines are hard to follow.
+ */
+internal val MaxColumnWidth = 640.dp
 
 /** The image on medium windows and in the two-pane layout: wider than tall, so the name stays in view. */
 private const val WIDE_IMAGE_ASPECT_RATIO = 4f / 3f
@@ -48,10 +51,11 @@ private const val IMAGE_PANE_WEIGHT = 0.4f
 
 /**
  * The whole recipe: image, name with the [FavoriteButton], ingredients and instructions. Its layout
- * follows the window's width class: one column on compact windows (phones in portrait), the same
- * column centered and with a wider image on medium ones (tablets in portrait), and on expanded ones
- * (tablets and phones in landscape) two panes, image and name next to ingredients and instructions,
- * each scrolling on its own.
+ * follows the window's size class: one column on compact widths (phones in portrait), the same
+ * column centered and with a wider image on medium widths (tablets in portrait), and two panes,
+ * name and image next to ingredients and instructions, each scrolling on its own, on expanded
+ * widths (tablets in landscape) and on medium widths with a compact height (phones in landscape),
+ * where the column's image would be taller than the window.
  */
 @Composable
 internal fun RecipeDetails(
@@ -63,10 +67,13 @@ internal fun RecipeDetails(
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     // Announced by screen readers when the recipe appears (the focus stays where it was, e.g. on "Next").
     val paneModifier = modifier.fillMaxSize().semantics { paneTitle = recipe.name }
+    val isMediumWidth = windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+    val isCompactHeight = !windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
     when {
-        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) ->
+        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) ||
+            isMediumWidth && isCompactHeight ->
             TwoPaneRecipe(recipe, isFavorite, onToggleFavorite, paneModifier)
-        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) ->
+        isMediumWidth ->
             SingleColumnRecipe(
                 recipe,
                 isFavorite,
@@ -103,7 +110,11 @@ private fun SingleColumnRecipe(
     }
 }
 
-/** Image and name on the start side, ingredients and instructions on the end side. */
+/**
+ * Name and image on the start side, ingredients and instructions on the end side. The name (with the
+ * heart) comes first: in a short window, such as a phone in landscape, the image would push it out
+ * of view. Each pane is its own traversal group, so screen readers finish one before the other.
+ */
 @Composable
 private fun TwoPaneRecipe(
     recipe: Recipe,
@@ -120,16 +131,18 @@ private fun TwoPaneRecipe(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            RecipeImage(recipe, WIDE_IMAGE_ASPECT_RATIO, Modifier.fillMaxWidth())
             RecipeTitle(recipe, isFavorite, onToggleFavorite)
+            RecipeImage(recipe, WIDE_IMAGE_ASPECT_RATIO, Modifier.fillMaxWidth())
         }
+        val bodyState = rememberLazyListState()
         LazyColumn(
-            modifier = Modifier.weight(1f - IMAGE_PANE_WEIGHT).fillMaxHeight(),
-            state = rememberLazyListState(),
+            // Nothing in this pane takes focus, so on the desktop the pane itself does, to scroll by keyboard.
+            modifier = Modifier.weight(1f - IMAGE_PANE_WEIGHT).fillMaxHeight().keyboardScrollable(bodyState),
+            state = bodyState,
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            recipeBody(recipe, Modifier.fillMaxWidth())
+            recipeBody(recipe, Modifier.widthIn(max = MaxColumnWidth).fillMaxWidth())
         }
     }
 }
@@ -138,7 +151,7 @@ private fun TwoPaneRecipe(
 private fun RecipeImage(recipe: Recipe, aspectRatio: Float, modifier: Modifier) {
     AsyncImage(
         model = recipe.imageUrl,
-        // Decorative: the recipe's name follows right below.
+        // Decorative: the recipe's name is right next to it.
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = modifier

@@ -4,11 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.requestFocus
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
@@ -19,11 +24,14 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollToNode
-import androidx.compose.ui.test.runDesktopComposeUiTest
 import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Ingredient
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe.RandomRecipeUiState.Content
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.runPhoneTest
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.runSmallPhoneLandscapeTest
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.runTabletLandscapeTest
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.runTabletPortraitTest
 import kotlin.test.Test
 
 /** What screen readers get from [RandomRecipeScreen] (the merged semantics tree). */
@@ -118,13 +126,40 @@ class RandomRecipeScreenAccessibilityTest {
         onNodeWithContentDescription("Favorite").assertIsOff()
     }
 
-    /** A phone in portrait: the compact layout, one column. */
-    private fun runPhoneTest(block: suspend ComposeUiTest.() -> Unit) =
-        runDesktopComposeUiTest(width = 411, height = 891) { block() }
+    @Test
+    fun centeredColumnKeepsHeadingsAndIngredients() = runTabletPortraitTest {
+        setContent { Screen(Content.Success(recipe)) }
 
-    /** A 10-inch tablet in landscape: the expanded layout, two panes. */
-    private fun runTabletLandscapeTest(block: suspend ComposeUiTest.() -> Unit) =
-        runDesktopComposeUiTest(width = 1280, height = 800) { block() }
+        onNode(paneTitle(recipe.name)).assertExists()
+        scrollTo(recipe.name)
+        onAllNodesWithText(recipe.name).assertCountEquals(1)
+        onNodeWithText(recipe.name).assert(isHeading)
+        scrollTo("Ingredients")
+        onNodeWithText("Ingredients").assert(isHeading)
+        scrollTo("Clotted Cream")
+        onNodeWithText("Clotted Cream").assert(hasText("227g"))
+    }
+
+    @Test
+    fun shortWindowShowsNameAndFavoriteWithoutScrolling() = runSmallPhoneLandscapeTest {
+        setContent { Screen(Content.Success(recipe)) }
+
+        onNodeWithText(recipe.name).assertIsDisplayed()
+        onNodeWithContentDescription("Favorite").assertIsDisplayed()
+    }
+
+    @Test
+    fun ingredientsPaneScrollsWithTheKeyboard() = runTabletLandscapeTest {
+        val longRecipe = recipe.copy(ingredients = List(40) { Ingredient("Ingredient $it", "$it g") })
+        setContent { Screen(Content.Success(longRecipe)) }
+        onNodeWithText("Instructions").assertDoesNotExist()
+
+        val ingredientsPane = onNode(hasScrollAction() and SemanticsMatcher.keyIsDefined(SemanticsProperties.Focused))
+        ingredientsPane.requestFocus()
+        repeat(times = 6) { ingredientsPane.performKeyInput { pressKey(Key.PageDown) } }
+
+        onNodeWithText("Instructions").assertIsDisplayed()
+    }
 
     /** The recipe's image fills the test window, so the lazy list only composes what's scrolled to. */
     private fun ComposeUiTest.scrollTo(text: String) {

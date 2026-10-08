@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.component.ErrorMessage
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.component.LoadingIndicator
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.component.MaxColumnWidth
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.component.RecipeDetails
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.randomrecipe.RandomRecipeUiState.Content
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.Res
@@ -75,8 +76,11 @@ private fun RecipeNavigationBar(
     onShowNext: () -> Unit,
 ) {
     Row(
-        // Two buttons as wide as a tablet look like banners; keep them at a phone's width, centered.
-        modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        // As wide as the recipe's column (padding outside the limit, as there), centered.
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .widthIn(max = MaxColumnWidth)
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         OutlinedButton(

@@ -15,17 +15,26 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollToNode
-import androidx.compose.ui.test.runDesktopComposeUiTest
 import io.github.fmweigl.yetanothermealsapp.core.domain.DataError
+import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Ingredient
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.recipedetail.RecipeUiState.Content
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.runPhoneTest
+import io.github.fmweigl.yetanothermealsapp.recipe.ui.runTabletLandscapeTest
 import kotlin.test.Test
 
 /** What screen readers get from [RecipeScreen] (the merged semantics tree). */
 @OptIn(ExperimentalTestApi::class)
 class RecipeScreenAccessibilityTest {
 
-    private val recipe = Recipe(id = "52923", name = "Canadian Butter Tarts", category = "Dessert", imageUrl = null)
+    private val recipe = Recipe(
+        id = "52923",
+        name = "Canadian Butter Tarts",
+        category = "Dessert",
+        instructions = "Bake the tarts.",
+        imageUrl = null,
+        ingredients = listOf(Ingredient("Butter", "50g"), Ingredient("Brown sugar", "100g")),
+    )
 
     private val isHeading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
 
@@ -86,16 +95,11 @@ class RecipeScreenAccessibilityTest {
         onNodeWithText("Recipe").assert(isHeading)
         onAllNodesWithText(recipe.name).assertCountEquals(1)
         onNodeWithText(recipe.name).assert(isHeading)
+        onNodeWithText("Ingredients").assert(isHeading)
+        onNodeWithText("Instructions").assert(isHeading)
+        onNodeWithText("Butter").assert(hasText("50g"))
         onNodeWithContentDescription("Favorite").assertIsOn()
     }
-
-    /** A phone in portrait: the compact layout, one column. */
-    private fun runPhoneTest(block: suspend ComposeUiTest.() -> Unit) =
-        runDesktopComposeUiTest(width = 411, height = 891) { block() }
-
-    /** A 10-inch tablet in landscape: the expanded layout, two panes. */
-    private fun runTabletLandscapeTest(block: suspend ComposeUiTest.() -> Unit) =
-        runDesktopComposeUiTest(width = 1280, height = 800) { block() }
 
     /** The recipe's image fills the test window, so the lazy list only composes what's scrolled to. */
     private fun ComposeUiTest.scrollTo(text: String) {
