@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -45,6 +46,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.FavoritesUiState.Content
@@ -202,7 +204,12 @@ private fun FavoritesList(
     }
 }
 
-/** One element for screen readers ("‹name›, ‹category · area›"), with the remove button as a separate one. */
+/**
+ * One element for screen readers ("‹name›, ‹category · area›"), with the remove button as a separate
+ * one. The name takes at most two lines and the subtitle one (cut off with "…" if longer; screen
+ * readers still get the whole text), and the text always gets room for all three lines, centered,
+ * so every card is equally tall.
+ */
 @Composable
 private fun TeaserCard(
     teaser: RecipeTeaser,
@@ -223,13 +230,29 @@ private fun TeaserCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.size(72.dp).clip(MaterialTheme.shapes.medium),
             )
-            Column(Modifier.weight(1f)) {
-                Text(teaser.name, style = MaterialTheme.typography.titleMedium)
+            val nameStyle = MaterialTheme.typography.titleMedium
+            val subtitleStyle = MaterialTheme.typography.bodyMedium
+            // Two lines of name and one of subtitle (in dp, so it follows the font size).
+            val fixedTextHeight = with(LocalDensity.current) {
+                (nameStyle.lineHeight * 2).toDp() + subtitleStyle.lineHeight.toDp()
+            }
+            Column(
+                modifier = Modifier.weight(1f).heightIn(min = fixedTextHeight),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    teaser.name,
+                    style = nameStyle,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
                 teaser.subtitle?.let {
                     Text(
                         it,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = subtitleStyle,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
