@@ -16,13 +16,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -33,7 +29,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,16 +41,21 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.CollectionInfo
 import androidx.compose.ui.semantics.CollectionItemInfo
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.collectionInfo
 import androidx.compose.ui.semantics.collectionItemInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import io.github.fmweigl.yetanothermealsapp.core.designsystem.component.FavoriteButton
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.FavoritesUiState.Content
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.Res
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.favorite_removed
@@ -61,6 +66,9 @@ import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.loading
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.no_favorites
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.remove_favorite
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.undo
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
@@ -242,10 +250,10 @@ private fun FavoritesList(
 
 /**
  * One element for screen readers ("‹name›, ‹category · area›"), with the remove button as a separate
- * one: a filled heart, as on a saved recipe, that removes the recipe from favorites. The name takes
- * at most two lines and the subtitle one (cut off with "…" if longer; screen readers still get the
- * whole text), and the text always gets room for all three lines, centered, so every card is
- * equally tall.
+ * one ("Remove ‹name› from favorites"): the recipe screen's [FavoriteButton], which empties with its
+ * animation before the recipe is removed. The name takes at most two lines and the subtitle one (cut
+ * off with "…" if longer; screen readers still get the whole text), and the text always gets room
+ * for all three lines, centered, so every card is equally tall.
  */
 @Composable
 private fun TeaserCard(
@@ -293,13 +301,51 @@ private fun TeaserCard(
                     )
                 }
             }
-            IconButton(onClick = onRemove) {
-                Icon(
-                    Icons.Filled.Favorite,
-                    contentDescription = stringResource(Res.string.remove_favorite, teaser.name),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-            }
+            RemoveFavoriteButton(teaser.name, onRemove)
         }
     }
+}
+
+/** How long the heart's emptying animation gets before the recipe is removed and its card fades out. */
+private const val REMOVE_AFTER_MILLIS = 300L
+
+/**
+ * A removed card has faded out and left the composition well before this; a card still shown then
+ * wasn't removed (the database failed), so its heart fills again.
+ */
+private const val REFILL_AFTER_MILLIS = 3_000L
+
+/**
+ * A filled heart that empties when tapped, then calls [onRemove]. For screen readers it's a plain
+ * button, "Remove ‹name› from favorites": an on/off toggle that is always on would only confuse.
+ */
+@Composable
+private fun RemoveFavoriteButton(name: String, onRemove: () -> Unit) {
+    var removing by remember { mutableStateOf(false) }
+    val currentOnRemove by rememberUpdatedState(onRemove)
+    LaunchedEffect(removing) {
+        if (!removing) return@LaunchedEffect
+        // Removed even if the card leaves the composition first, e.g. when the tab changes.
+        withContext(NonCancellable) {
+            delay(REMOVE_AFTER_MILLIS)
+            currentOnRemove()
+        }
+        delay(REFILL_AFTER_MILLIS)
+        removing = false
+    }
+    val label = stringResource(Res.string.remove_favorite, name)
+    FavoriteButton(
+        isFavorite = !removing,
+        onToggle = { removing = true },
+        // Its own element, not part of the card's (clearing the toggle's semantics also clears the
+        // boundary it set).
+        modifier = Modifier.semantics(mergeDescendants = true) {}.clearAndSetSemantics {
+            contentDescription = label
+            role = Role.Button
+            onClick {
+                removing = true
+                true
+            }
+        },
+    )
 }

@@ -3,6 +3,7 @@ package io.github.fmweigl.yetanothermealsapp.favorites.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
@@ -24,6 +25,7 @@ import io.github.fmweigl.yetanothermealsapp.favorites.ui.FavoritesUiState.Conten
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /** What screen readers get from [FavoritesScreen] (the merged semantics tree). */
@@ -113,6 +115,29 @@ class FavoritesScreenAccessibilityTest {
     }
 
     @Test
+    fun removeButtonIsAPlainButtonNotAToggle() = runComposeUiTest {
+        setContent { Screen(FavoritesUiState(Content.Favorites(listOf(tarts)))) }
+
+        onNodeWithContentDescription("Remove Canadian Butter Tarts from favorites")
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+            .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.ToggleableState))
+    }
+
+    @Test
+    fun heartEmptiesBeforeTheRecipeIsRemoved() = runComposeUiTest {
+        var removedId: String? = null
+        setContent { Screen(FavoritesUiState(Content.Favorites(listOf(tarts))), onRemove = { removedId = it }) }
+        mainClock.autoAdvance = false
+
+        onNodeWithContentDescription("Remove Canadian Butter Tarts from favorites").performClick()
+        mainClock.advanceTimeBy(100)
+        assertNull(removedId, "the heart's animation plays first")
+
+        mainClock.advanceTimeBy(300)
+        assertEquals(tarts.id, removedId)
+    }
+
+    @Test
     fun emptyStateIsAnnounced() = runComposeUiTest {
         setContent { Screen(FavoritesUiState(Content.Empty)) }
 
@@ -193,13 +218,14 @@ class FavoritesScreenAccessibilityTest {
     @Composable
     private fun Screen(
         uiState: FavoritesUiState,
+        onRemove: (String) -> Unit = {},
         onRemovalMessageClosed: (Boolean) -> Unit = {},
         onRestoreFailureMessageClosed: () -> Unit = {},
     ) {
         FavoritesScreen(
             uiState = uiState,
             onOpenRecipe = {},
-            onRemove = {},
+            onRemove = onRemove,
             onRemovalMessageClosed = onRemovalMessageClosed,
             onRestoreFailureMessageClosed = onRestoreFailureMessageClosed,
         )

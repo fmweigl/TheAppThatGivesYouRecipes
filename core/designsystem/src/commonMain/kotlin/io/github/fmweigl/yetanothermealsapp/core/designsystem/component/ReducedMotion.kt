@@ -1,4 +1,4 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.ui.component
+package io.github.fmweigl.yetanothermealsapp.core.designsystem.component
 
 /**
  * Whether the system asks apps to avoid motion and the app has to check it itself: iOS's Reduce
