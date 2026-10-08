@@ -1,7 +1,9 @@
 TEAM_ID=
 
-PRODUCT_NAME=YetAnotherMealsApp
-PRODUCT_BUNDLE_IDENTIFIER=io.github.fmweigl.yetanothermealsapp.YetAnotherMealsApp$(TEAM_ID)
+PRODUCT_NAME=TheAppThatGivesYouRecipes
+# The home screen label: the full name, "The App That Gives You Recipes", doesn't fit under the icon.
+INFOPLIST_KEY_CFBundleDisplayName=TATGYR
+PRODUCT_BUNDLE_IDENTIFIER=io.github.fmweigl.theappthatgivesyourecipes.TheAppThatGivesYouRecipes$(TEAM_ID)
 
 CURRENT_PROJECT_VERSION=1
 MARKETING_VERSION=1.0

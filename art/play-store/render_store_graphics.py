@@ -23,7 +23,7 @@ spec = importlib.util.spec_from_file_location("render_icons", ROOT / "art/app-ic
 icons = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(icons)
 
-TITLE = "YetAnotherMealsApp"
+TITLE = "The App That Gives You Recipes"
 # Describes the app's features (random recipes, favorites). Revisit it (and the listing texts) when features are added.
 TAGLINE = "Find a recipe. Keep your favorites."
 FOOTER = "Open source. No ads. No tracking."

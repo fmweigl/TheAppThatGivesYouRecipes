@@ -1,8 +1,8 @@
-# Privacy Policy for YetAnotherMealsApp
+# Privacy Policy for The App That Gives You Recipes
 
-Last updated: October 2, 2026
+Last updated: October 8, 2026
 
-YetAnotherMealsApp is a free recipe app developed by Florian Weigl as a private individual.
+The App That Gives You Recipes is a free recipe app developed by Florian Weigl as a private individual.
 This policy explains what happens with your data when you use the app.
 
 ## Data I collect

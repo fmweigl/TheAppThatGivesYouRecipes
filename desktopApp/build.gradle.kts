@@ -1,4 +1,4 @@
-import io.github.fmweigl.yetanothermealsapp.buildlogic.requireTheMealDbProductionKey
+import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.requireTheMealDbProductionKey
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -20,11 +20,11 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "io.github.fmweigl.yetanothermealsapp.MainKt"
+        mainClass = "io.github.fmweigl.theappthatgivesyourecipes.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "io.github.fmweigl.yetanothermealsapp"
+            packageName = "io.github.fmweigl.theappthatgivesyourecipes"
             packageVersion = "1.0.0"
             // Rendered by art/app-icon/render_icons.py.
             linux { iconFile.set(project.file("src/main/resources/icon.png")) }

@@ -1,5 +1,5 @@
-import io.github.fmweigl.yetanothermealsapp.buildlogic.releaseSigning
-import io.github.fmweigl.yetanothermealsapp.buildlogic.requireTheMealDbProductionKey
+import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.releaseSigning
+import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.requireTheMealDbProductionKey
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -26,11 +26,11 @@ dependencies {
 }
 
 android {
-    namespace = "io.github.fmweigl.yetanothermealsapp"
+    namespace = "io.github.fmweigl.theappthatgivesyourecipes"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "io.github.fmweigl.yetanothermealsapp"
+        applicationId = "io.github.fmweigl.theappthatgivesyourecipes"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         // CI passes the GitHub run number (-PappVersionCode=...), so every Play upload is higher.

@@ -89,7 +89,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          apk="$RUNNER_TEMP/yetanothermealsapp-$VERSION_NAME.apk"
+          apk="$RUNNER_TEMP/theappthatgivesyourecipes-$VERSION_NAME.apk"
           cp androidApp/build/outputs/apk/release/androidApp-release.apk "$apk"
           gh release create "v$VERSION_NAME" "$apk" \
             --target "$GITHUB_SHA" \
@@ -101,7 +101,7 @@ jobs:
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: io.github.fmweigl.yetanothermealsapp
+          packageName: io.github.fmweigl.theappthatgivesyourecipes
           releaseFiles: androidApp/build/outputs/bundle/release/androidApp-release.aab
           mappingFile: androidApp/build/outputs/mapping/release/mapping.txt
           track: production

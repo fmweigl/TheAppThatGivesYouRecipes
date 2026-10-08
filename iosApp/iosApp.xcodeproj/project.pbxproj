@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		7B4CCD4E1FBA4C5408965839 /* YetAnotherMealsApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YetAnotherMealsApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7B4CCD4E1FBA4C5408965839 /* TheAppThatGivesYouRecipes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TheAppThatGivesYouRecipes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -59,7 +59,7 @@
 		E724AB7CAB83C99D8C6DE771 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7B4CCD4E1FBA4C5408965839 /* YetAnotherMealsApp.app */,
+				7B4CCD4E1FBA4C5408965839 /* TheAppThatGivesYouRecipes.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -87,7 +87,7 @@
 			packageProductDependencies = (
 			);
 			productName = iosApp;
-			productReference = 7B4CCD4E1FBA4C5408965839 /* YetAnotherMealsApp.app */;
+			productReference = 7B4CCD4E1FBA4C5408965839 /* TheAppThatGivesYouRecipes.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
