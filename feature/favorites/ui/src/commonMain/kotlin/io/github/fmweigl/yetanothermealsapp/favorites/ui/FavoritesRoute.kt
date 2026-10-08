@@ -20,6 +20,7 @@ internal fun FavoritesRoute(
         onRemove = viewModel::remove,
         onRemovalMessageClosed = viewModel::removalMessageClosed,
         onRestoreFailureMessageClosed = viewModel::restoreFailureMessageClosed,
+        onRemoveFailureMessageClosed = viewModel::removeFailureMessageClosed,
         modifier = modifier,
     )
 }

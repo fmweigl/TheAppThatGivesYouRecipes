@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import coil3.compose.AsyncImage
+import io.github.fmweigl.yetanothermealsapp.core.designsystem.component.FavoriteButton
 import io.github.fmweigl.yetanothermealsapp.recipe.domain.model.Recipe
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.Res
 import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.ingredients

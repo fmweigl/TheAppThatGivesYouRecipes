@@ -1,6 +1,5 @@
 <resources>
     <string name="try_again">Try again</string>
-    <string name="favorite">Favorite</string>
     <string name="recipe">Recipe</string>
     <string name="previous_recipe">Previous</string>
     <string name="next_recipe">Next</string>

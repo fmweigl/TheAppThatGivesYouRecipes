@@ -31,6 +31,7 @@ private fun EmptyFavoritesScreenPreview() {
             onRemove = {},
             onRemovalMessageClosed = {},
             onRestoreFailureMessageClosed = {},
+            onRemoveFailureMessageClosed = {},
         )
     }
 }
@@ -51,6 +52,7 @@ private fun FavoritesScreenPreview() {
                 onRemove = {},
                 onRemovalMessageClosed = {},
                 onRestoreFailureMessageClosed = {},
+                onRemoveFailureMessageClosed = {},
             )
         }
     }

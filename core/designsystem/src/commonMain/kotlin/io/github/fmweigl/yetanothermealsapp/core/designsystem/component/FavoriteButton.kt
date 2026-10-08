@@ -1,4 +1,4 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.ui.component
+package io.github.fmweigl.yetanothermealsapp.core.designsystem.component
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -25,8 +25,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
-import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.Res
-import io.github.fmweigl.yetanothermealsapp.recipe.ui.resources.favorite
+import io.github.fmweigl.yetanothermealsapp.core.designsystem.resources.Res
+import io.github.fmweigl.yetanothermealsapp.core.designsystem.resources.favorite
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.PI
@@ -60,7 +60,7 @@ private const val BURST_END = 1.1f
  * [prefersReducedMotion] (Reduce Motion) does.
  */
 @Composable
-internal fun FavoriteButton(
+fun FavoriteButton(
     isFavorite: Boolean,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,

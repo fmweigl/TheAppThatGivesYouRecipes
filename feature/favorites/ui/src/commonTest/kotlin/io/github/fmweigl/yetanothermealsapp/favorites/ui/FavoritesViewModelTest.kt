@@ -7,8 +7,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlin.test.AfterTest
@@ -80,6 +82,23 @@ class FavoritesViewModelTest {
         assertEquals(listOf(TARTS), repository.favorites)
         assertEquals(listOf(TARTS.id), viewModel.shownIds())
         assertEquals("Soup", viewModel.uiState.value.removed?.name)
+    }
+
+    @Test
+    fun removingShowsTheHeartEmptyUntilTheCardIsGone() = runTest(dispatcher) {
+        repository.favorites = listOf(TARTS, SOUP)
+        val viewModel = createViewModel()
+
+        viewModel.remove(SOUP.id)
+        runCurrent()
+        assertEquals(setOf(SOUP.id), viewModel.uiState.value.removing)
+
+        advanceTimeBy(REMOVE_DELAY_MILLIS - 1)
+        assertEquals(listOf(TARTS, SOUP), repository.favorites, "the heart's animation plays first")
+
+        advanceUntilIdle()
+        assertEquals(listOf(TARTS.id), viewModel.shownIds())
+        assertEquals(emptySet(), viewModel.uiState.value.removing)
     }
 
     @Test
@@ -170,6 +189,37 @@ class FavoritesViewModelTest {
         advanceUntilIdle()
         assertEquals(listOf(TARTS.id), viewModel.shownIds())
         assertNull(viewModel.uiState.value.removed)
+    }
+
+    @Test
+    fun failedRemoveFillsTheHeartAgainAndIsReportedUntilItsMessageCloses() = runTest(dispatcher) {
+        repository.favorites = listOf(TARTS)
+        val viewModel = createViewModel()
+        repository.writeError = DataError.Storage
+
+        viewModel.remove(TARTS.id)
+        advanceUntilIdle()
+        assertEquals(emptySet(), viewModel.uiState.value.removing)
+        assertEquals("Canadian Butter Tarts", viewModel.uiState.value.removeFailed?.name)
+
+        viewModel.removeFailureMessageClosed()
+        advanceUntilIdle()
+        assertNull(viewModel.uiState.value.removeFailed)
+    }
+
+    @Test
+    fun retryingAFailedRemoveClearsTheOldFailure() = runTest(dispatcher) {
+        repository.favorites = listOf(TARTS)
+        val viewModel = createViewModel()
+        repository.writeError = DataError.Storage
+        viewModel.remove(TARTS.id)
+        advanceUntilIdle()
+        repository.writeError = null
+
+        viewModel.remove(TARTS.id)
+        advanceUntilIdle()
+        assertNull(viewModel.uiState.value.removeFailed)
+        assertEquals("Canadian Butter Tarts", viewModel.uiState.value.removed?.name)
     }
 
     private companion object {

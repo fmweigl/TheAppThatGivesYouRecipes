@@ -1,4 +1,4 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.ui.component
+package io.github.fmweigl.yetanothermealsapp.core.designsystem.component
 
 import platform.UIKit.UIAccessibilityIsReduceMotionEnabled
 

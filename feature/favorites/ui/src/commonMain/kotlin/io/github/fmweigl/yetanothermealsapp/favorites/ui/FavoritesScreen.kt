@@ -16,13 +16,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -41,18 +37,24 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.CollectionInfo
 import androidx.compose.ui.semantics.CollectionItemInfo
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.collectionInfo
 import androidx.compose.ui.semantics.collectionItemInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import io.github.fmweigl.yetanothermealsapp.core.designsystem.component.FavoriteButton
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.FavoritesUiState.Content
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.Res
+import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.favorite_remove_failed
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.favorite_removed
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.favorite_restore_failed
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.favorites
@@ -73,11 +75,23 @@ internal fun FavoritesScreen(
     onRemove: (recipeId: String) -> Unit,
     onRemovalMessageClosed: (undo: Boolean) -> Unit,
     onRestoreFailureMessageClosed: () -> Unit,
+    onRemoveFailureMessageClosed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     RemovalMessage(uiState.removed, snackbarHostState, onRemovalMessageClosed)
-    RestoreFailureMessage(uiState.restoreFailed, snackbarHostState, onRestoreFailureMessageClosed)
+    FailureMessage(
+        uiState.restoreFailed,
+        Res.string.favorite_restore_failed,
+        snackbarHostState,
+        onRestoreFailureMessageClosed,
+    )
+    FailureMessage(
+        uiState.removeFailed,
+        Res.string.favorite_remove_failed,
+        snackbarHostState,
+        onRemoveFailureMessageClosed,
+    )
 
     Scaffold(
         modifier = modifier,
@@ -100,7 +114,7 @@ internal fun FavoritesScreen(
                 }
                 Content.Empty -> EmptyMessage()
                 Content.Error -> Message(Res.string.favorites_error, isError = true)
-                is Content.Favorites -> FavoritesList(content.teasers, onOpenRecipe, onRemove)
+                is Content.Favorites -> FavoritesList(content.teasers, uiState.removing, onOpenRecipe, onRemove)
             }
         }
     }
@@ -124,17 +138,18 @@ private fun RemovalMessage(
     }
 }
 
-/** "Couldn't restore ‹name›" while [failed] is set. */
+/** [message] ("Couldn't restore ‹name›", "Couldn't remove ‹name›") while [failed] is set. */
 @Composable
-private fun RestoreFailureMessage(
+private fun FailureMessage(
     failed: RecipeTeaser?,
+    message: StringResource,
     snackbarHostState: SnackbarHostState,
     onClosed: () -> Unit,
 ) {
     LaunchedEffect(failed) {
         if (failed == null) return@LaunchedEffect
         snackbarHostState.showSnackbar(
-            message = getString(Res.string.favorite_restore_failed, failed.name),
+            message = getString(message, failed.name),
             duration = SnackbarDuration.Long,
         )
         onClosed()
@@ -204,6 +219,7 @@ private val CardSpacing = 12.dp
 @Composable
 private fun FavoritesList(
     teasers: List<RecipeTeaser>,
+    removing: Set<String>,
     onOpenRecipe: (recipeId: String) -> Unit,
     onRemove: (recipeId: String) -> Unit,
 ) {
@@ -224,6 +240,7 @@ private fun FavoritesList(
             itemsIndexed(teasers, key = { _, teaser -> teaser.id }) { index, teaser ->
                 TeaserCard(
                     teaser = teaser,
+                    isRemoving = teaser.id in removing,
                     onClick = { onOpenRecipe(teaser.id) },
                     onRemove = { onRemove(teaser.id) },
                     modifier = Modifier.animateItem().semantics {
@@ -242,13 +259,14 @@ private fun FavoritesList(
 
 /**
  * One element for screen readers ("‹name›, ‹category · area›"), with the remove button as a separate
- * one. The name takes at most two lines and the subtitle one (cut off with "…" if longer; screen
- * readers still get the whole text), and the text always gets room for all three lines, centered,
- * so every card is equally tall.
+ * one: [RemoveFavoriteButton]. The name takes at most two lines and the subtitle one (cut
+ * off with "…" if longer; screen readers still get the whole text), and the text always gets room
+ * for all three lines, centered, so every card is equally tall.
  */
 @Composable
 private fun TeaserCard(
     teaser: RecipeTeaser,
+    isRemoving: Boolean,
     onClick: () -> Unit,
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
@@ -292,9 +310,32 @@ private fun TeaserCard(
                     )
                 }
             }
-            IconButton(onClick = onRemove) {
-                Icon(Icons.Filled.Delete, contentDescription = stringResource(Res.string.remove_favorite, teaser.name))
-            }
+            RemoveFavoriteButton(teaser.name, isRemoving, onRemove)
         }
     }
+}
+
+/**
+ * A filled heart that empties while [isRemoving] (with the recipe screen's animation, when tapped)
+ * and calls [onRemove]. For screen readers it's a plain button, "Remove ‹name› from favorites": an
+ * on/off toggle that is always on would only confuse. Activating it that way skips the animation,
+ * since only a tap animates [FavoriteButton]; that's fine, the "Removed" message reports it.
+ */
+@Composable
+private fun RemoveFavoriteButton(name: String, isRemoving: Boolean, onRemove: () -> Unit) {
+    val label = stringResource(Res.string.remove_favorite, name)
+    FavoriteButton(
+        isFavorite = !isRemoving,
+        onToggle = onRemove,
+        // Its own element, not part of the card's (clearing the toggle's semantics also clears the
+        // boundary it set).
+        modifier = Modifier.semantics(mergeDescendants = true) {}.clearAndSetSemantics {
+            contentDescription = label
+            role = Role.Button
+            onClick {
+                onRemove()
+                true
+            }
+        },
+    )
 }

@@ -1,8 +1,10 @@
 package io.github.fmweigl.yetanothermealsapp.favorites.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
@@ -16,7 +18,10 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.test.runDesktopComposeUiTest
@@ -113,6 +118,63 @@ class FavoritesScreenAccessibilityTest {
     }
 
     @Test
+    fun removeButtonIsAPlainButtonNotAToggle() = runComposeUiTest {
+        setContent { Screen(FavoritesUiState(Content.Favorites(listOf(tarts)))) }
+
+        onNodeWithContentDescription("Remove Canadian Butter Tarts from favorites")
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+            .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.ToggleableState))
+    }
+
+    @Test
+    fun removeButtonIsSeparateFromTheCard() = runComposeUiTest {
+        setContent { Screen(FavoritesUiState(Content.Favorites(listOf(tarts)))) }
+
+        val label = "Remove Canadian Butter Tarts from favorites"
+        onNodeWithText(tarts.name).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.ContentDescription))
+        onNodeWithContentDescription(label).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Text))
+    }
+
+    @Test
+    fun removeButtonWorksWithTheKeyboard() = runDesktopComposeUiTest {
+        var removedId: String? = null
+        var opened = false
+        setContent {
+            Screen(
+                FavoritesUiState(Content.Favorites(listOf(tarts))),
+                onOpenRecipe = { opened = true },
+                onRemove = { removedId = it },
+            )
+        }
+
+        // The card, then its heart.
+        onRoot().performKeyInput {
+            pressKey(Key.Tab)
+            pressKey(Key.Tab)
+            pressKey(Key.Enter)
+        }
+        waitForIdle()
+        assertEquals(tarts.id, removedId)
+        assertFalse(opened)
+    }
+
+    @Test
+    fun failedRemoveIsReported() = runComposeUiTest {
+        var closed = false
+        setContent {
+            Screen(
+                FavoritesUiState(Content.Favorites(listOf(tarts)), removeFailed = tarts),
+                onRemoveFailureMessageClosed = { closed = true },
+            )
+        }
+
+        onNodeWithText("Couldn't remove Canadian Butter Tarts").assertExists()
+        mainClock.advanceTimeBy(15_000)
+        waitForIdle()
+        assertTrue(closed)
+    }
+
+    @Test
     fun emptyStateIsAnnounced() = runComposeUiTest {
         setContent { Screen(FavoritesUiState(Content.Empty)) }
 
@@ -193,15 +255,19 @@ class FavoritesScreenAccessibilityTest {
     @Composable
     private fun Screen(
         uiState: FavoritesUiState,
+        onOpenRecipe: (String) -> Unit = {},
+        onRemove: (String) -> Unit = {},
         onRemovalMessageClosed: (Boolean) -> Unit = {},
         onRestoreFailureMessageClosed: () -> Unit = {},
+        onRemoveFailureMessageClosed: () -> Unit = {},
     ) {
         FavoritesScreen(
             uiState = uiState,
-            onOpenRecipe = {},
-            onRemove = {},
+            onOpenRecipe = onOpenRecipe,
+            onRemove = onRemove,
             onRemovalMessageClosed = onRemovalMessageClosed,
             onRestoreFailureMessageClosed = onRestoreFailureMessageClosed,
+            onRemoveFailureMessageClosed = onRemoveFailureMessageClosed,
         )
     }
 }

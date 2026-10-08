@@ -1,4 +1,4 @@
-package io.github.fmweigl.yetanothermealsapp.recipe.ui.component
+package io.github.fmweigl.yetanothermealsapp.core.designsystem.component
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

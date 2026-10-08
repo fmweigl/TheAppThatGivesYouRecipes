@@ -11,6 +11,11 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.compose.materialIconsCore)
         }
+        // Component tests run on the JVM, with Skia from the desktop runtime.
+        jvmTest.dependencies {
+            implementation(libs.compose.uiTest)
+            implementation(compose.desktop.currentOs)
+        }
     }
 }
 

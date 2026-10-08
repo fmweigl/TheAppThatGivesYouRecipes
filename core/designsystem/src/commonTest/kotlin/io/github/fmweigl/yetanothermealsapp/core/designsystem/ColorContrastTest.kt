@@ -37,6 +37,25 @@ class ColorContrastTest {
         }
     }
 
+    @Test
+    fun lightSchemeMeetsIconContrast() = assertIconContrast(LightColorScheme)
+
+    @Test
+    fun darkSchemeMeetsIconContrast() = assertIconContrast(DarkColorScheme)
+
+    /** Icons drawn in a color other than the on-color: the filled heart on screens and cards. */
+    private fun assertIconContrast(scheme: ColorScheme) = with(scheme) {
+        val pairs = mapOf(
+            "primary on background" to (primary to background),
+            "primary on surface" to (primary to surface),
+            "primary on surfaceContainerHighest" to (primary to surfaceContainerHighest),
+        )
+        pairs.forEach { (name, colors) ->
+            val ratio = contrast(colors.first, colors.second)
+            assertTrue(ratio >= MIN_ICON_CONTRAST, "$name: contrast $ratio is below $MIN_ICON_CONTRAST")
+        }
+    }
+
     private fun contrast(a: Color, b: Color): Float {
         val (light, dark) = listOf(a.luminance(), b.luminance()).sortedDescending()
         return (light + 0.05f) / (dark + 0.05f)
@@ -45,5 +64,8 @@ class ColorContrastTest {
     private companion object {
         /** WCAG AA for normal text. */
         const val MIN_TEXT_CONTRAST = 4.5f
+
+        /** WCAG AA for graphical objects such as icons (1.4.11). */
+        const val MIN_ICON_CONTRAST = 3f
     }
 }
