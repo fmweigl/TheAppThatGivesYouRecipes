@@ -11,11 +11,13 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.FavoritesUiState.Content
@@ -117,13 +119,28 @@ class FavoritesScreenAccessibilityTest {
         onNode(paneTitle("No favorites yet. Tap the heart on a recipe to save it.")).assertExists()
     }
 
+    private val emptyMessage = "No favorites yet. Tap the heart on a recipe to save it."
+
     @Test
-    fun emptyStateIllustrationIsSkippedByScreenReaders() = runComposeUiTest {
+    fun emptyStateReadsOnlyItsMessage() = runComposeUiTest {
         setContent { Screen(FavoritesUiState(Content.Empty)) }
 
-        // The illustration's heart isn't read; the text is.
-        onAllNodesWithContentDescription("Favorite", substring = true).assertCountEquals(0)
-        onNodeWithText("No favorites yet. Tap the heart on a recipe to save it.").assertExists()
+        // Inside the empty state, the message is the only thing with text or a description:
+        // the illustration is decorative.
+        val readable = SemanticsMatcher("has text or a description") {
+            it.config.contains(SemanticsProperties.Text) || it.config.contains(SemanticsProperties.ContentDescription)
+        }
+        onAllNodes(hasAnyAncestor(paneTitle(emptyMessage)) and readable, useUnmergedTree = true)
+            .assertCountEquals(1)
+            .onFirst()
+            .assert(hasText(emptyMessage))
+    }
+
+    @Test
+    fun emptyStateTextStaysReachableInAShortWindow() = runDesktopComposeUiTest(width = 640, height = 220) {
+        setContent { Screen(FavoritesUiState(Content.Empty)) }
+
+        onNodeWithText(emptyMessage).performScrollTo().assertIsDisplayed()
     }
 
     @Test

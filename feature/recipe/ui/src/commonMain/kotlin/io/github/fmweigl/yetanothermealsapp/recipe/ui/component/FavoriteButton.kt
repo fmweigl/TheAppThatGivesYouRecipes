@@ -53,9 +53,11 @@ private const val BURST_END = 1.1f
 
 /**
  * A heart that saves or removes a favorite; screen readers get "Favorite" with its on/off state.
- * When it fills, it pops and a ring of dots bursts out of it; when it empties, it shrinks briefly.
- * Nothing animates when the screen first shows it. On Android the animations follow the system's
- * animation scale, so "Remove animations" turns them off.
+ * When a tap fills it, it pops and a ring of dots bursts out of it; when a tap empties it, it
+ * shrinks briefly. Only a tap animates: a change from elsewhere, such as the database answering
+ * that a recipe shown after "Next" is saved, just changes the icon. On Android the animations
+ * follow the system's animation scale ("Remove animations" turns them off); on iOS
+ * [prefersReducedMotion] (Reduce Motion) does.
  */
 @Composable
 internal fun FavoriteButton(
@@ -67,9 +69,15 @@ internal fun FavoriteButton(
     // 0 when the burst starts, 1 when it's gone (also when there's none).
     val burst = remember { Animatable(1f) }
     var shownState by remember { mutableStateOf(isFavorite) }
+    // Set by a tap, cleared by the change it causes, which is then animated.
+    var tapped by remember { mutableStateOf(false) }
+    val reduceMotion = prefersReducedMotion()
     LaunchedEffect(isFavorite) {
         if (isFavorite == shownState) return@LaunchedEffect
         shownState = isFavorite
+        val animate = tapped && !reduceMotion
+        tapped = false
+        if (!animate) return@LaunchedEffect
         if (isFavorite) {
             launch {
                 burst.snapTo(0f)
@@ -85,7 +93,10 @@ internal fun FavoriteButton(
     val burstColor = MaterialTheme.colorScheme.primary
     IconToggleButton(
         checked = isFavorite,
-        onCheckedChange = { onToggle() },
+        onCheckedChange = {
+            tapped = true
+            onToggle()
+        },
         modifier = modifier
             .size(ButtonSize)
             .drawBehind { drawBurst(burst.value, burstColor) },
