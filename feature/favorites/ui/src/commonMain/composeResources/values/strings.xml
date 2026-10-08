@@ -6,5 +6,6 @@
     <string name="remove_favorite">Remove %1$s from favorites</string>
     <string name="favorite_removed">Removed %1$s</string>
     <string name="favorite_restore_failed">Couldn't restore %1$s</string>
+    <string name="favorite_remove_failed">Couldn't remove %1$s</string>
     <string name="undo">Undo</string>
 </resources>

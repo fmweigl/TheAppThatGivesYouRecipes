@@ -29,11 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,6 +54,7 @@ import coil3.compose.AsyncImage
 import io.github.fmweigl.yetanothermealsapp.core.designsystem.component.FavoriteButton
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.FavoritesUiState.Content
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.Res
+import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.favorite_remove_failed
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.favorite_removed
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.favorite_restore_failed
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.favorites
@@ -66,9 +63,6 @@ import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.loading
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.no_favorites
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.remove_favorite
 import io.github.fmweigl.yetanothermealsapp.favorites.ui.resources.undo
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
@@ -81,11 +75,23 @@ internal fun FavoritesScreen(
     onRemove: (recipeId: String) -> Unit,
     onRemovalMessageClosed: (undo: Boolean) -> Unit,
     onRestoreFailureMessageClosed: () -> Unit,
+    onRemoveFailureMessageClosed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     RemovalMessage(uiState.removed, snackbarHostState, onRemovalMessageClosed)
-    RestoreFailureMessage(uiState.restoreFailed, snackbarHostState, onRestoreFailureMessageClosed)
+    FailureMessage(
+        uiState.restoreFailed,
+        Res.string.favorite_restore_failed,
+        snackbarHostState,
+        onRestoreFailureMessageClosed,
+    )
+    FailureMessage(
+        uiState.removeFailed,
+        Res.string.favorite_remove_failed,
+        snackbarHostState,
+        onRemoveFailureMessageClosed,
+    )
 
     Scaffold(
         modifier = modifier,
@@ -108,7 +114,7 @@ internal fun FavoritesScreen(
                 }
                 Content.Empty -> EmptyMessage()
                 Content.Error -> Message(Res.string.favorites_error, isError = true)
-                is Content.Favorites -> FavoritesList(content.teasers, onOpenRecipe, onRemove)
+                is Content.Favorites -> FavoritesList(content.teasers, uiState.removing, onOpenRecipe, onRemove)
             }
         }
     }
@@ -132,17 +138,18 @@ private fun RemovalMessage(
     }
 }
 
-/** "Couldn't restore ‹name›" while [failed] is set. */
+/** [message] ("Couldn't restore ‹name›", "Couldn't remove ‹name›") while [failed] is set. */
 @Composable
-private fun RestoreFailureMessage(
+private fun FailureMessage(
     failed: RecipeTeaser?,
+    message: StringResource,
     snackbarHostState: SnackbarHostState,
     onClosed: () -> Unit,
 ) {
     LaunchedEffect(failed) {
         if (failed == null) return@LaunchedEffect
         snackbarHostState.showSnackbar(
-            message = getString(Res.string.favorite_restore_failed, failed.name),
+            message = getString(message, failed.name),
             duration = SnackbarDuration.Long,
         )
         onClosed()
@@ -212,6 +219,7 @@ private val CardSpacing = 12.dp
 @Composable
 private fun FavoritesList(
     teasers: List<RecipeTeaser>,
+    removing: Set<String>,
     onOpenRecipe: (recipeId: String) -> Unit,
     onRemove: (recipeId: String) -> Unit,
 ) {
@@ -232,6 +240,7 @@ private fun FavoritesList(
             itemsIndexed(teasers, key = { _, teaser -> teaser.id }) { index, teaser ->
                 TeaserCard(
                     teaser = teaser,
+                    isRemoving = teaser.id in removing,
                     onClick = { onOpenRecipe(teaser.id) },
                     onRemove = { onRemove(teaser.id) },
                     modifier = Modifier.animateItem().semantics {
@@ -250,14 +259,14 @@ private fun FavoritesList(
 
 /**
  * One element for screen readers ("‹name›, ‹category · area›"), with the remove button as a separate
- * one ("Remove ‹name› from favorites"): the recipe screen's [FavoriteButton], which empties with its
- * animation before the recipe is removed. The name takes at most two lines and the subtitle one (cut
+ * one: [RemoveFavoriteButton]. The name takes at most two lines and the subtitle one (cut
  * off with "…" if longer; screen readers still get the whole text), and the text always gets room
  * for all three lines, centered, so every card is equally tall.
  */
 @Composable
 private fun TeaserCard(
     teaser: RecipeTeaser,
+    isRemoving: Boolean,
     onClick: () -> Unit,
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
@@ -301,49 +310,30 @@ private fun TeaserCard(
                     )
                 }
             }
-            RemoveFavoriteButton(teaser.name, onRemove)
+            RemoveFavoriteButton(teaser.name, isRemoving, onRemove)
         }
     }
 }
 
-/** How long the heart's emptying animation gets before the recipe is removed and its card fades out. */
-private const val REMOVE_AFTER_MILLIS = 300L
-
 /**
- * A removed card has faded out and left the composition well before this; a card still shown then
- * wasn't removed (the database failed), so its heart fills again.
- */
-private const val REFILL_AFTER_MILLIS = 3_000L
-
-/**
- * A filled heart that empties when tapped, then calls [onRemove]. For screen readers it's a plain
- * button, "Remove ‹name› from favorites": an on/off toggle that is always on would only confuse.
+ * A filled heart that empties while [isRemoving] (with the recipe screen's animation, when tapped)
+ * and calls [onRemove]. For screen readers it's a plain button, "Remove ‹name› from favorites": an
+ * on/off toggle that is always on would only confuse. Activating it that way skips the animation,
+ * since only a tap animates [FavoriteButton]; that's fine, the "Removed" message reports it.
  */
 @Composable
-private fun RemoveFavoriteButton(name: String, onRemove: () -> Unit) {
-    var removing by remember { mutableStateOf(false) }
-    val currentOnRemove by rememberUpdatedState(onRemove)
-    LaunchedEffect(removing) {
-        if (!removing) return@LaunchedEffect
-        // Removed even if the card leaves the composition first, e.g. when the tab changes.
-        withContext(NonCancellable) {
-            delay(REMOVE_AFTER_MILLIS)
-            currentOnRemove()
-        }
-        delay(REFILL_AFTER_MILLIS)
-        removing = false
-    }
+private fun RemoveFavoriteButton(name: String, isRemoving: Boolean, onRemove: () -> Unit) {
     val label = stringResource(Res.string.remove_favorite, name)
     FavoriteButton(
-        isFavorite = !removing,
-        onToggle = { removing = true },
+        isFavorite = !isRemoving,
+        onToggle = onRemove,
         // Its own element, not part of the card's (clearing the toggle's semantics also clears the
         // boundary it set).
         modifier = Modifier.semantics(mergeDescendants = true) {}.clearAndSetSemantics {
             contentDescription = label
             role = Role.Button
             onClick {
-                removing = true
+                onRemove()
                 true
             }
         },

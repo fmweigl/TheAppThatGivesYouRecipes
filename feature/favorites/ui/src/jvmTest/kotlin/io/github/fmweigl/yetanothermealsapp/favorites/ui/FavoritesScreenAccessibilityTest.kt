@@ -1,6 +1,7 @@
 package io.github.fmweigl.yetanothermealsapp.favorites.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -17,7 +18,10 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.test.runDesktopComposeUiTest
@@ -25,7 +29,6 @@ import io.github.fmweigl.yetanothermealsapp.favorites.ui.FavoritesUiState.Conten
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /** What screen readers get from [FavoritesScreen] (the merged semantics tree). */
@@ -124,17 +127,51 @@ class FavoritesScreenAccessibilityTest {
     }
 
     @Test
-    fun heartEmptiesBeforeTheRecipeIsRemoved() = runComposeUiTest {
+    fun removeButtonIsSeparateFromTheCard() = runComposeUiTest {
+        setContent { Screen(FavoritesUiState(Content.Favorites(listOf(tarts)))) }
+
+        val label = "Remove Canadian Butter Tarts from favorites"
+        onNodeWithText(tarts.name).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.ContentDescription))
+        onNodeWithContentDescription(label).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Text))
+    }
+
+    @Test
+    fun removeButtonWorksWithTheKeyboard() = runDesktopComposeUiTest {
         var removedId: String? = null
-        setContent { Screen(FavoritesUiState(Content.Favorites(listOf(tarts))), onRemove = { removedId = it }) }
-        mainClock.autoAdvance = false
+        var opened = false
+        setContent {
+            Screen(
+                FavoritesUiState(Content.Favorites(listOf(tarts))),
+                onOpenRecipe = { opened = true },
+                onRemove = { removedId = it },
+            )
+        }
 
-        onNodeWithContentDescription("Remove Canadian Butter Tarts from favorites").performClick()
-        mainClock.advanceTimeBy(100)
-        assertNull(removedId, "the heart's animation plays first")
-
-        mainClock.advanceTimeBy(300)
+        // The card, then its heart.
+        onRoot().performKeyInput {
+            pressKey(Key.Tab)
+            pressKey(Key.Tab)
+            pressKey(Key.Enter)
+        }
+        waitForIdle()
         assertEquals(tarts.id, removedId)
+        assertFalse(opened)
+    }
+
+    @Test
+    fun failedRemoveIsReported() = runComposeUiTest {
+        var closed = false
+        setContent {
+            Screen(
+                FavoritesUiState(Content.Favorites(listOf(tarts)), removeFailed = tarts),
+                onRemoveFailureMessageClosed = { closed = true },
+            )
+        }
+
+        onNodeWithText("Couldn't remove Canadian Butter Tarts").assertExists()
+        mainClock.advanceTimeBy(15_000)
+        waitForIdle()
+        assertTrue(closed)
     }
 
     @Test
@@ -218,16 +255,19 @@ class FavoritesScreenAccessibilityTest {
     @Composable
     private fun Screen(
         uiState: FavoritesUiState,
+        onOpenRecipe: (String) -> Unit = {},
         onRemove: (String) -> Unit = {},
         onRemovalMessageClosed: (Boolean) -> Unit = {},
         onRestoreFailureMessageClosed: () -> Unit = {},
+        onRemoveFailureMessageClosed: () -> Unit = {},
     ) {
         FavoritesScreen(
             uiState = uiState,
-            onOpenRecipe = {},
+            onOpenRecipe = onOpenRecipe,
             onRemove = onRemove,
             onRemovalMessageClosed = onRemovalMessageClosed,
             onRestoreFailureMessageClosed = onRestoreFailureMessageClosed,
+            onRemoveFailureMessageClosed = onRemoveFailureMessageClosed,
         )
     }
 }
