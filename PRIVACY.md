@@ -56,4 +56,4 @@ adjusted.
 ## Contact
 
 Florian Weigl
-yetanothermealapp@proton.me
+tatgyr@proton.me
