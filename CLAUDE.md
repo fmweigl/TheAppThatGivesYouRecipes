@@ -95,7 +95,7 @@ Shared Gradle setup lives in convention plugins in the included build `build-log
 
 ## App icon
 
-A two-pronged fork shaped like a "Y" with a saffron leaf, cream on a basil-green disc and background (MealsTheme colors). The source is `art/app-icon/render_icons.py`, which holds the motif as SVG on Android's 108×108 adaptive-icon grid and renders, with Inkscape and Pillow (`python3 art/app-icon/render_icons.py`):
+A chef's hat with a saffron band, cream on a basil-green disc and background (MealsTheme colors). The hat is a single outline with its pleats cut out (`fillType="evenOdd"`) and a gap above the band, so the one-color themed icon keeps every detail. The source is `art/app-icon/render_icons.py`, which holds the motif as SVG on Android's 108×108 adaptive-icon grid and renders, with Inkscape and Pillow (`python3 art/app-icon/render_icons.py`):
 - Android's legacy launcher PNGs (`mipmap-*dpi`, only used on API 24–25),
 - iOS's 1024 px light, dark and tinted icons (`iosApp/iosApp/Assets.xcassets/AppIcon.appiconset`, opaque RGB),
 - the desktop icon: `desktopApp/src/main/resources/icon.png` (the window icon, set in `main.kt`, and the Linux package icon) plus `desktopApp/icons/icon.ico` and `icon.icns` for the Windows and macOS installers.

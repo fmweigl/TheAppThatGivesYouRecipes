@@ -23,20 +23,19 @@ CREAM = "#FFF8F0"
 SAFFRON = "#F2BF48"
 ESPRESSO = "#18120E"
 
-LIGHT = dict(background=BASIL, disc=BASIL_DARK, fork=CREAM, leaf=SAFFRON)
-DARK = dict(background=ESPRESSO, disc=BASIL_DARK, fork=CREAM, leaf=SAFFRON)
-TINTED = dict(background="#000000", disc="#262626", fork="#FFFFFF", leaf="#B3B3B3")
+LIGHT = dict(background=BASIL, disc=BASIL_DARK, hat=CREAM, band=SAFFRON)
+DARK = dict(background=ESPRESSO, disc=BASIL_DARK, hat=CREAM, band=SAFFRON)
+TINTED = dict(background="#000000", disc="#262626", hat="#FFFFFF", band="#B3B3B3")
 
-# A two-pronged fork shaped like a "Y", with a leaf. The fork and leaf are scaled around the
-# center so they stay inside the adaptive icon's 66-unit safe zone.
+# A chef's hat with a saffron band. The hat is one outline (three arcs) with the pleats cut out,
+# and a gap separates it from the band, so the monochrome icon keeps both details in one color.
 MOTIF = """
 <rect width="108" height="108" fill="{background}"/>
 <circle cx="54" cy="54" r="30" fill="{disc}"/>
-<g transform="translate(54 54) scale(0.85) translate(-54 -54)">
-  <path d="M54 80V61C54 50 39 49 39 31M54 61C54 50 69 49 69 31" fill="none" stroke="{fork}"
-        stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="54" cy="61" r="5.5" fill="{fork}"/>
-  <path d="M69 31c4.5-4.5 10-4 12 0c-4 3-8.5 3-12 0z" fill="{leaf}"/>
+<g transform="translate(0 1.25)">
+  <path fill-rule="evenodd" fill="{hat}" d="M43 57A9 9 0 0 1 42.898 39.001A11.5 11.5 0 0 1 65.102 39.001A9 9 0 0 1 65 57V64Q65 66 63 66H45Q43 66 43 64Z
+           M48.4 56A1.1 1.1 0 0 1 50.6 56V63A1.1 1.1 0 0 1 48.4 63Z M57.4 56A1.1 1.1 0 0 1 59.6 56V63A1.1 1.1 0 0 1 57.4 63Z"/>
+  <path fill="{band}" d="M44 68H64A2 2 0 0 1 66 70V73A2 2 0 0 1 64 75H44A2 2 0 0 1 42 73V70A2 2 0 0 1 44 68Z"/>
 </g>
 """
 
