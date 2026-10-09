@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       issue_key:
-        description: "Optional: work on a specific ticket (e.g. PROJ-42)"
+        description: "Optional: work on a specific ticket (e.g. TATGYR-42)"
         required: false
 
 # Never two runs at once, so no ticket is worked on twice
@@ -26,7 +26,7 @@ permissions:
   id-token: write
 
 # Only non-secret values at job level. Jira secrets are deliberately given
-# only to the steps that need them – not to the Claude step.
+# only to the steps that need them, not to the Claude step.
 env:
   JIRA_PROJECT: ${{ vars.JIRA_PROJECT_KEY }}
   STATUS_READY: "Ready for Claude"
@@ -43,7 +43,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          # Optional PAT, so your CI also runs on agent PRs
+          # PAT instead of GITHUB_TOKEN, so CI also runs on the agent's PRs
           token: ${{ secrets.AGENT_GH_TOKEN || github.token }}
 
       - name: Provide Jira helper functions
@@ -98,7 +98,7 @@ jobs:
 
           KEY=$(echo "$RESULT" | jq -r '.issues[0].key // empty')
           if [ -z "$KEY" ]; then
-            echo "No ticket ready – nothing to do."
+            echo "No ticket ready, nothing to do."
             exit 0
           fi
 
@@ -110,7 +110,7 @@ jobs:
               | [.content[]? | .text? // empty] | join("")]
             | join("\n")')
 
-          # Set to "In Progress" right away – this is the lock against working on a ticket twice.
+          # Move to "In Progress" right away: this is the lock against working on a ticket twice.
           # For a manually given ticket the transition may be missing.
           jira_transition "$KEY" "$STATUS_IN_PROGRESS" || [ -n "$INPUT_KEY" ]
 
@@ -129,11 +129,12 @@ jobs:
             echo "$DELIM"
           } >> "$GITHUB_OUTPUT"
 
+      # Same JDK as ci.yml, so the agent builds under the same conditions as CI
       - uses: actions/setup-java@v5
         if: steps.ticket.outputs.key != ''
         with:
-          distribution: temurin
-          java-version: "17" # adjust to your project
+          distribution: zulu
+          java-version: 21
 
       - uses: gradle/actions/setup-gradle@v4
         if: steps.ticket.outputs.key != ''
@@ -148,7 +149,7 @@ jobs:
           # anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
             You are working autonomously on a Jira ticket in the repository ${{ github.repository }}.
-            Nobody answers questions – make sensible decisions yourself
+            Nobody answers questions: make sensible decisions yourself
             or stop (see below).
 
             ## Ticket ${{ steps.ticket.outputs.key }}: ${{ steps.ticket.outputs.summary }}
@@ -161,7 +162,7 @@ jobs:
                the conventions from CLAUDE.md. Change nothing the ticket doesn't ask for.
             3. Write or extend tests for the new or changed behavior.
             4. Run the check commands from CLAUDE.md and fix errors until everything is green.
-            5. Do NOT commit or push – the workflow does that after you.
+            5. Do NOT commit or push; the workflow does that after you.
 
             ## When to stop
             Stop and return status "blocked" if
@@ -174,7 +175,7 @@ jobs:
             ## Return value
             - status: "done" or "blocked"
             - title: short PR title without the ticket key, in the imperative
-            - pr_body: Markdown – what was changed, why, how it was tested; open points
+            - pr_body: Markdown: what was changed, why, how it was tested; open points
             - blocker_reason: only when "blocked"
           claude_args: |
             --max-turns 200
@@ -223,10 +224,17 @@ jobs:
           jira_comment "$KEY" "Pull request created: $PR_URL"
           jira_transition "$KEY" "$STATUS_REVIEW"
 
-      # Keep the agent's last commit as an artifact, so its work is never lost
+      # Keep the agent's work as an artifact, committed or not, so it is never lost.
+      # Restore it on a fresh branch from master with: git apply --index agent.patch
       - name: Save agent patch
         if: always() && steps.ticket.outputs.key != ''
-        run: git format-patch -1 HEAD -o "$RUNNER_TEMP/patch" || true
+        run: |
+          mkdir -p "$RUNNER_TEMP/patch"
+          git add -A
+          # Compare the index with the base branch: covers committed and uncommitted changes
+          git diff --cached --binary "origin/$BASE_BRANCH" > "$RUNNER_TEMP/patch/agent.patch" || true
+          # An empty patch is useless; drop it so the upload is skipped
+          [ -s "$RUNNER_TEMP/patch/agent.patch" ] || rm -f "$RUNNER_TEMP/patch/agent.patch"
 
       - name: Upload agent patch
         if: always() && steps.ticket.outputs.key != ''
