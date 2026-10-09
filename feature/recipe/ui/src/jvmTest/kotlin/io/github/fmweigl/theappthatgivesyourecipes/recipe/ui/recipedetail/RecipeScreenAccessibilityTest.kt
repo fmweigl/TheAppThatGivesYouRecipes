@@ -1,6 +1,10 @@
 package io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.recipedetail
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -9,6 +13,7 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
@@ -18,6 +23,7 @@ import androidx.compose.ui.test.performScrollToNode
 import io.github.fmweigl.theappthatgivesyourecipes.core.domain.DataError
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.domain.model.Ingredient
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.domain.model.Recipe
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.CONTENT_FADE_MILLIS
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.recipedetail.RecipeUiState.Content
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runPhoneTest
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runTabletLandscapeTest
@@ -37,6 +43,9 @@ class RecipeScreenAccessibilityTest {
     )
 
     private val isHeading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
+
+    private val isLoadingIndicator = hasContentDescription("Loading") and
+        SemanticsMatcher.expectValue(SemanticsProperties.ProgressBarRangeInfo, ProgressBarRangeInfo.Indeterminate)
 
     private fun paneTitle(title: String) = SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, title)
 
@@ -82,10 +91,29 @@ class RecipeScreenAccessibilityTest {
     }
 
     @Test
-    fun loadingIndicatorIsDescribed() = runPhoneTest {
+    fun skeletonIsOneProgressElementDescribedAsLoading() = runPhoneTest {
         setContent { Screen(Content.Loading) }
 
-        onNodeWithContentDescription("Loading").assertExists()
+        onAllNodes(isLoadingIndicator).assertCountEquals(1)
+        onAllNodes(hasScrollAction()).assertCountEquals(0)
+    }
+
+    /** As after "Try again": only the incoming content is there for screen readers, also during the fade. */
+    @Test
+    fun errorSkeletonAndRecipeFadeIntoEachOther() = runPhoneTest {
+        var content: Content by mutableStateOf(Content.Error(DataError.NoConnection))
+        setContent { Screen(content) }
+        mainClock.autoAdvance = false
+
+        content = Content.Loading
+        mainClock.advanceTimeBy(CONTENT_FADE_MILLIS / 2L)
+        onAllNodesWithText("Try again").assertCountEquals(0)
+        onAllNodes(isLoadingIndicator).assertCountEquals(1)
+
+        content = Content.Success(recipe)
+        mainClock.advanceTimeBy(CONTENT_FADE_MILLIS / 2L)
+        onAllNodes(isLoadingIndicator).assertCountEquals(0)
+        onNode(paneTitle(recipe.name)).assertExists()
     }
 
     @Test

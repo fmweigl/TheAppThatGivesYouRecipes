@@ -1,6 +1,5 @@
 package io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.recipedetail
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,8 +8,9 @@ import androidx.compose.ui.Modifier
 import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.component.BackTopAppBar
 import io.github.fmweigl.theappthatgivesyourecipes.core.domain.DataError
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.ErrorMessage
-import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.LoadingIndicator
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.RecipeContentFade
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.RecipeDetails
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.RecipeSkeleton
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.recipedetail.RecipeUiState.Content
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.Res
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.recipe
@@ -30,9 +30,13 @@ internal fun RecipeScreen(
 ) {
     Column(modifier.fillMaxSize()) {
         BackTopAppBar(title = stringResource(Res.string.recipe), onBack = onBack)
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            when (val content = uiState.content) {
-                Content.Loading -> LoadingIndicator()
+        RecipeContentFade(
+            targetState = uiState,
+            contentKey = { it.content.key },
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+        ) { shown ->
+            when (val content = shown.content) {
+                Content.Loading -> RecipeSkeleton()
                 is Content.Error -> ErrorMessage(
                     content.error,
                     // Trying again can't bring back a recipe TheMealDB doesn't have.
@@ -40,10 +44,17 @@ internal fun RecipeScreen(
                 )
                 is Content.Success -> RecipeDetails(
                     recipe = content.recipe,
-                    isFavorite = uiState.isFavorite,
+                    isFavorite = shown.isFavorite,
                     onToggleFavorite = onToggleFavorite,
                 )
             }
         }
     }
 }
+
+/** What the fade tells apart: the skeleton, an error, or one particular recipe. */
+private val Content.key: Any
+    get() = when (this) {
+        Content.Loading, is Content.Error -> this
+        is Content.Success -> recipe.id
+    }

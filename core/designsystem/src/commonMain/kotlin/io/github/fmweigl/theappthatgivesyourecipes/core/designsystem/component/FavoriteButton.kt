@@ -5,7 +5,9 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -18,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -111,6 +114,14 @@ fun FavoriteButton(
                     scaleY = scale.value
                 },
         )
+    }
+}
+
+/** Stands in for a [FavoriteButton] in a [Skeleton]: a circle the heart's size, where the heart will be. */
+@Composable
+fun FavoriteButtonPlaceholder(modifier: Modifier = Modifier) {
+    Box(modifier.size(ButtonSize), contentAlignment = Alignment.Center) {
+        SkeletonBlock(Modifier.size(HeartSize), CircleShape)
     }
 }
 

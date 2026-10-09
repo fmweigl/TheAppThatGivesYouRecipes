@@ -44,19 +44,49 @@ import org.jetbrains.compose.resources.stringResource
  */
 internal val MaxColumnWidth = 640.dp
 
+// The recipe's measurements, shared with its RecipeSkeleton so nothing moves when the recipe arrives.
+
+/** Padding around each column or pane. */
+internal val ContentPadding = 16.dp
+
+/** Space between the items of a column or pane. */
+internal val ItemSpacing = 12.dp
+
+/** Space between an ingredient's name and its measure. */
+internal val IngredientSpacing = 8.dp
+
 /** The image on medium windows and in the two-pane layout: wider than tall, so the name stays in view. */
-private const val WIDE_IMAGE_ASPECT_RATIO = 4f / 3f
+internal const val WIDE_IMAGE_ASPECT_RATIO = 4f / 3f
 
 /** Share of the window's width the image pane gets in the two-pane layout. */
-private const val IMAGE_PANE_WEIGHT = 0.4f
+internal const val IMAGE_PANE_WEIGHT = 0.4f
+
+/** How a recipe (or its [RecipeSkeleton]) is laid out; see [currentRecipeLayout]. */
+internal enum class RecipeLayout { Column, CenteredColumn, TwoPanes }
 
 /**
- * The whole recipe: image, name with the [FavoriteButton], ingredients and instructions. Its layout
- * follows the window's size class: one column on compact widths (phones in portrait), the same
- * column centered and with a wider image on medium widths (tablets in portrait), and two panes,
- * name and image next to ingredients and instructions, each scrolling on its own, on expanded
- * widths (tablets in landscape) and on medium widths with a compact height (phones in landscape),
- * where the column's image would be taller than the window.
+ * The layout for the window's size class: one column on compact widths (phones in portrait), the
+ * same column centered and with a wider image on medium widths (tablets in portrait), and two panes
+ * on expanded widths (tablets in landscape) and on medium widths with a compact height (phones in
+ * landscape), where the column's image would be taller than the window.
+ */
+@Composable
+internal fun currentRecipeLayout(): RecipeLayout {
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val isMediumWidth = windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+    val isCompactHeight = !windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
+    return when {
+        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) ||
+            isMediumWidth && isCompactHeight -> RecipeLayout.TwoPanes
+        isMediumWidth -> RecipeLayout.CenteredColumn
+        else -> RecipeLayout.Column
+    }
+}
+
+/**
+ * The whole recipe: image, name with the [FavoriteButton], ingredients and instructions, laid out
+ * by [currentRecipeLayout]. In two panes, name and image are next to ingredients and instructions,
+ * each pane scrolling on its own.
  */
 @Composable
 internal fun RecipeDetails(
@@ -65,16 +95,11 @@ internal fun RecipeDetails(
     onToggleFavorite: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     // Announced by screen readers when the recipe appears (the focus stays where it was, e.g. on "Next").
     val paneModifier = modifier.fillMaxSize().semantics { paneTitle = recipe.name }
-    val isMediumWidth = windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
-    val isCompactHeight = !windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
-    when {
-        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) ||
-            isMediumWidth && isCompactHeight ->
-            TwoPaneRecipe(recipe, isFavorite, onToggleFavorite, paneModifier)
-        isMediumWidth ->
+    when (currentRecipeLayout()) {
+        RecipeLayout.TwoPanes -> TwoPaneRecipe(recipe, isFavorite, onToggleFavorite, paneModifier)
+        RecipeLayout.CenteredColumn ->
             SingleColumnRecipe(
                 recipe,
                 isFavorite,
@@ -83,7 +108,8 @@ internal fun RecipeDetails(
                 modifier = paneModifier,
                 itemModifier = Modifier.widthIn(max = MaxColumnWidth),
             )
-        else -> SingleColumnRecipe(recipe, isFavorite, onToggleFavorite, imageAspectRatio = 1f, paneModifier)
+        RecipeLayout.Column ->
+            SingleColumnRecipe(recipe, isFavorite, onToggleFavorite, imageAspectRatio = 1f, paneModifier)
     }
 }
 
@@ -100,8 +126,8 @@ private fun SingleColumnRecipe(
     LazyColumn(
         modifier = modifier,
         state = rememberLazyListState(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(ContentPadding),
+        verticalArrangement = Arrangement.spacedBy(ItemSpacing),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         val fullWidth = itemModifier.fillMaxWidth()
@@ -129,8 +155,8 @@ private fun TwoPaneRecipe(
                 .weight(IMAGE_PANE_WEIGHT)
                 .fillMaxHeight()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(ContentPadding),
+            verticalArrangement = Arrangement.spacedBy(ItemSpacing),
         ) {
             RecipeTitle(recipe, isFavorite, onToggleFavorite)
             RecipeImage(recipe, WIDE_IMAGE_ASPECT_RATIO, Modifier.fillMaxWidth())
@@ -140,8 +166,8 @@ private fun TwoPaneRecipe(
             // Nothing in this pane takes focus, so on the desktop the pane itself does, to scroll by keyboard.
             modifier = Modifier.weight(1f - IMAGE_PANE_WEIGHT).fillMaxHeight().keyboardScrollable(bodyState),
             state = bodyState,
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(ContentPadding),
+            verticalArrangement = Arrangement.spacedBy(ItemSpacing),
         ) {
             recipeBody(recipe, Modifier.widthIn(max = MaxColumnWidth).fillMaxWidth())
         }
@@ -198,7 +224,7 @@ private fun LazyListScope.recipeBody(recipe: Recipe, itemModifier: Modifier) {
             // One element for screen readers: "Sushi Rice, 300ml".
             Row(
                 modifier = itemModifier.semantics(mergeDescendants = true) {},
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(IngredientSpacing),
             ) {
                 Text(ingredient.name, modifier = Modifier.weight(1f))
                 Text(ingredient.measure, color = MaterialTheme.colorScheme.onSurfaceVariant)
