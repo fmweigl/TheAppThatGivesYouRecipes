@@ -9,8 +9,8 @@ import androidx.compose.ui.Modifier
 import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.component.BackTopAppBar
 import io.github.fmweigl.theappthatgivesyourecipes.core.domain.DataError
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.ErrorMessage
-import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.LoadingIndicator
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.RecipeDetails
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.RecipeSkeleton
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.recipedetail.RecipeUiState.Content
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.Res
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.recipe
@@ -32,7 +32,7 @@ internal fun RecipeScreen(
         BackTopAppBar(title = stringResource(Res.string.recipe), onBack = onBack)
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (val content = uiState.content) {
-                Content.Loading -> LoadingIndicator()
+                Content.Loading -> RecipeSkeleton()
                 is Content.Error -> ErrorMessage(
                     content.error,
                     // Trying again can't bring back a recipe TheMealDB doesn't have.

@@ -107,10 +107,20 @@ class RandomRecipeScreenAccessibilityTest {
     }
 
     @Test
-    fun loadingIndicatorIsDescribed() = runPhoneTest {
+    fun skeletonIsOneElementDescribedAsLoading() = runPhoneTest {
         setContent { Screen(Content.Loading) }
 
-        onNodeWithContentDescription("Loading").assertExists()
+        onAllNodesWithContentDescription("Loading").assertCountEquals(1)
+        // Nothing to scroll to yet: the placeholders aren't content.
+        onAllNodes(hasScrollAction()).assertCountEquals(0)
+    }
+
+    @Test
+    fun twoPaneSkeletonIsOneElementDescribedAsLoading() = runTabletLandscapeTest {
+        setContent { Screen(Content.Loading) }
+
+        onAllNodesWithContentDescription("Loading").assertCountEquals(1)
+        onAllNodes(hasScrollAction()).assertCountEquals(0)
     }
 
     @Test

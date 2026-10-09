@@ -26,9 +26,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.ErrorMessage
-import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.LoadingIndicator
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.MaxColumnWidth
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.RecipeDetails
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.RecipeSkeleton
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.randomrecipe.RandomRecipeUiState.Content
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.Res
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.next_recipe
@@ -46,7 +46,7 @@ internal fun RandomRecipeScreen(
     Column(modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (val content = uiState.content) {
-                Content.Loading -> LoadingIndicator()
+                Content.Loading -> RecipeSkeleton()
                 is Content.Error -> ErrorMessage(content.error, onRetry = onShowNext)
                 // A new list state per recipe, so each one starts scrolled to the top.
                 is Content.Success -> key(content.recipe.id) {

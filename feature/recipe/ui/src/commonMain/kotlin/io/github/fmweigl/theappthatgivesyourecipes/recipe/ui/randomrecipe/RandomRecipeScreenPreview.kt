@@ -18,3 +18,16 @@ private fun RandomRecipeScreenPreview() {
         )
     }
 }
+
+@DevicePreviews
+@Composable
+private fun RandomRecipeScreenLoadingPreview() {
+    RecipePreview {
+        RandomRecipeScreen(
+            uiState = RandomRecipeUiState(Content.Loading),
+            onShowNext = {},
+            onShowPrevious = {},
+            onToggleFavorite = {},
+        )
+    }
+}

@@ -18,3 +18,16 @@ private fun RecipeScreenPreview() {
         )
     }
 }
+
+@DevicePreviews
+@Composable
+private fun RecipeScreenLoadingPreview() {
+    RecipePreview {
+        RecipeScreen(
+            uiState = RecipeUiState(Content.Loading),
+            onBack = {},
+            onRetry = {},
+            onToggleFavorite = {},
+        )
+    }
+}

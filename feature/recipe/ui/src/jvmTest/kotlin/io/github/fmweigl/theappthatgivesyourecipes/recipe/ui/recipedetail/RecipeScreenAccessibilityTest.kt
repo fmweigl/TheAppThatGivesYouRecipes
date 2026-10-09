@@ -11,6 +11,7 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -82,10 +83,11 @@ class RecipeScreenAccessibilityTest {
     }
 
     @Test
-    fun loadingIndicatorIsDescribed() = runPhoneTest {
+    fun skeletonIsOneElementDescribedAsLoading() = runPhoneTest {
         setContent { Screen(Content.Loading) }
 
-        onNodeWithContentDescription("Loading").assertExists()
+        onAllNodesWithContentDescription("Loading").assertCountEquals(1)
+        onAllNodes(hasScrollAction()).assertCountEquals(0)
     }
 
     @Test
