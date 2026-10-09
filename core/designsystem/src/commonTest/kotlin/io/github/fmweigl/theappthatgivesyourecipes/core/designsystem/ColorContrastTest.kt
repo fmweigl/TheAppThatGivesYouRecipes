@@ -2,7 +2,9 @@ package io.github.fmweigl.theappthatgivesyourecipes.core.designsystem
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
+import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.component.SKELETON_MIN_ALPHA
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -56,6 +58,27 @@ class ColorContrastTest {
         }
     }
 
+    @Test
+    fun lightSkeletonIsVisible() = assertSkeletonContrast(LightColorScheme)
+
+    @Test
+    fun darkSkeletonIsVisible() = assertSkeletonContrast(DarkColorScheme)
+
+    /**
+     * The skeleton's blocks are the only sign that a screen is loading, so they have to stand out
+     * from the background, also at the low point of their pulse. Decorative shapes have no WCAG
+     * minimum; this keeps them from fading away by accident.
+     */
+    private fun assertSkeletonContrast(scheme: ColorScheme) = with(scheme) {
+        val full = contrast(outlineVariant, background)
+        val faded = contrast(outlineVariant.copy(alpha = SKELETON_MIN_ALPHA).compositeOver(background), background)
+        assertTrue(full >= MIN_SKELETON_CONTRAST, "skeleton: contrast $full is below $MIN_SKELETON_CONTRAST")
+        assertTrue(
+            faded >= MIN_FADED_SKELETON_CONTRAST,
+            "faded skeleton: contrast $faded is below $MIN_FADED_SKELETON_CONTRAST",
+        )
+    }
+
     private fun contrast(a: Color, b: Color): Float {
         val (light, dark) = listOf(a.luminance(), b.luminance()).sortedDescending()
         return (light + 0.05f) / (dark + 0.05f)
@@ -67,5 +90,9 @@ class ColorContrastTest {
 
         /** WCAG AA for graphical objects such as icons (1.4.11). */
         const val MIN_ICON_CONTRAST = 3f
+
+        /** The skeleton's blocks at full opacity and at the low point of their pulse. */
+        const val MIN_SKELETON_CONTRAST = 1.5f
+        const val MIN_FADED_SKELETON_CONTRAST = 1.4f
     }
 }

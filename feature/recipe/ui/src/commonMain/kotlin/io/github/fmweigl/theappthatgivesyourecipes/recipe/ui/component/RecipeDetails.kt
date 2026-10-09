@@ -44,6 +44,17 @@ import org.jetbrains.compose.resources.stringResource
  */
 internal val MaxColumnWidth = 640.dp
 
+// The recipe's measurements, shared with its RecipeSkeleton so nothing moves when the recipe arrives.
+
+/** Padding around each column or pane. */
+internal val ContentPadding = 16.dp
+
+/** Space between the items of a column or pane. */
+internal val ItemSpacing = 12.dp
+
+/** Space between an ingredient's name and its measure. */
+internal val IngredientSpacing = 8.dp
+
 /** The image on medium windows and in the two-pane layout: wider than tall, so the name stays in view. */
 internal const val WIDE_IMAGE_ASPECT_RATIO = 4f / 3f
 
@@ -115,8 +126,8 @@ private fun SingleColumnRecipe(
     LazyColumn(
         modifier = modifier,
         state = rememberLazyListState(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(ContentPadding),
+        verticalArrangement = Arrangement.spacedBy(ItemSpacing),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         val fullWidth = itemModifier.fillMaxWidth()
@@ -144,8 +155,8 @@ private fun TwoPaneRecipe(
                 .weight(IMAGE_PANE_WEIGHT)
                 .fillMaxHeight()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(ContentPadding),
+            verticalArrangement = Arrangement.spacedBy(ItemSpacing),
         ) {
             RecipeTitle(recipe, isFavorite, onToggleFavorite)
             RecipeImage(recipe, WIDE_IMAGE_ASPECT_RATIO, Modifier.fillMaxWidth())
@@ -155,8 +166,8 @@ private fun TwoPaneRecipe(
             // Nothing in this pane takes focus, so on the desktop the pane itself does, to scroll by keyboard.
             modifier = Modifier.weight(1f - IMAGE_PANE_WEIGHT).fillMaxHeight().keyboardScrollable(bodyState),
             state = bodyState,
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(ContentPadding),
+            verticalArrangement = Arrangement.spacedBy(ItemSpacing),
         ) {
             recipeBody(recipe, Modifier.widthIn(max = MaxColumnWidth).fillMaxWidth())
         }
@@ -213,7 +224,7 @@ private fun LazyListScope.recipeBody(recipe: Recipe, itemModifier: Modifier) {
             // One element for screen readers: "Sushi Rice, 300ml".
             Row(
                 modifier = itemModifier.semantics(mergeDescendants = true) {},
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(IngredientSpacing),
             ) {
                 Text(ingredient.name, modifier = Modifier.weight(1f))
                 Text(ingredient.measure, color = MaterialTheme.colorScheme.onSurfaceVariant)

@@ -1,9 +1,5 @@
 package io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.randomrecipe
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,9 +23,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.ContentFadeSpec
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.ErrorMessage
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.MaxColumnWidth
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.RecipeContentFade
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.RecipeDetails
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.RecipeSkeleton
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.randomrecipe.RandomRecipeUiState.Content
@@ -47,14 +43,11 @@ internal fun RandomRecipeScreen(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-        // Fades between skeleton, error and recipes, also from one recipe to the next. Each recipe
-        // is its own content, so it starts scrolled to the top, and the one fading out keeps its
-        // state (its heart) from before.
-        AnimatedContent(
+        // A new content per recipe (not just per state), so each one starts scrolled to the top.
+        RecipeContentFade(
             targetState = uiState,
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            transitionSpec = { fadeIn(ContentFadeSpec) togetherWith fadeOut(ContentFadeSpec) },
             contentKey = { it.content.key },
+            modifier = Modifier.weight(1f).fillMaxWidth(),
         ) { shown ->
             when (val content = shown.content) {
                 Content.Loading -> RecipeSkeleton()
@@ -76,7 +69,7 @@ internal fun RandomRecipeScreen(
     }
 }
 
-/** What the crossfade tells apart: the skeleton, an error, or one particular recipe. */
+/** What the fade tells apart: the skeleton, an error, or one particular recipe. */
 private val Content.key: Any
     get() = when (this) {
         Content.Loading, is Content.Error -> this
