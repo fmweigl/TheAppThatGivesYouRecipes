@@ -35,7 +35,7 @@ class RecipeRepositoryImplTest {
             assertEquals(expectedUrl, request.url.toString())
             handler(request)
         }
-        return RecipeRepositoryImpl(createTheMealDbHttpClient(engine), database.favoriteRecipeDao())
+        return RecipeRepositoryImpl(createTheMealDbHttpClient(engine), database.favoriteRecipeDao(), RecipeCache())
     }
 
     private fun repository(
@@ -183,7 +183,82 @@ class RecipeRepositoryImplTest {
         )
     }
 
+    @Test
+    fun searchRecipesSendsTheQueryAndMapsTheMeals() = runTest {
+        val result = repository(MEAL_JSON, expectedUrl = "$SEARCH_URL?s=tart").searchRecipes("tart")
+
+        val recipes = assertIs<Result.Success<List<Recipe>>>(result).data
+        assertEquals(listOf("52923"), recipes.map { it.id })
+        assertEquals(3, recipes.single().ingredients.size)
+    }
+
+    @Test
+    fun searchRecipesReturnsAnEmptyListWhenThereIsNoMatch() = runTest {
+        assertEquals(
+            Result.Success(emptyList<Recipe>()),
+            repository("""{"meals":null}""", expectedUrl = "$SEARCH_URL?s=zzz").searchRecipes("zzz"),
+        )
+    }
+
+    @Test
+    fun searchRecipesTrimsTheNames() = runTest {
+        val body = """{"meals":[{"idMeal":"1","strMeal":"  Pad Thai "},{"idMeal":"2","strMeal":"Pad Thai Soup"}]}"""
+
+        val result = repository(body, expectedUrl = "$SEARCH_URL?s=pad+thai").searchRecipes("pad thai")
+
+        assertEquals(
+            listOf("Pad Thai", "Pad Thai Soup"),
+            assertIs<Result.Success<List<Recipe>>>(result).data.map { it.name },
+        )
+    }
+
+    @Test
+    fun searchRecipesKeepsTheOrderOfTheResponse() = runTest {
+        val body = """{"meals":[{"idMeal":"3","strMeal":"B"},{"idMeal":"1","strMeal":"A"}]}"""
+
+        val result = repository(body, expectedUrl = "$SEARCH_URL?s=x").searchRecipes("x")
+
+        assertEquals(listOf("3", "1"), assertIs<Result.Success<List<Recipe>>>(result).data.map { it.id })
+    }
+
+    @Test
+    fun searchRecipesFailsWithNoConnectionOnNetworkError() = runTest {
+        assertEquals(
+            Result.Failure(DataError.NoConnection),
+            repository("$SEARCH_URL?s=x") { throw IOException("offline") }.searchRecipes("x"),
+        )
+    }
+
+    @Test
+    fun getRecipeOpensASearchResultWithoutALookup() = runTest {
+        val requestedUrls = mutableListOf<String>()
+        val engine = MockEngine { request ->
+            requestedUrls += request.url.toString()
+            respond(MEAL_JSON, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+        }
+        val client = createTheMealDbHttpClient(engine)
+        val repository = RecipeRepositoryImpl(client, database.favoriteRecipeDao(), RecipeCache())
+
+        repository.searchRecipes("tart")
+        val result = repository.getRecipe("52923")
+
+        assertEquals("Canadian Butter Tarts", assertIs<Result.Success<Recipe>>(result).data.name)
+        assertEquals(listOf("$SEARCH_URL?s=tart"), requestedUrls)
+    }
+
+    @Test
+    fun getRecipePrefersASavedFavoriteOverASearchResult() = runTest {
+        val saved = testRecipe("52923")
+        database.favoriteRecipeDao().upsert(saved.toFavoriteRecipeEntity(savedAt = 1))
+        val repository = repository(MEAL_JSON, expectedUrl = "$SEARCH_URL?s=tart")
+
+        repository.searchRecipes("tart")
+
+        assertEquals(Result.Success(saved), repository.getRecipe("52923"))
+    }
+
     private companion object {
+        const val SEARCH_URL = "https://www.themealdb.com/api/json/v2/1/search.php"
         const val RANDOM_URL = "https://www.themealdb.com/api/json/v2/1/random.php"
         const val LOOKUP_URL = "https://www.themealdb.com/api/json/v2/1/lookup.php"
 

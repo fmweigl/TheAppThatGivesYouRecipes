@@ -4,6 +4,7 @@ import io.github.fmweigl.theappthatgivesyourecipes.core.data.safeApiCall
 import io.github.fmweigl.theappthatgivesyourecipes.core.domain.DataError
 import io.github.fmweigl.theappthatgivesyourecipes.core.domain.Result
 import io.github.fmweigl.theappthatgivesyourecipes.core.domain.flatMap
+import io.github.fmweigl.theappthatgivesyourecipes.core.domain.map
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.data.database.FavoriteRecipeDao
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.data.database.safeDbCall
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.data.database.toRecipe
@@ -19,6 +20,7 @@ import io.ktor.client.request.parameter
 internal class RecipeRepositoryImpl(
     private val client: HttpClient,
     private val favoriteRecipeDao: FavoriteRecipeDao,
+    private val searchResults: RecipeCache,
 ) : RecipeRepository {
 
     override suspend fun getRandomRecipe(): Result<Recipe, DataError> =
@@ -29,15 +31,26 @@ internal class RecipeRepositoryImpl(
                 if (recipe != null) Result.Success(recipe) else Result.Failure(DataError.InvalidResponse)
             }
 
-    /** A saved favorite comes from the database, so it opens offline; anything else from TheMealDB. */
+    /**
+     * A saved favorite comes from the database, so it opens offline; then a recipe from a search
+     * result; anything else from TheMealDB.
+     */
     override suspend fun getRecipe(id: String): Result<Recipe, DataError> {
         val saved = when (val result = safeDbCall { favoriteRecipeDao.getById(id) }) {
             is Result.Success -> result.data
             // TheMealDB still has the recipe if the database can't be read.
             is Result.Failure -> null
         }
-        return if (saved != null) Result.Success(saved.toRecipe()) else lookUpRecipe(id)
+        if (saved != null) return Result.Success(saved.toRecipe())
+        return searchResults[id]?.let { Result.Success(it) } ?: lookUpRecipe(id)
     }
+
+    override suspend fun searchRecipes(query: String): Result<List<Recipe>, DataError> =
+        safeApiCall { client.get("search.php") { parameter("s", query) }.body<MealsResponse>() }
+            .map { response ->
+                // Meals that can't be mapped are skipped; none at all is simply no match.
+                response.meals.mapNotNull { it.toRecipe() }.also(searchResults::putAll)
+            }
 
     private suspend fun lookUpRecipe(id: String): Result<Recipe, DataError> =
         safeApiCall { client.get("lookup.php") { parameter("i", id) }.body<MealsResponse>() }

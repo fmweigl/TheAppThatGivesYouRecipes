@@ -15,4 +15,7 @@ internal class ScreenshotRecipeRepository(private val recipes: List<Recipe>) : R
 
     override suspend fun getRecipe(id: String): Result<Recipe, DataError> =
         recipes.find { it.id == id }?.let { Result.Success(it) } ?: Result.Failure(DataError.NotFound)
+
+    override suspend fun searchRecipes(query: String): Result<List<Recipe>, DataError> =
+        Result.Success(recipes.filter { it.name.contains(query, ignoreCase = true) })
 }

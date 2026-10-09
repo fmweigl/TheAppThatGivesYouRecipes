@@ -38,6 +38,7 @@ kotlin {
             implementation(projects.feature.favorites.ui)
             implementation(projects.feature.recipe.data)
             implementation(projects.feature.recipe.ui)
+            implementation(projects.feature.search.ui)
 
             api(libs.koin.core)
 

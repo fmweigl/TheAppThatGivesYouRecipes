@@ -4,6 +4,7 @@ import androidx.room3.RoomDatabase
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.data.database.RecipeDatabase
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.data.database.buildRecipeDatabase
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.data.repository.FavoritesRepositoryImpl
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.data.repository.RecipeCache
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.data.repository.RecipeRepositoryImpl
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.domain.repository.FavoritesRepository
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.domain.repository.RecipeRepository
@@ -16,6 +17,7 @@ val recipeDataModule = module {
     includes(platformDatabaseModule)
     single { get<RoomDatabase.Builder<RecipeDatabase>>().buildRecipeDatabase() }
     single { get<RecipeDatabase>().favoriteRecipeDao() }
+    singleOf(::RecipeCache)
     singleOf(::RecipeRepositoryImpl) { bind<RecipeRepository>() }
     single<FavoritesRepository> { FavoritesRepositoryImpl(get()) }
 }
