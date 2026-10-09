@@ -1,6 +1,9 @@
 package io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.recipedetail
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.component.BackTopAppBar
 import io.github.fmweigl.theappthatgivesyourecipes.core.domain.DataError
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.ContentFadeSpec
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.ErrorMessage
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.RecipeDetails
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.RecipeSkeleton
@@ -30,8 +34,14 @@ internal fun RecipeScreen(
 ) {
     Column(modifier.fillMaxSize()) {
         BackTopAppBar(title = stringResource(Res.string.recipe), onBack = onBack)
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            when (val content = uiState.content) {
+        // Fades between skeleton, error and recipe; the content fading out keeps its state from before.
+        AnimatedContent(
+            targetState = uiState,
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            transitionSpec = { fadeIn(ContentFadeSpec) togetherWith fadeOut(ContentFadeSpec) },
+            contentKey = { it.content },
+        ) { shown ->
+            when (val content = shown.content) {
                 Content.Loading -> RecipeSkeleton()
                 is Content.Error -> ErrorMessage(
                     content.error,
@@ -40,7 +50,7 @@ internal fun RecipeScreen(
                 )
                 is Content.Success -> RecipeDetails(
                     recipe = content.recipe,
-                    isFavorite = uiState.isFavorite,
+                    isFavorite = shown.isFavorite,
                     onToggleFavorite = onToggleFavorite,
                 )
             }

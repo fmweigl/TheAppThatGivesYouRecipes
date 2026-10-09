@@ -1,5 +1,6 @@
 package io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component
 
+import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.InfiniteRepeatableSpec
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -44,6 +45,12 @@ import org.jetbrains.compose.resources.stringResource
 /** Lowest opacity of the pulse, and how long one half of it takes. */
 private const val PULSE_MIN_ALPHA = 0.4f
 private const val PULSE_MILLIS = 900
+
+/** How long the screens crossfade between skeleton, recipe and error: short, so loading never feels slower. */
+private const val CONTENT_FADE_MILLIS = 250
+
+/** The crossfade between [RecipeSkeleton], [RecipeDetails] and [ErrorMessage]. */
+internal val ContentFadeSpec: FiniteAnimationSpec<Float> = tween(CONTENT_FADE_MILLIS)
 
 /** Widths of the placeholder name, "Category · Area" line and section headings, as fractions of their space. */
 private const val NAME_FRACTION = 0.7f

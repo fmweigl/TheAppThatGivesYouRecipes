@@ -34,6 +34,10 @@ import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runTabletLandscapeT
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runTabletPortraitTest
 import kotlin.test.Test
 
+/** Points in the crossfade between skeleton and recipe (250 ms). */
+private const val FADE_HALFWAY_MILLIS = 120L
+private const val FADE_DONE_MILLIS = 400L
+
 /** What screen readers get from [RandomRecipeScreen] (the merged semantics tree). */
 @OptIn(ExperimentalTestApi::class)
 class RandomRecipeScreenAccessibilityTest {
@@ -113,6 +117,27 @@ class RandomRecipeScreenAccessibilityTest {
         onAllNodesWithContentDescription("Loading").assertCountEquals(1)
         // Nothing to scroll to yet: the placeholders aren't content.
         onAllNodes(hasScrollAction()).assertCountEquals(0)
+    }
+
+    @Test
+    fun skeletonAndRecipeCrossfade() = runPhoneTest {
+        var content: Content by mutableStateOf(Content.Loading)
+        setContent { Screen(content) }
+        mainClock.autoAdvance = false
+
+        content = Content.Success(recipe)
+        mainClock.advanceTimeBy(FADE_HALFWAY_MILLIS)
+        onAllNodesWithContentDescription("Loading").assertCountEquals(1)
+        onNode(paneTitle(recipe.name)).assertExists()
+
+        mainClock.advanceTimeBy(FADE_DONE_MILLIS)
+        onAllNodesWithContentDescription("Loading").assertCountEquals(0)
+        onNode(paneTitle(recipe.name)).assertExists()
+
+        content = Content.Loading
+        mainClock.advanceTimeBy(FADE_DONE_MILLIS)
+        onAllNodesWithContentDescription("Loading").assertCountEquals(1)
+        onAllNodes(paneTitle(recipe.name)).assertCountEquals(0)
     }
 
     @Test
