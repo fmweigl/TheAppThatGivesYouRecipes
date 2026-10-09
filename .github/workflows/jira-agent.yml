@@ -33,7 +33,7 @@ env:
   STATUS_IN_PROGRESS: "In Progress"
   STATUS_REVIEW: "In Review"
   STATUS_BLOCKED: "To Do" # wohin ein Ticket zurückgeht, wenn Claude scheitert
-  BASE_BRANCH: main
+  BASE_BRANCH: master
 
 jobs:
   work-ticket:
