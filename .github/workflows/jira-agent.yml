@@ -1,21 +1,21 @@
 # .github/workflows/jira-agent.yml
 #
-# Holt stündlich das nächste Jira-Ticket mit Status "Ready for Claude",
-# lässt Claude Code es umsetzen, öffnet einen Pull Request und meldet
-# den Stand zurück an Jira.
+# Fetches the next Jira ticket with status "Ready for Claude" every hour,
+# lets Claude Code implement it, opens a pull request and reports
+# the result back to Jira.
 
 name: Jira Agent
 
 on:
   schedule:
-    - cron: "17 * * * *" # stündlich zur Minute 17 (UTC)
+    - cron: "17 * * * *" # hourly at minute 17 (UTC)
   workflow_dispatch:
     inputs:
       issue_key:
-        description: "Optional: ein bestimmtes Ticket bearbeiten (z. B. PROJ-42)"
+        description: "Optional: work on a specific ticket (e.g. PROJ-42)"
         required: false
 
-# Nie zwei Läufe gleichzeitig, damit kein Ticket doppelt bearbeitet wird
+# Never two runs at once, so no ticket is worked on twice
 concurrency:
   group: jira-agent
   cancel-in-progress: false
@@ -25,14 +25,14 @@ permissions:
   pull-requests: write
   id-token: write
 
-# Nur nicht-geheime Werte auf Job-Ebene. Jira-Secrets bekommen bewusst
-# nur die Schritte, die sie brauchen – nicht der Claude-Schritt.
+# Only non-secret values at job level. Jira secrets are deliberately given
+# only to the steps that need them – not to the Claude step.
 env:
   JIRA_PROJECT: ${{ vars.JIRA_PROJECT_KEY }}
   STATUS_READY: "Ready for Claude"
   STATUS_IN_PROGRESS: "In Progress"
   STATUS_REVIEW: "In Review"
-  STATUS_BLOCKED: "To Do" # wohin ein Ticket zurückgeht, wenn Claude scheitert
+  STATUS_BLOCKED: "To Do" # where a ticket goes back to when Claude fails
   BASE_BRANCH: master
 
 jobs:
@@ -43,10 +43,10 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          # Optionaler PAT, damit deine CI auch auf Agent-PRs läuft
+          # Optional PAT, so your CI also runs on agent PRs
           token: ${{ secrets.AGENT_GH_TOKEN || github.token }}
 
-      - name: Jira-Hilfsfunktionen bereitstellen
+      - name: Provide Jira helper functions
         run: |
           cat > "$RUNNER_TEMP/jira.sh" <<'EOF'
           # jira METHOD PATH [JSON]
@@ -57,18 +57,18 @@ jobs:
               -H "Accept: application/json" -H "Content-Type: application/json" \
               -X "$1" "$JIRA_BASE_URL/rest/api/3/$2" "${data[@]}"
           }
-          # jira_transition KEY "Zielstatus"
+          # jira_transition KEY "Target status"
           jira_transition() {
             local id
             id=$(jira GET "issue/$1/transitions" \
               | jq -r --arg s "$2" '.transitions[] | select(.to.name == $s) | .id' | head -n1)
             if [ -z "$id" ]; then
-              echo "Kein Übergang nach '$2' für $1 gefunden" >&2
+              echo "No transition to '$2' found for $1" >&2
               return 1
             fi
             jira POST "issue/$1/transitions" "$(jq -n --arg id "$id" '{transition: {id: $id}}')" > /dev/null
           }
-          # jira_comment KEY "Text (mehrzeilig erlaubt)"
+          # jira_comment KEY "Text (multiple lines allowed)"
           jira_comment() {
             local body
             body=$(jq -n --arg t "$2" '{body: {type: "doc", version: 1, content:
@@ -78,7 +78,7 @@ jobs:
           }
           EOF
 
-      - name: Nächstes Ticket holen
+      - name: Fetch next ticket
         id: ticket
         env:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
@@ -98,20 +98,20 @@ jobs:
 
           KEY=$(echo "$RESULT" | jq -r '.issues[0].key // empty')
           if [ -z "$KEY" ]; then
-            echo "Kein Ticket bereit – nichts zu tun."
+            echo "No ticket ready – nothing to do."
             exit 0
           fi
 
           SUMMARY=$(echo "$RESULT" | jq -r '.issues[0].fields.summary')
-          # Beschreibung kommt als Atlassian Document Format; eine Zeile pro Absatz/Überschrift/Listenpunkt
+          # The description comes as Atlassian Document Format; one line per paragraph/heading/list item
           DESCRIPTION=$(echo "$RESULT" | jq -r '
             [.issues[0].fields.description | .. | objects
               | select(.type == "paragraph" or .type == "heading" or .type == "codeBlock")
               | [.content[]? | .text? // empty] | join("")]
             | join("\n")')
 
-          # Sofort auf "In Progress" setzen – das ist die Sperre gegen Doppelbearbeitung.
-          # Bei manuell angegebenem Ticket darf der Übergang fehlen.
+          # Set to "In Progress" right away – this is the lock against working on a ticket twice.
+          # For a manually given ticket the transition may be missing.
           jira_transition "$KEY" "$STATUS_IN_PROGRESS" || [ -n "$INPUT_KEY" ]
 
           SLUG=$(echo "$SUMMARY" | iconv -f UTF-8 -t ASCII//TRANSLIT | tr '[:upper:]' '[:lower:]' \
@@ -133,55 +133,55 @@ jobs:
         if: steps.ticket.outputs.key != ''
         with:
           distribution: temurin
-          java-version: "17" # an dein Projekt anpassen
+          java-version: "17" # adjust to your project
 
       - uses: gradle/actions/setup-gradle@v4
         if: steps.ticket.outputs.key != ''
 
-      - name: Claude setzt das Ticket um
+      - name: Claude implements the ticket
         id: claude
         if: steps.ticket.outputs.key != ''
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          # Alternativ mit API-Key:
+          # Alternatively with an API key:
           # anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
-            Du arbeitest autonom an einem Jira-Ticket im Repository ${{ github.repository }}.
-            Niemand beantwortet Rückfragen – triff sinnvolle Entscheidungen selbst
-            oder brich ab (siehe unten).
+            You are working autonomously on a Jira ticket in the repository ${{ github.repository }}.
+            Nobody answers questions – make sensible decisions yourself
+            or stop (see below).
 
             ## Ticket ${{ steps.ticket.outputs.key }}: ${{ steps.ticket.outputs.summary }}
 
             ${{ steps.ticket.outputs.description }}
 
-            ## Vorgehen
-            1. Lies zuerst CLAUDE.md und verschaffe dir einen Überblick über die betroffenen Stellen.
-            2. Setze das Ticket vollständig um. Halte dich an die bestehende Architektur und
-               die Konventionen aus CLAUDE.md. Ändere nichts, was das Ticket nicht verlangt.
-            3. Schreibe oder ergänze Tests für das neue bzw. geänderte Verhalten.
-            4. Führe die Prüfbefehle aus CLAUDE.md aus und behebe Fehler, bis alles grün ist.
-            5. Committe und pushe NICHT – das übernimmt der Workflow nach dir.
+            ## Approach
+            1. First read CLAUDE.md and get an overview of the affected code.
+            2. Implement the ticket completely. Follow the existing architecture and
+               the conventions from CLAUDE.md. Change nothing the ticket doesn't ask for.
+            3. Write or extend tests for the new or changed behavior.
+            4. Run the check commands from CLAUDE.md and fix errors until everything is green.
+            5. Do NOT commit or push – the workflow does that after you.
 
-            ## Wann du abbrichst
-            Brich ab und gib status "blocked" zurück, wenn
-            - das Ticket unklar oder widersprüchlich ist und eine falsche Annahme teuer wäre,
-            - Zugangsdaten, Assets oder Infrastruktur fehlen,
-            - du die Prüfungen nach ernsthaften Versuchen nicht grün bekommst.
-            Erkläre in blocker_reason konkret, was fehlt oder welche Frage zu klären ist.
-            Halbfertige Änderungen kannst du liegen lassen; sie werden verworfen.
+            ## When to stop
+            Stop and return status "blocked" if
+            - the ticket is unclear or contradictory and a wrong assumption would be costly,
+            - credentials, assets or infrastructure are missing,
+            - you can't get the checks green after serious attempts.
+            Explain concretely in blocker_reason what is missing or which question needs to be answered.
+            You can leave half-finished changes behind; they will be discarded.
 
-            ## Rückgabe
-            - status: "done" oder "blocked"
-            - title: kurzer PR-Titel ohne Ticket-Key, im Imperativ
-            - pr_body: Markdown – was geändert wurde, warum, wie getestet; offene Punkte
-            - blocker_reason: nur bei "blocked"
+            ## Return value
+            - status: "done" or "blocked"
+            - title: short PR title without the ticket key, in the imperative
+            - pr_body: Markdown – what was changed, why, how it was tested; open points
+            - blocker_reason: only when "blocked"
           claude_args: |
             --max-turns 200
             --allowedTools "Read,Edit,Write,Glob,Grep,Bash(./gradlew:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*)"
             --json-schema '{"type":"object","properties":{"status":{"type":"string","enum":["done","blocked"]},"title":{"type":"string"},"pr_body":{"type":"string"},"blocker_reason":{"type":"string"}},"required":["status","title","pr_body"]}'
 
-      - name: PR erstellen und Jira aktualisieren
+      - name: Create PR and update Jira
         if: steps.ticket.outputs.key != ''
         env:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
@@ -196,8 +196,8 @@ jobs:
 
           STATUS=$(echo "$OUT" | jq -r '.status // "blocked"')
           if [ "$STATUS" != "done" ] || [ -z "$(git status --porcelain)" ]; then
-            REASON=$(echo "$OUT" | jq -r '.blocker_reason // "Es wurden keine Änderungen erzeugt."')
-            jira_comment "$KEY" "Claude konnte das Ticket nicht abschließen:
+            REASON=$(echo "$OUT" | jq -r '.blocker_reason // "No changes were produced."')
+            jira_comment "$KEY" "Claude couldn't complete the ticket:
           $REASON"
             jira_transition "$KEY" "$STATUS_BLOCKED"
             exit 0
@@ -211,15 +211,32 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "$KEY: $TITLE"
+          # The Claude action revokes its git credentials when it finishes:
+          # drop the leftover auth header and push with GH_TOKEN instead.
+          git config --local --unset-all http.https://github.com/.extraheader || true
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push -u origin "$BRANCH"
 
           PR_URL=$(gh pr create --base "$BASE_BRANCH" --head "$BRANCH" \
             --title "$KEY: $TITLE" --body-file "$RUNNER_TEMP/pr_body.md")
 
-          jira_comment "$KEY" "Pull Request erstellt: $PR_URL"
+          jira_comment "$KEY" "Pull request created: $PR_URL"
           jira_transition "$KEY" "$STATUS_REVIEW"
 
-      - name: Bei Fehler Ticket zurückgeben
+      # Keep the agent's last commit as an artifact, so its work is never lost
+      - name: Save agent patch
+        if: always() && steps.ticket.outputs.key != ''
+        run: git format-patch -1 HEAD -o "$RUNNER_TEMP/patch" || true
+
+      - name: Upload agent patch
+        if: always() && steps.ticket.outputs.key != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-patch-${{ steps.ticket.outputs.key }}
+          path: ${{ runner.temp }}/patch
+          if-no-files-found: ignore
+
+      - name: Return ticket on failure
         if: (failure() || cancelled()) && steps.ticket.outputs.key != ''
         env:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
@@ -229,5 +246,5 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           source "$RUNNER_TEMP/jira.sh"
-          jira_comment "$KEY" "Agent-Lauf fehlgeschlagen oder abgebrochen: $RUN_URL" || true
+          jira_comment "$KEY" "Agent run failed or was cancelled: $RUN_URL" || true
           jira_transition "$KEY" "$STATUS_BLOCKED" || true
