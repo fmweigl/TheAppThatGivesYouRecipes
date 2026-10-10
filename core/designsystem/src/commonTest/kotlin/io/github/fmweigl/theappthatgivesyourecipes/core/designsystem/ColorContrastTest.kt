@@ -30,6 +30,9 @@ class ColorContrastTest {
             "surface" to (onSurface to surface),
             "surfaceVariant" to (onSurfaceVariant to surfaceVariant),
             "surfaceContainerHighest" to (onSurfaceVariant to surfaceContainerHighest),
+            // Secondary text directly on a screen, such as the About screen's version line.
+            "onSurfaceVariant on background" to (onSurfaceVariant to background),
+            "onSurfaceVariant on surface" to (onSurfaceVariant to surface),
             "inverseSurface" to (inverseOnSurface to inverseSurface),
             "error on surface" to (error to surface),
         )

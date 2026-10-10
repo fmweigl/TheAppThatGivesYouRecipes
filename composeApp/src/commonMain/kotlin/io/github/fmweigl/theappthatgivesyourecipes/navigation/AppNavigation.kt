@@ -19,6 +19,8 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import io.github.fmweigl.theappthatgivesyourecipes.APP_VERSION_CODE
+import io.github.fmweigl.theappthatgivesyourecipes.APP_VERSION_NAME
 import io.github.fmweigl.theappthatgivesyourecipes.about.ui.AboutContent
 import io.github.fmweigl.theappthatgivesyourecipes.about.ui.AboutNavKey
 import io.github.fmweigl.theappthatgivesyourecipes.about.ui.AttributionsNavKey
@@ -75,6 +77,8 @@ private val navKeyConfiguration = SavedStateConfiguration {
 
 /** The about screens' content: files that generateAppComposeResources copies into the resources. */
 private val aboutContent = AboutContent(
+    versionName = APP_VERSION_NAME,
+    versionCode = APP_VERSION_CODE,
     loadLicenseText = { Res.readBytes("files/LICENSE").decodeToString() },
     loadPrivacyText = { Res.readBytes("files/PRIVACY.md").decodeToString() },
     loadAttributionsText = { Res.readBytes("files/ATTRIBUTIONS.md").decodeToString() },
