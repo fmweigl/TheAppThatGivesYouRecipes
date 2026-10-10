@@ -48,12 +48,19 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - uses: anthropics/claude-code-action@v1
+        env:
+          # Lets the gh CLI read the PR's reviews and inline review comments.
+          # The action doesn't always pass inline comments to Claude, e.g. when
+          # it is triggered by a review summary.
+          GH_TOKEN: ${{ github.token }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # Lets Claude read CI results on the PR
           additional_permissions: |
             actions: read
+          # git rm: review comments may ask to delete files.
+          # gh pr view / gh api: read-only access to the PR's reviews and comments.
           claude_args: |
             --max-turns 150
-            --allowedTools "Read,Edit,Write,Glob,Grep,Bash(./gradlew:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*)"
-            --append-system-prompt "Address every open review comment on this pull request. Follow CLAUDE.md. Run the check commands from CLAUDE.md before you finish and keep them green. Reply to each comment with what you changed, or why you did not change it. Never change files the review does not ask about."
+            --allowedTools "Read,Edit,Write,Glob,Grep,Bash(./gradlew:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash(gh pr view:*),Bash(gh api:*)"
+            --append-system-prompt "First fetch all inline review comments with: gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number || github.event.issue.number }}/comments --paginate. Also read the reviews and conversation with: gh pr view ${{ github.event.pull_request.number || github.event.issue.number }} --comments. Address every open review comment. Follow CLAUDE.md. Run the check commands from CLAUDE.md before you finish and keep them green. Reply to each comment with what you changed, or why you did not change it. Never change files the review does not ask about."
