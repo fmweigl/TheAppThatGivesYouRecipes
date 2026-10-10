@@ -41,10 +41,9 @@ fun EntryProviderScope<NavKey>.aboutEntries(
 ) {
     entry<AboutNavKey> {
         AboutScreen(
-            onLicenseClick = { onNavigate(LicenseNavKey) },
-            onLibrariesClick = { onNavigate(LibrariesNavKey) },
-            onPrivacyClick = { onNavigate(PrivacyNavKey) },
-            onAttributionsClick = { onNavigate(AttributionsNavKey) },
+            onNavigate = onNavigate,
+            versionName = content.versionName,
+            versionCode = content.versionCode,
         )
     }
     entry<LicenseNavKey> {

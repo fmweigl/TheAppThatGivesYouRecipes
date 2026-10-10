@@ -19,3 +19,11 @@ plugins {
     id("meals.kmp.feature.ui") apply false
     id("meals.detekt") apply false
 }
+
+// The included build-logic's tests, under the name the modules' JVM tests have,
+// so `./gradlew jvmTest` (and CI) runs them too.
+tasks.register("jvmTest") {
+    group = "verification"
+    description = "Runs the tests of the build-logic included build."
+    dependsOn(gradle.includedBuild("build-logic").task(":convention:test"))
+}

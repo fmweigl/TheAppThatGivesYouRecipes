@@ -1,4 +1,5 @@
 import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.androidLibraryDefaults
+import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.appVersionSource
 import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.requireTheMealDbProductionKey
 import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.sharedKmpTargets
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
@@ -15,6 +16,7 @@ plugins {
 
 kotlin {
     sharedKmpTargets()
+    appVersionSource(project, packageName = "io.github.fmweigl.theappthatgivesyourecipes")
     androidLibraryDefaults(project)
 
     targets.withType<KotlinNativeTarget>().configureEach {

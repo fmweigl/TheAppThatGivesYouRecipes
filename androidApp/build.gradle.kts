@@ -1,3 +1,4 @@
+import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.appVersion
 import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.releaseSigning
 import io.github.fmweigl.theappthatgivesyourecipes.buildlogic.requireTheMealDbProductionKey
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -34,8 +35,9 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         // CI passes the GitHub run number (-PappVersionCode=...), so every Play upload is higher.
-        versionCode = providers.gradleProperty("appVersionCode").map(String::toInt).getOrElse(1)
-        versionName = "1.0.$versionCode"
+        val appVersion = appVersion().get()
+        versionCode = appVersion.code
+        versionName = appVersion.name
     }
     packaging {
         resources {
