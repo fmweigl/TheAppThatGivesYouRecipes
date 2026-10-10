@@ -4,6 +4,7 @@ import io.github.fmweigl.theappthatgivesyourecipes.core.network.di.coreNetworkMo
 import io.github.fmweigl.theappthatgivesyourecipes.favorites.ui.di.favoritesUiModule
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.data.di.recipeDataModule
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.di.recipeUiModule
+import io.github.fmweigl.theappthatgivesyourecipes.search.ui.di.searchUiModule
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
 
@@ -15,7 +16,7 @@ import org.koin.dsl.KoinAppDeclaration
  */
 fun initKoin(config: KoinAppDeclaration? = null) {
     startKoin {
-        modules(coreNetworkModule, recipeDataModule, recipeUiModule, favoritesUiModule)
+        modules(coreNetworkModule, recipeDataModule, recipeUiModule, searchUiModule, favoritesUiModule)
         config?.invoke(this)
     }
 }

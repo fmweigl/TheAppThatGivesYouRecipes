@@ -21,12 +21,12 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollToNode
 import io.github.fmweigl.theappthatgivesyourecipes.core.domain.DataError
+import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.test.runPhoneTest
+import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.test.runTabletLandscapeTest
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.domain.model.Ingredient
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.domain.model.Recipe
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.CONTENT_FADE_MILLIS
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.recipedetail.RecipeUiState.Content
-import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runPhoneTest
-import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runTabletLandscapeTest
 import kotlin.test.Test
 
 /** What screen readers get from [RecipeScreen] (the merged semantics tree). */

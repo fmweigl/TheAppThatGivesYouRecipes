@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -31,6 +32,9 @@ import io.github.fmweigl.theappthatgivesyourecipes.favorites.ui.favoritesEntry
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.RandomRecipeNavKey
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.RecipeNavKey
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.recipeEntries
+import io.github.fmweigl.theappthatgivesyourecipes.search.ui.SearchNavKey
+import io.github.fmweigl.theappthatgivesyourecipes.search.ui.searchEntry
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -40,12 +44,14 @@ import theappthatgivesyourecipes.composeapp.generated.resources.Res
 import theappthatgivesyourecipes.composeapp.generated.resources.tab_about
 import theappthatgivesyourecipes.composeapp.generated.resources.tab_favorites
 import theappthatgivesyourecipes.composeapp.generated.resources.tab_random
+import theappthatgivesyourecipes.composeapp.generated.resources.tab_search
 
 private class TopLevelDestination(val icon: ImageVector, val label: StringResource)
 
 /** The tabs of the bottom navigation bar, in display order. The first one is the start route. */
 private val topLevelDestinations: Map<NavKey, TopLevelDestination> = linkedMapOf(
     RandomRecipeNavKey to TopLevelDestination(Icons.Filled.Refresh, Res.string.tab_random),
+    SearchNavKey to TopLevelDestination(Icons.Filled.Search, Res.string.tab_search),
     FavoritesNavKey to TopLevelDestination(Icons.Filled.Favorite, Res.string.tab_favorites),
     AboutNavKey to TopLevelDestination(Icons.Filled.Info, Res.string.tab_about),
 )
@@ -56,6 +62,7 @@ private val navKeyConfiguration = SavedStateConfiguration {
         polymorphic(NavKey::class) {
             subclass(RandomRecipeNavKey::class)
             subclass(RecipeNavKey::class)
+            subclass(SearchNavKey::class)
             subclass(FavoritesNavKey::class)
             subclass(AboutNavKey::class)
             subclass(LicenseNavKey::class)
@@ -83,8 +90,14 @@ internal fun AppNavigation(modifier: Modifier = Modifier) {
         configuration = navKeyConfiguration,
     )
     val navigator = remember(navigationState) { Navigator(navigationState) }
+    // Emits when the selected Search tab is tapped again; the screen scrolls up and focuses its field.
+    val searchTabReselected = remember { MutableSharedFlow<Unit>(extraBufferCapacity = 1) }
     val entryProvider = entryProvider {
         recipeEntries(onBack = navigator::goBack)
+        searchEntry(
+            onOpenRecipe = { recipeId -> navigator.navigate(RecipeNavKey(recipeId)) },
+            tabReselected = searchTabReselected,
+        )
         favoritesEntry(onOpenRecipe = { recipeId -> navigator.navigate(RecipeNavKey(recipeId)) })
         aboutEntries(
             onNavigate = navigator::navigate,
@@ -100,7 +113,12 @@ internal fun AppNavigation(modifier: Modifier = Modifier) {
                 topLevelDestinations.forEach { (route, destination) ->
                     NavigationBarItem(
                         selected = route == navigationState.topLevelRoute,
-                        onClick = { navigator.navigate(route) },
+                        onClick = {
+                            if (route == SearchNavKey && route == navigationState.topLevelRoute) {
+                                searchTabReselected.tryEmit(Unit)
+                            }
+                            navigator.navigate(route)
+                        },
                         icon = { Icon(destination.icon, contentDescription = null) },
                         label = { Text(stringResource(destination.label)) },
                     )

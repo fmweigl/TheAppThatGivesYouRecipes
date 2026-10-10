@@ -1,6 +1,6 @@
 # Privacy Policy for The App That Gives You Recipes
 
-Last updated: October 8, 2026
+Last updated: October 9, 2026
 
 The App That Gives You Recipes is a free recipe app developed by Florian Weigl as a private individual.
 This policy explains what happens with your data when you use the app.
@@ -15,7 +15,11 @@ SDKs and no tracking. I do not collect, store or share any personal data.
 To show recipes, the app loads recipe data and images from TheMealDB
 (https://www.themealdb.com). As with any internet request, TheMealDB's servers
 receive technical information such as your IP address and request details.
-The requests contain no personal information beyond this. Recipes you saved as
+The requests contain no personal information beyond this, with one addition: when you
+search for recipes, the text you type in the search field is sent to TheMealDB to find
+matching recipes. This happens while you type, after a short pause, and when you tap
+the keyboard's search button. The app does not keep a history of your searches; it is not
+sent to me or anyone else. Recipes you saved as
 favorites open from your device, but their images are still loaded from TheMealDB.
 TheMealDB's own privacy policy applies to this processing:
 https://www.themealdb.com/privacy_policy.php

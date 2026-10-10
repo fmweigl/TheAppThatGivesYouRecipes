@@ -9,4 +9,11 @@ interface RecipeRepository {
 
     /** The recipe with this TheMealDB [id]; fails with [DataError.NotFound] if there is none. */
     suspend fun getRecipe(id: String): Result<Recipe, DataError>
+
+    /**
+     * TheMealDB's recipes whose name contains [query] (ignoring case and accents), in the order the
+     * API returns them: at most 25, shortest names first. No match is an empty list, not an error.
+     * The results are complete, so [getRecipe] opens them without another request.
+     */
+    suspend fun searchRecipes(query: String): Result<List<Recipe>, DataError>
 }

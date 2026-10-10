@@ -26,15 +26,15 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollToNode
+import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.test.runPhoneTest
+import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.test.runSmallPhoneLandscapeTest
+import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.test.runTabletLandscapeTest
+import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.test.runTabletPortraitTest
 import io.github.fmweigl.theappthatgivesyourecipes.core.domain.DataError
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.domain.model.Ingredient
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.domain.model.Recipe
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.CONTENT_FADE_MILLIS
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.randomrecipe.RandomRecipeUiState.Content
-import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runPhoneTest
-import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runSmallPhoneLandscapeTest
-import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runTabletLandscapeTest
-import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.runTabletPortraitTest
 import kotlin.test.Test
 
 /** Points in the fade between the screen's contents. */
