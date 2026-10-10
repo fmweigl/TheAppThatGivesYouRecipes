@@ -44,6 +44,9 @@ class RandomRecipeViewModelTest {
         }
 
         override suspend fun getRecipe(id: String): Result<Recipe, DataError> = error("Not used by the random screen")
+
+        override suspend fun searchRecipes(query: String): Result<List<Recipe>, DataError> =
+            error("Not used by the random screen")
     }
 
     private val repository = FakeRepository()

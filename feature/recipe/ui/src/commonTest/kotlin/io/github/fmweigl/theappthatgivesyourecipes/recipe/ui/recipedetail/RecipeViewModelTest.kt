@@ -43,6 +43,9 @@ class RecipeViewModelTest {
             requestedIds += id
             return result
         }
+
+        override suspend fun searchRecipes(query: String): Result<List<Recipe>, DataError> =
+            error("Not used by the recipe screen")
     }
 
     private val repository = FakeRepository()
