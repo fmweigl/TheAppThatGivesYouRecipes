@@ -13,9 +13,11 @@ files. You report findings; the main session decides what to fix.
 Look only at changed composables. Use the range you're given; otherwise:
 
 1. `git status --short` to see what's modified and what's new,
-2. `git diff master...HEAD -- '*.kt' '*.xml'` for committed changes,
+2. `git diff origin/master...HEAD -- '*.kt' '*.xml'` for committed changes,
 3. `git diff HEAD -- '*.kt' '*.xml'` for uncommitted changes,
 4. read new untracked files directly.
+
+If `origin/master` is missing, say so in your report instead of reviewing an empty diff.
 
 Filter to feature `ui` modules, `:core:designsystem`, `:composeApp` and
 `:desktopApp`. Include changed `strings.xml` (content descriptions and labels
