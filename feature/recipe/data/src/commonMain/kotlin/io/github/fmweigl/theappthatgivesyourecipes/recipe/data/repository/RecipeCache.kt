@@ -10,19 +10,17 @@ import kotlinx.coroutines.flow.update
  */
 internal class RecipeCache {
 
-    private val recipes = MutableStateFlow<Map<String, Recipe>>(emptyMap())
+    // A list, oldest first: a StateFlow ignores a map that only differs in order, so a stored-again
+    // recipe would not move to the newest end.
+    private val recipes = MutableStateFlow<List<Recipe>>(emptyList())
 
-    operator fun get(id: String): Recipe? = recipes.value[id]
+    operator fun get(id: String): Recipe? = recipes.value.lastOrNull { it.id == id }
 
     fun putAll(newRecipes: List<Recipe>) {
         recipes.update { cached ->
-            val merged = LinkedHashMap(cached)
-            newRecipes.forEach { recipe ->
-                // Removed first, so a stored-again recipe moves to the newest end.
-                merged.remove(recipe.id)
-                merged[recipe.id] = recipe
-            }
-            merged.entries.toList().takeLast(MAX_RECIPES).associate { it.key to it.value }
+            val storedIds = newRecipes.mapTo(HashSet()) { it.id }
+            // Recipes stored again drop out of their old place and join the newest end.
+            (cached.filterNot { it.id in storedIds } + newRecipes.distinctBy { it.id }).takeLast(MAX_RECIPES)
         }
     }
 
