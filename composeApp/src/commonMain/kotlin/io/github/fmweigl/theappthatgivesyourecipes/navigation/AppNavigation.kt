@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -27,6 +26,7 @@ import io.github.fmweigl.theappthatgivesyourecipes.about.ui.LibrariesNavKey
 import io.github.fmweigl.theappthatgivesyourecipes.about.ui.LicenseNavKey
 import io.github.fmweigl.theappthatgivesyourecipes.about.ui.PrivacyNavKey
 import io.github.fmweigl.theappthatgivesyourecipes.about.ui.aboutEntries
+import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.component.DieIcon
 import io.github.fmweigl.theappthatgivesyourecipes.favorites.ui.FavoritesNavKey
 import io.github.fmweigl.theappthatgivesyourecipes.favorites.ui.favoritesEntry
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.RandomRecipeNavKey
@@ -50,7 +50,7 @@ private class TopLevelDestination(val icon: ImageVector, val label: StringResour
 
 /** The tabs of the bottom navigation bar, in display order. The first one is the start route. */
 private val topLevelDestinations: Map<NavKey, TopLevelDestination> = linkedMapOf(
-    RandomRecipeNavKey to TopLevelDestination(Icons.Filled.Refresh, Res.string.tab_random),
+    RandomRecipeNavKey to TopLevelDestination(DieIcon, Res.string.tab_random),
     SearchNavKey to TopLevelDestination(Icons.Filled.Search, Res.string.tab_search),
     FavoritesNavKey to TopLevelDestination(Icons.Filled.Favorite, Res.string.tab_favorites),
     AboutNavKey to TopLevelDestination(Icons.Filled.Info, Res.string.tab_about),
