@@ -1,11 +1,11 @@
-# .github/workflows/claude-review.yml
+# .github/workflows/claude-pr-feedback.yml
 #
 # Lets Claude address review feedback on pull requests. Claude only runs when
 # "@claude" appears in a PR comment, an inline review comment or the summary of a
 # submitted review, and only for users with write access to the repository.
 # It commits its changes to the PR branch, which triggers CI again.
 
-name: Claude PR Assistant
+name: Claude PR feedback
 
 on:
   issue_comment:

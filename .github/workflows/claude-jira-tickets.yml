@@ -1,10 +1,10 @@
-# .github/workflows/jira-agent.yml
+# .github/workflows/claude-jira-tickets.yml
 #
 # Fetches the next Jira ticket with status "Ready for Claude" every hour,
 # lets Claude Code implement it, opens a pull request and reports
 # the result back to Jira.
 
-name: Jira Agent
+name: Claude Jira tickets
 
 on:
   schedule:
@@ -17,7 +17,7 @@ on:
 
 # Never two runs at once, so no ticket is worked on twice
 concurrency:
-  group: jira-agent
+  group: claude-jira-tickets
   cancel-in-progress: false
 
 permissions:
