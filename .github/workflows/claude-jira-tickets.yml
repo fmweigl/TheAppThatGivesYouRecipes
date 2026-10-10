@@ -179,7 +179,7 @@ jobs:
             - blocker_reason: only when "blocked"
           claude_args: |
             --max-turns 200
-            --allowedTools "Read,Edit,Write,Glob,Grep,Bash(./gradlew:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*)"
+            --allowedTools "Read,Edit,Write,Glob,Grep,Bash(./gradlew:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*)"
             --json-schema '{"type":"object","properties":{"status":{"type":"string","enum":["done","blocked"]},"title":{"type":"string"},"pr_body":{"type":"string"},"blocker_reason":{"type":"string"}},"required":["status","title","pr_body"]}'
 
       - name: Create PR and update Jira
