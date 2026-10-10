@@ -38,6 +38,12 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          # Claude pushes its fixes with these credentials. Pushes made with the
+          # default GITHUB_TOKEN show up as github-actions[bot], and GitHub holds
+          # the CI run they trigger until a maintainer approves it. The PAT is the
+          # one claude-jira-tickets.yml uses, so CI runs right away, as it does on
+          # the ticket workflow's PRs.
+          token: ${{ secrets.AGENT_GH_TOKEN }}
 
       # Same JDK as ci.yml, so Claude builds under the same conditions as CI
       - uses: actions/setup-java@v6
