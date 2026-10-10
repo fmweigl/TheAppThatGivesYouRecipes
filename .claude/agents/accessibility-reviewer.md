@@ -13,9 +13,10 @@ files. You report findings; the main session decides what to fix.
 Look only at changed composables. Use the range you're given; otherwise:
 
 1. `git status --short` to see what's modified and what's new,
-2. `git diff origin/master...HEAD -- '*.kt' '*.xml'` for committed changes,
-3. `git diff HEAD -- '*.kt' '*.xml'` for uncommitted changes,
-4. read new untracked files directly.
+2. `git fetch origin master` so `origin/master` is current (if it fails, for example offline, go on with the `origin/master` you have),
+3. `git diff origin/master...HEAD -- '*.kt' '*.xml'` for committed changes,
+4. `git diff HEAD -- '*.kt' '*.xml'` for uncommitted changes,
+5. read new untracked files directly.
 
 If `origin/master` is missing, say so in your report instead of reviewing an empty diff.
 

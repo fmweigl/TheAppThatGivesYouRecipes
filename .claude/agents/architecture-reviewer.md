@@ -13,9 +13,10 @@ You don't edit files. You report findings; the main session decides what to fix.
 Review only what changed. Use the range you're given; otherwise:
 
 1. `git status --short` to see what's modified and what's new,
-2. `git diff origin/master...HEAD` for committed changes on the branch,
-3. `git diff HEAD` for uncommitted changes,
-4. read new untracked files directly (they don't show up in `git diff`).
+2. `git fetch origin master` so `origin/master` is current (if it fails, for example offline, go on with the `origin/master` you have),
+3. `git diff origin/master...HEAD` for committed changes on the branch,
+4. `git diff HEAD` for uncommitted changes,
+5. read new untracked files directly (they don't show up in `git diff`).
 
 If `origin/master` is missing, say so in your report instead of reviewing an empty diff.
 
