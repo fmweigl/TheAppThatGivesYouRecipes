@@ -1,4 +1,4 @@
-Not sure what to cook? The App That Gives You Recipes shows you a random recipe with every tap, and keeps the ones you like.
+Not sure what to cook? The App That Gives You Recipes shows you a random recipe with every tap, finds recipes by name when you know what you want, and keeps the ones you like.
 
 Each recipe comes with:
 • A photo of the dish
@@ -7,6 +7,8 @@ Each recipe comes with:
 • Step-by-step instructions
 
 Tap Next for another idea, or Previous to go back to a recipe you've already seen.
+
+Looking for something specific? Search recipes by name in their own tab, for example "tomato" or "curry", and open any result. Results appear as you type. What you type is sent to TheMealDB to find matching recipes; the app keeps no search history.
 
 Found one you like? Tap the heart to save it. Your favorites have their own tab and open even without an internet connection. Removed one by mistake? Tap Undo.
 
