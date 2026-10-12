@@ -115,6 +115,12 @@ private fun Recipe.toResult() = SearchResult(
     id = id,
     name = name.trim(),
     subtitle = listOfNotNull(category, area).joinToString(" · ").ifEmpty { null },
-    // TheMealDB serves smaller copies of its images under /small.
-    thumbnailUrl = imageUrl?.let { "$it/small" },
+    thumbnailUrl = imageUrl?.let(::thumbnailUrl),
 )
+
+/**
+ * TheMealDB serves smaller copies of its images under /small. Other images, such as the local
+ * files of the debug build's screenshot mode, have no such copy and are shown as they are.
+ */
+private fun thumbnailUrl(imageUrl: String): String =
+    if (imageUrl.startsWith("https://") || imageUrl.startsWith("http://")) "$imageUrl/small" else imageUrl
