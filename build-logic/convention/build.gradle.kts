@@ -16,6 +16,12 @@ dependencies {
     compileOnly(libs.plugins.detekt.asDependency())
     compileOnly(libs.plugins.ksp.asDependency())
     compileOnly(libs.plugins.room3.asDependency())
+
+    testImplementation(kotlin("test"))
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 gradlePlugin {

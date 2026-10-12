@@ -199,6 +199,18 @@ class SearchViewModelTest {
     }
 
     @Test
+    fun usesLocalImagesAsTheirOwnThumbnails() = runTest(dispatcher) {
+        repository.recipes = listOf(Recipe(id = "1", name = "Shakshuka", imageUrl = "file:/data/shakshuka.png"))
+        val viewModel = createViewModel()
+
+        type(viewModel, "shakshuka")
+        advanceUntilIdle()
+
+        val result = (viewModel.uiState.value.content as Content.Results).results.single()
+        assertEquals("file:/data/shakshuka.png", result.thumbnailUrl)
+    }
+
+    @Test
     fun marksResultsAsCappedAtTheApisLimit() = runTest(dispatcher) {
         repository.recipes = (1..MAX_RESULTS).map { Recipe(id = "$it", name = "Soup $it") }
         val viewModel = createViewModel()
