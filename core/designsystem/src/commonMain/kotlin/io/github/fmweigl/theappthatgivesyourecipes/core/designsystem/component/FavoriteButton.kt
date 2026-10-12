@@ -5,6 +5,9 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -39,6 +42,7 @@ import kotlin.math.sin
 private val ButtonSize = 56.dp
 private val HeartSize = 32.dp
 private val BurstDotRadius = 3.dp
+private val FocusRingWidth = 2.dp
 
 private const val BURST_DOTS = 8
 private const val BURST_MILLIS = 450
@@ -60,7 +64,8 @@ private const val BURST_END = 1.1f
  * shrinks briefly. Only a tap animates: a change from elsewhere, such as the database answering
  * that a recipe shown after "Next" is saved, just changes the icon. On Android the animations
  * follow the system's animation scale ("Remove animations" turns them off); on iOS
- * [prefersReducedMotion] (Reduce Motion) does.
+ * [prefersReducedMotion] (Reduce Motion) does. With keyboard focus it gets a ring in `onSurface`,
+ * since the button's own state layer (about 10 % of the content color) is too faint to see.
  */
 @Composable
 fun FavoriteButton(
@@ -94,6 +99,9 @@ fun FavoriteButton(
         }
     }
     val burstColor = MaterialTheme.colorScheme.primary
+    val interactionSource = remember { MutableInteractionSource() }
+    val focused by interactionSource.collectIsFocusedAsState()
+    val ringColor = MaterialTheme.colorScheme.onSurface
     IconToggleButton(
         checked = isFavorite,
         onCheckedChange = {
@@ -102,7 +110,9 @@ fun FavoriteButton(
         },
         modifier = modifier
             .size(ButtonSize)
-            .drawBehind { drawBurst(burst.value, burstColor) },
+            .drawBehind { drawBurst(burst.value, burstColor) }
+            .then(if (focused) Modifier.border(FocusRingWidth, ringColor, CircleShape) else Modifier),
+        interactionSource = interactionSource,
     ) {
         Icon(
             if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,

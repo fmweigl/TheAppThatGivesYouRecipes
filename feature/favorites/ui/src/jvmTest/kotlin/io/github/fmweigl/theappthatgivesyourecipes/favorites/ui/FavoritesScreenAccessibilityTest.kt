@@ -1,6 +1,9 @@
 package io.github.fmweigl.theappthatgivesyourecipes.favorites.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -11,6 +14,8 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
@@ -159,7 +164,60 @@ class FavoritesScreenAccessibilityTest {
     }
 
     @Test
-    fun failedRemoveIsReported() = runComposeUiTest {
+    fun focusMovesToTheNextCardAfterRemovingWithTheKeyboardAndUndoStaysAvailable() =
+        runDesktopComposeUiTest(width = 411, height = 891) {
+        var shown by mutableStateOf(teasers)
+        var removed by mutableStateOf<RecipeTeaser?>(null)
+        setContent {
+            Screen(
+                FavoritesUiState(Content.Favorites(shown), removed = removed),
+                onRemove = { id ->
+                    removed = shown.first { it.id == id }
+                    shown = shown.filter { it.id != id }
+                },
+            )
+        }
+
+        // Tab to the first card's heart, remove it.
+        onRoot().performKeyInput {
+            pressKey(Key.Tab)
+            pressKey(Key.Tab)
+            pressKey(Key.Enter)
+        }
+        waitForIdle()
+        mainClock.advanceTimeBy(1_000)
+
+        assertEquals(listOf("1", "2"), shown.map { it.id })
+        onNode(hasText("Shakshuka") and hasClickAction()).assertIsFocused()
+        // With the keyboard the message doesn't time out after 10 s.
+        mainClock.advanceTimeBy(15_000)
+        waitForIdle()
+        onNodeWithText("Removed Canadian Butter Tarts").assertExists()
+    }
+
+    @Test
+    fun focusMovesToThePreviousCardAfterRemovingTheLastOne() = runDesktopComposeUiTest(width = 411, height = 891) {
+        var shown by mutableStateOf(teasers)
+        setContent {
+            Screen(
+                FavoritesUiState(Content.Favorites(shown)),
+                onRemove = { id -> shown = shown.filter { it.id != id } },
+            )
+        }
+
+        onRoot().performKeyInput { repeat(6) { pressKey(Key.Tab) } }
+        waitForIdle()
+        // The last card's heart (the remove button's own semantics don't report focus).
+        onRoot().performKeyInput { pressKey(Key.Enter) }
+        waitForIdle()
+        mainClock.advanceTimeBy(1_000)
+
+        assertEquals(listOf("52923", "1"), shown.map { it.id })
+        onNode(hasText("Shakshuka") and hasClickAction()).assertIsFocused()
+    }
+
+    @Test
+    fun failedRemoveIsReported()= runComposeUiTest {
         var closed = false
         setContent {
             Screen(

@@ -3,13 +3,20 @@ package io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.component
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.runComposeUiTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 /** Only a tap animates the heart; the test window's density is 1, so the 32dp heart is 32px wide. */
@@ -49,5 +56,19 @@ class FavoriteButtonTest {
 
         mainClock.advanceTimeBy(1_000)
         assertEquals(heartSize, heartWidth())
+    }
+
+    @Test
+    fun keyboardFocusDrawsARing() = runComposeUiTest {
+        setContent { FavoriteButton(isFavorite = false, onToggle = {}) }
+        val button = onNodeWithContentDescription("Favorite")
+
+        // Next to the button's edge, where nothing else is drawn unless the ring is.
+        fun edgePixel() = button.captureToImage().toPixelMap().let { it[it.width / 2, 1] }
+        val before = edgePixel()
+        onRoot().performKeyInput { pressKey(Key.Tab) }
+        waitForIdle()
+
+        assertNotEquals(before, edgePixel())
     }
 }

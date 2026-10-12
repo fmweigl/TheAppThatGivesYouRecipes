@@ -28,8 +28,19 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -121,18 +132,24 @@ internal fun FavoritesScreen(
 }
 
 /** "Removed ‹name›" with "Undo" while [removed] is set; a new removal replaces the message. */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun RemovalMessage(
     removed: RecipeTeaser?,
     snackbarHostState: SnackbarHostState,
     onClosed: (undo: Boolean) -> Unit,
 ) {
+    // Tabbing to "Undo" can take longer than 10 s, so with the keyboard in use the message stays
+    // until it's dismissed. (With a screen reader on, M3 already extends the timeout.)
+    val inputModeManager = LocalInputModeManager.current
     LaunchedEffect(removed) {
         if (removed == null) return@LaunchedEffect
+        val keyboard = inputModeManager.inputMode == InputMode.Keyboard
         val result = snackbarHostState.showSnackbar(
             message = getString(Res.string.favorite_removed, removed.name),
             actionLabel = getString(Res.string.undo),
-            duration = SnackbarDuration.Long,
+            withDismissAction = keyboard,
+            duration = if (keyboard) SnackbarDuration.Indefinite else SnackbarDuration.Long,
         )
         onClosed(result == SnackbarResult.ActionPerformed)
     }
@@ -227,6 +244,8 @@ private fun FavoritesList(
         val minCardWidth = MinCardWidth * LocalDensity.current.fontScale.coerceAtLeast(1f)
         val columns = ((maxWidth - ListPadding * 2 + CardSpacing) / (minCardWidth + CardSpacing)).toInt()
             .coerceAtLeast(1)
+        val cardFocus = remember { CardFocus() }
+        KeepFocusAfterRemoval(teasers, cardFocus)
         LazyVerticalGrid(
             columns = GridCells.Fixed(columns),
             modifier = Modifier.fillMaxSize().semantics {
@@ -243,7 +262,7 @@ private fun FavoritesList(
                     isRemoving = teaser.id in removing,
                     onClick = { onOpenRecipe(teaser.id) },
                     onRemove = { onRemove(teaser.id) },
-                    modifier = Modifier.animateItem().semantics {
+                    modifier = Modifier.trackFocus(teaser.id, cardFocus).animateItem().semantics {
                         collectionItemInfo = CollectionItemInfo(
                             rowIndex = index / columns,
                             rowSpan = 1,
@@ -254,6 +273,51 @@ private fun FavoritesList(
                 )
             }
         }
+    }
+}
+
+/** Which card (or its heart) has focus, and a [FocusRequester] for each card in the grid. */
+private class CardFocus {
+    val requesters = mutableMapOf<String, FocusRequester>()
+    var focusedId: String? = null
+}
+
+/** Registers the card [id] in [cardFocus] while it's in the grid and notes when it has focus. */
+@Composable
+private fun Modifier.trackFocus(id: String, cardFocus: CardFocus): Modifier {
+    val requester = remember(id) { FocusRequester() }
+    DisposableEffect(id) {
+        cardFocus.requesters[id] = requester
+        onDispose { cardFocus.requesters.remove(id) }
+    }
+    return focusRequester(requester).onFocusChanged {
+        if (it.hasFocus) {
+            cardFocus.focusedId = id
+        } else if (cardFocus.focusedId == id && id in cardFocus.requesters) {
+            // Focus moved elsewhere while the card stays; a card leaving the grid keeps its mark.
+            cardFocus.focusedId = null
+        }
+    }
+}
+
+/**
+ * Compose clears focus when the focused card disappears, and the next Tab would start at the top
+ * of the window. When the card (or its heart) that had focus leaves [teasers], focus moves to the
+ * card that took its place, or the last one, so keyboard and screen-reader focus go on from there.
+ */
+@Composable
+private fun KeepFocusAfterRemoval(teasers: List<RecipeTeaser>, cardFocus: CardFocus) {
+    var previous by remember { mutableStateOf(teasers) }
+    LaunchedEffect(teasers) {
+        val focusedId = cardFocus.focusedId
+        val index = previous.indexOfFirst { it.id == focusedId }
+        previous = teasers
+        if (focusedId == null || index < 0 || teasers.any { it.id == focusedId }) return@LaunchedEffect
+        cardFocus.focusedId = null
+        val next = teasers.getOrNull(index) ?: teasers.lastOrNull() ?: return@LaunchedEffect
+        // The neighbor may still be composing.
+        withFrameNanos { }
+        cardFocus.requesters[next.id]?.requestFocus()
     }
 }
 
