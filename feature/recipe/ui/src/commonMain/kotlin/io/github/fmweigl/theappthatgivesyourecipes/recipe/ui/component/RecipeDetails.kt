@@ -1,6 +1,7 @@
 package io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -20,11 +22,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -32,10 +45,17 @@ import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import coil3.compose.AsyncImage
 import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.component.FavoriteButton
+import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.component.ShareButton
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.domain.model.Recipe
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.Res
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.copy_recipe
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.ingredients
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.instructions
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.recipe_copied
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.share_footer
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.share_recipe
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.share_source
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -84,7 +104,7 @@ internal fun currentRecipeLayout(): RecipeLayout {
 }
 
 /**
- * The whole recipe: image, name with the [FavoriteButton], ingredients and instructions, laid out
+ * The whole recipe: image, name with the [ShareButton] and [FavoriteButton], ingredients and instructions, laid out
  * by [currentRecipeLayout]. In two panes, name and image are next to ingredients and instructions,
  * each pane scrolling on its own.
  */
@@ -194,7 +214,7 @@ private fun RecipeTitle(
     onToggleFavorite: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // The heart stays at the top, next to the name's first line, so it doesn't move from recipe to
+    // The buttons stay at the top, next to the name's first line, so they don't move from recipe to
     // recipe when a name takes two lines.
     Row(modifier, verticalAlignment = Alignment.Top) {
         Column(Modifier.weight(1f)) {
@@ -212,8 +232,54 @@ private fun RecipeTitle(
                 )
             }
         }
+        RecipeShareButton(recipe)
         FavoriteButton(isFavorite = isFavorite, onToggle = onToggleFavorite)
     }
+}
+
+/** How long the desktop's share button shows its check mark after copying. */
+private const val COPIED_MILLIS = 2_000L
+
+/**
+ * Shares [recipe] as text ([toShareText]) through the platform's [Sharer]. On the desktop, which
+ * copies instead, the button says "Copy recipe", shows a check mark for [COPIED_MILLIS] and screen
+ * readers hear "Recipe copied" from a polite live region (empty, so silent, the rest of the time).
+ */
+@Composable
+private fun RecipeShareButton(recipe: Recipe) {
+    val sharer = rememberSharer()
+    val labels = ShareTextLabels(
+        ingredients = stringResource(Res.string.ingredients),
+        instructions = stringResource(Res.string.instructions),
+        sourceLine = recipe.sourceUrl?.ifBlank { null }?.let { stringResource(Res.string.share_source, it) },
+        sharedFrom = stringResource(Res.string.share_footer),
+    )
+    var anchor by remember { mutableStateOf(Rect.Zero) }
+    var copied by remember(recipe.id) { mutableStateOf(false) }
+    if (copied) {
+        LaunchedEffect(Unit) {
+            delay(COPIED_MILLIS)
+            copied = false
+        }
+    }
+    val copiedMessage = stringResource(Res.string.recipe_copied)
+    Box(
+        Modifier.size(0.dp).semantics {
+            liveRegion = LiveRegionMode.Polite
+            if (copied) contentDescription = copiedMessage
+        },
+    )
+    ShareButton(
+        onClick = {
+            sharer.share(ShareRequest(subject = recipe.name, text = recipe.toShareText(labels), anchor = anchor))
+            if (shareCopiesToClipboard) copied = true
+        },
+        contentDescription = stringResource(
+            if (shareCopiesToClipboard) Res.string.copy_recipe else Res.string.share_recipe,
+        ),
+        confirmed = copied,
+        modifier = Modifier.onGloballyPositioned { anchor = it.boundsInWindow() },
+    )
 }
 
 /** Ingredients and instructions, each item with [itemModifier]. */

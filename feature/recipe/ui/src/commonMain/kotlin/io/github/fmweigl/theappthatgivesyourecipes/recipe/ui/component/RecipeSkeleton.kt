@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.component.FavoriteButtonPlaceholder
+import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.component.ShareButtonPlaceholder
 import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.component.Skeleton
 import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.component.SkeletonBlock
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.resources.Res
@@ -49,7 +50,7 @@ private val InstructionLineFractions = listOf(1f, 0.95f, 1f, 0.9f, 0.6f)
 
 /**
  * Stands in for [RecipeDetails] while the recipe loads: the design system's [Skeleton], with blocks
- * where the image, name, heart, ingredients and instructions will be, in the same layout
+ * where the image, name, share button, heart, ingredients and instructions will be, in the same layout
  * ([currentRecipeLayout]) and measurements, so nothing jumps when the recipe arrives. For screen
  * readers one element, "Loading", reported as a progress bar as the spinner before it was; it
  * doesn't scroll, the window cuts off what doesn't fit.
@@ -123,7 +124,7 @@ private fun ImagePlaceholder(aspectRatio: Float, modifier: Modifier) {
     SkeletonBlock(modifier.aspectRatio(aspectRatio), MaterialTheme.shapes.large)
 }
 
-/** The name, the "Category · Area" line and the heart. */
+/** The name, the "Category · Area" line, the share button and the heart. */
 @Composable
 private fun TitlePlaceholder(modifier: Modifier) {
     Row(modifier, verticalAlignment = Alignment.Top) {
@@ -131,6 +132,7 @@ private fun TitlePlaceholder(modifier: Modifier) {
             TextPlaceholder(MaterialTheme.typography.headlineMedium, Modifier.fillMaxWidth(NAME_FRACTION))
             TextPlaceholder(MaterialTheme.typography.titleSmall, Modifier.fillMaxWidth(SUBTITLE_FRACTION))
         }
+        ShareButtonPlaceholder()
         FavoriteButtonPlaceholder()
     }
 }

@@ -1,9 +1,12 @@
 package io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.recipedetail
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
@@ -16,18 +19,28 @@ import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.requestFocus
 import io.github.fmweigl.theappthatgivesyourecipes.core.domain.DataError
 import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.test.runPhoneTest
 import io.github.fmweigl.theappthatgivesyourecipes.core.designsystem.test.runTabletLandscapeTest
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.domain.model.Ingredient
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.domain.model.Recipe
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.CONTENT_FADE_MILLIS
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.LocalSharer
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.ShareRequest
+import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.component.Sharer
 import io.github.fmweigl.theappthatgivesyourecipes.recipe.ui.recipedetail.RecipeUiState.Content
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /** What screen readers get from [RecipeScreen] (the merged semantics tree). */
 @OptIn(ExperimentalTestApi::class)
@@ -46,6 +59,9 @@ class RecipeScreenAccessibilityTest {
 
     private val isLoadingIndicator = hasContentDescription("Loading") and
         SemanticsMatcher.expectValue(SemanticsProperties.ProgressBarRangeInfo, ProgressBarRangeInfo.Indeterminate)
+
+    private val isPoliteLiveRegion =
+        SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite)
 
     private fun paneTitle(title: String) = SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, title)
 
@@ -72,6 +88,36 @@ class RecipeScreenAccessibilityTest {
 
         scrollTo(recipe.name)
         onNodeWithContentDescription("Favorite").assertIsOn()
+    }
+
+    @Test
+    fun copyingIsConfirmedAndAnnounced() = runPhoneTest {
+        val shared = mutableListOf<ShareRequest>()
+        setContent { Screen(Content.Success(recipe), sharer = { shared += it }) }
+        mainClock.autoAdvance = false
+
+        scrollTo(recipe.name)
+        onNodeWithContentDescription("Copy recipe").performClick()
+        mainClock.advanceTimeByFrame()
+
+        assertEquals(recipe.name, shared.single().subject)
+        assertTrue(shared.single().text.startsWith("Canadian Butter Tarts\nDessert\n\nIngredients\n• 50g Butter"))
+        onNodeWithContentDescription("Recipe copied").assert(isPoliteLiveRegion)
+        mainClock.advanceTimeBy(3_000)
+        onAllNodesWithContentDescription("Recipe copied").assertCountEquals(0)
+    }
+
+    @Test
+    fun shareButtonWorksWithTheKeyboard() = runPhoneTest {
+        val shared = mutableListOf<ShareRequest>()
+        setContent { Screen(Content.Success(recipe), sharer = { shared += it }) }
+
+        scrollTo(recipe.name)
+        val button = onNodeWithContentDescription("Copy recipe")
+        button.requestFocus()
+        button.performKeyInput { pressKey(Key.Enter) }
+
+        assertEquals(1, shared.size)
     }
 
     @Test
@@ -127,6 +173,7 @@ class RecipeScreenAccessibilityTest {
         onNodeWithText("Instructions").assert(isHeading)
         onNodeWithText("Butter").assert(hasText("50g"))
         onNodeWithContentDescription("Favorite").assertIsOn()
+        onNodeWithContentDescription("Copy recipe").assertHasClickAction()
     }
 
     /** The recipe's image fills the test window, so the lazy list only composes what's scrolled to. */
@@ -135,12 +182,14 @@ class RecipeScreenAccessibilityTest {
     }
 
     @Composable
-    private fun Screen(content: Content, isFavorite: Boolean = false) {
-        RecipeScreen(
-            uiState = RecipeUiState(content = content, isFavorite = isFavorite),
-            onBack = {},
-            onRetry = {},
-            onToggleFavorite = {},
-        )
+    private fun Screen(content: Content, isFavorite: Boolean = false, sharer: Sharer = Sharer {}) {
+        CompositionLocalProvider(LocalSharer provides sharer) {
+            RecipeScreen(
+                uiState = RecipeUiState(content = content, isFavorite = isFavorite),
+                onBack = {},
+                onRetry = {},
+                onToggleFavorite = {},
+            )
+        }
     }
 }
