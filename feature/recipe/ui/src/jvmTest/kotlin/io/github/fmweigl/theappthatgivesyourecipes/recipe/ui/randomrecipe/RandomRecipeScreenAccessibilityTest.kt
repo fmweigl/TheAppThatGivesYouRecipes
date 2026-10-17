@@ -14,6 +14,7 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsOff
@@ -100,6 +101,25 @@ class RandomRecipeScreenAccessibilityTest {
         onNodeWithContentDescription("Favorite").assertIsOff()
         isFavorite = true
         onNodeWithContentDescription("Favorite").assertIsOn()
+    }
+
+    @Test
+    fun shareButtonIsLabeled() = runPhoneTest {
+        setContent { Screen(Content.Success(recipe)) }
+
+        scrollTo(recipe.name)
+        // The desktop copies instead of sharing, and says so.
+        onNodeWithContentDescription("Copy recipe").assertHasClickAction()
+    }
+
+    @Test
+    fun skeletonAndErrorHaveNoShareButton() = runPhoneTest {
+        var content: Content by mutableStateOf(Content.Loading)
+        setContent { Screen(content) }
+
+        onAllNodesWithContentDescription("Copy recipe").assertCountEquals(0)
+        content = Content.Error(DataError.NoConnection)
+        onAllNodesWithContentDescription("Copy recipe").assertCountEquals(0)
     }
 
     @Test
@@ -227,6 +247,7 @@ class RandomRecipeScreenAccessibilityTest {
 
         onNodeWithText(recipe.name).assertIsDisplayed()
         onNodeWithContentDescription("Favorite").assertIsDisplayed()
+        onNodeWithContentDescription("Copy recipe").assertIsDisplayed()
     }
 
     @Test

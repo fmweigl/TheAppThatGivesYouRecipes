@@ -1,6 +1,6 @@
 # Privacy Policy for The App That Gives You Recipes
 
-Last updated: October 9, 2026
+Last updated: October 17, 2026
 
 The App That Gives You Recipes is a free recipe app developed by Florian Weigl as a private individual.
 This policy explains what happens with your data when you use the app.
@@ -34,6 +34,14 @@ Recipes you save as favorites are stored in a database on your device, so you ca
 them without an internet connection. They are never transmitted to me or anyone else,
 and on Android they are excluded from the system's backup and device-to-device transfer.
 They are deleted when you remove them in the app, clear the app's data or uninstall the app.
+
+## Sharing recipes
+
+When you share a recipe, the app hands its text (name, ingredients, instructions and source
+link) to the app you choose in your device's share menu, such as a messenger or email app.
+That app's own privacy policy applies to what it does with the text. On computers, the app
+copies the text to your clipboard instead. The app sends nothing to me or anyone else when
+you share, and nothing is shared unless you choose to.
 
 ## Google Play
 

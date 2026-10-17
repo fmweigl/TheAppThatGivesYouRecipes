@@ -5,12 +5,8 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -23,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -39,10 +34,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-private val ButtonSize = 56.dp
-private val HeartSize = 32.dp
 private val BurstDotRadius = 3.dp
-private val FocusRingWidth = 2.dp
 
 private const val BURST_DOTS = 8
 private const val BURST_MILLIS = 450
@@ -100,8 +92,6 @@ fun FavoriteButton(
     }
     val burstColor = MaterialTheme.colorScheme.primary
     val interactionSource = remember { MutableInteractionSource() }
-    val focused by interactionSource.collectIsFocusedAsState()
-    val ringColor = MaterialTheme.colorScheme.onSurface
     IconToggleButton(
         checked = isFavorite,
         onCheckedChange = {
@@ -109,16 +99,16 @@ fun FavoriteButton(
             onToggle()
         },
         modifier = modifier
-            .size(ButtonSize)
+            .size(RoundButtonSize)
             .drawBehind { drawBurst(burst.value, burstColor) }
-            .then(if (focused) Modifier.border(FocusRingWidth, ringColor, CircleShape) else Modifier),
+            .focusRing(interactionSource),
         interactionSource = interactionSource,
     ) {
         Icon(
             if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
             contentDescription = stringResource(Res.string.favorite),
             modifier = Modifier
-                .size(HeartSize)
+                .size(RoundButtonIconSize)
                 .graphicsLayer {
                     scaleX = scale.value
                     scaleY = scale.value
@@ -130,9 +120,7 @@ fun FavoriteButton(
 /** Stands in for a [FavoriteButton] in a [Skeleton]: a circle the heart's size, where the heart will be. */
 @Composable
 fun FavoriteButtonPlaceholder(modifier: Modifier = Modifier) {
-    Box(modifier.size(ButtonSize), contentAlignment = Alignment.Center) {
-        SkeletonBlock(Modifier.size(HeartSize), CircleShape)
-    }
+    RoundButtonPlaceholder(modifier)
 }
 
 /** Dots that move out from the heart, shrinking and fading, while [progress] goes from 0 to 1. */

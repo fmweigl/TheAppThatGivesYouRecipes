@@ -12,6 +12,8 @@ Looking for something specific? Search recipes by name in their own tab, for exa
 
 Found one you like? Tap the heart to save it. Your favorites have their own tab and open even without an internet connection. Removed one by mistake? Tap Undo.
 
+Want to cook it with someone? Share a recipe with its ingredients and instructions as text, to a messenger, an email or your notes.
+
 Made with care:
 • Light and dark theme that follows your system settings
 • Works with screen readers like TalkBack

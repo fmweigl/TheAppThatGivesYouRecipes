@@ -6,6 +6,11 @@
     <string name="ingredients">Ingredients</string>
     <string name="instructions">Instructions</string>
     <string name="loading">Loading</string>
+    <string name="share_recipe">Share recipe</string>
+    <string name="copy_recipe">Copy recipe</string>
+    <string name="recipe_copied">Recipe copied</string>
+    <string name="share_source">Source: %1$s</string>
+    <string name="share_footer">Shared from The App That Gives You Recipes</string>
     <string name="error_no_connection">Could not reach TheMealDB. Check your connection.</string>
     <string name="error_timeout">TheMealDB took too long to respond. Please try again.</string>
     <string name="error_not_found">This recipe could not be found on TheMealDB.</string>
