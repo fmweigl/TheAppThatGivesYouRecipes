@@ -72,6 +72,9 @@ internal val ContentPadding = 16.dp
 /** Space between the items of a column or pane. */
 internal val ItemSpacing = 12.dp
 
+/** Space between the subtitle and the tags. */
+internal val TagsTopPadding = 8.dp
+
 /** Space between an ingredient's name and its measure. */
 internal val IngredientSpacing = 8.dp
 
@@ -230,6 +233,10 @@ private fun RecipeTitle(
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            val tags = recipe.tags.distinctTags()
+            if (tags.isNotEmpty()) {
+                RecipeTags(tags, Modifier.padding(top = TagsTopPadding))
             }
         }
         RecipeShareButton(recipe)

@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -174,6 +175,34 @@ class RecipeScreenAccessibilityTest {
         onNodeWithText("Butter").assert(hasText("50g"))
         onNodeWithContentDescription("Favorite").assertIsOn()
         onNodeWithContentDescription("Copy recipe").assertHasClickAction()
+    }
+
+    @Test
+    fun tagsAreOneTextWithoutFocusOrClickOnPhone() = runPhoneTest {
+        setContent { Screen(Content.Success(recipe.copy(tags = listOf("Spicy", "Breakfast", "spicy")))) }
+
+        scrollTo("Tags: Spicy, Breakfast")
+        onAllNodesWithText("Tags: Spicy, Breakfast").assertCountEquals(1)
+        onNodeWithText("Tags: Spicy, Breakfast")
+            .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Focused))
+            .assert(SemanticsMatcher.keyNotDefined(SemanticsActions.OnClick))
+    }
+
+    @Test
+    fun tagsAreOneTextInTwoPanes() = runTabletLandscapeTest {
+        setContent { Screen(Content.Success(recipe.copy(tags = listOf("Spicy", "Breakfast")))) }
+
+        onAllNodesWithText("Tags: Spicy, Breakfast").assertCountEquals(1)
+        onNodeWithText("Tags: Spicy, Breakfast")
+            .assert(SemanticsMatcher.keyNotDefined(SemanticsActions.OnClick))
+    }
+
+    @Test
+    fun noTagsShowNothing() = runPhoneTest {
+        setContent { Screen(Content.Success(recipe)) }
+
+        scrollTo(recipe.name)
+        onAllNodes(hasText("Tags", substring = true)).assertCountEquals(0)
     }
 
     /** The recipe's image fills the test window, so the lazy list only composes what's scrolled to. */
