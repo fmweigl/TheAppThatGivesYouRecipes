@@ -5,6 +5,7 @@
     <string name="next_recipe">Next</string>
     <string name="ingredients">Ingredients</string>
     <string name="instructions">Instructions</string>
+    <string name="tags">Tags: %1$s</string>
     <string name="loading">Loading</string>
     <string name="share_recipe">Share recipe</string>
     <string name="copy_recipe">Copy recipe</string>

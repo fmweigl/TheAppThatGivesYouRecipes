@@ -26,6 +26,7 @@ private fun shakshuka(directory: File) = Recipe(
     name = "Shakshuka",
     category = "Vegetarian",
     area = "Tunisian",
+    tags = listOf("Breakfast", "Vegetarian"),
     imageUrl = File(directory, "shakshuka.png").toURI().toString(),
     ingredients = listOf(
         Ingredient("Olive Oil", "2 tbs"),
@@ -52,6 +53,7 @@ private fun spaghetti(directory: File) = Recipe(
     name = "Spaghetti al Pomodoro",
     category = "Pasta",
     area = "Italian",
+    tags = listOf("Pasta", "Quick"),
     imageUrl = File(directory, "spaghetti.png").toURI().toString(),
     ingredients = listOf(
         Ingredient("Spaghetti", "400g"),

@@ -3,6 +3,7 @@ Not sure what to cook? The App That Gives You Recipes shows you a random recipe 
 Each recipe comes with:
 • A photo of the dish
 • Its category and cuisine
+• Tags such as "Spicy" or "Breakfast"
 • The ingredients with their measures
 • Step-by-step instructions
 

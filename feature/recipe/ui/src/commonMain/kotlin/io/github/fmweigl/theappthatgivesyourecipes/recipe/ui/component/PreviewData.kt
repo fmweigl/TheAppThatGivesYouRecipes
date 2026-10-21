@@ -18,6 +18,7 @@ internal val previewRecipe = Recipe(
     name = "Shakshuka",
     category = "Vegetarian",
     area = "Tunisian",
+    tags = listOf("Breakfast", "Vegetarian", "Spicy", "Egg", "One pot", "Comfort food", "Quick"),
     instructions = "Soften the onion and pepper in olive oil, then add garlic, cumin and paprika.\n\n" +
         "Pour in the tomatoes and simmer until thick. Make six hollows, crack an egg into each, cover and " +
         "cook until the whites are set. Scatter with parsley and serve with bread.",
