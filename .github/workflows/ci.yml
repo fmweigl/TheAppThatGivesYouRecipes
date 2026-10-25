@@ -42,16 +42,17 @@ jobs:
             **/build/test-results/
           if-no-files-found: ignore
 
-  # Releases every master build that passed the job above. versionCode is the workflow's run number,
-  # versionName 1.0.<run number>; both go up with every push. Creates the GitHub Release v1.0.<run number>
-  # with the signed APK, and uploads the bundle to Google Play's production track when the repository
-  # variable PLAY_PUBLISHING is "true". Needs the secrets RELEASE_KEYSTORE_BASE64 (base64 of the upload
-  # keystore), RELEASE_STORE_PASSWORD, RELEASE_KEY_ALIAS, RELEASE_KEY_PASSWORD and THE_MEAL_DB_API_KEY,
-  # and PLAY_SERVICE_ACCOUNT_JSON for Google Play.
+  # Releases every master build that passed the job above, from a push or a manual run ("Run workflow"
+  # on master, to rebuild the app with a new version without a code change). versionCode is the
+  # workflow's run number, versionName 1.0.<run number>; both go up with every run. Creates the GitHub
+  # Release v1.0.<run number> with the signed APK, and uploads the bundle to Google Play's production
+  # track when the repository variable PLAY_PUBLISHING is "true". Needs the secrets
+  # RELEASE_KEYSTORE_BASE64 (base64 of the upload keystore), RELEASE_STORE_PASSWORD, RELEASE_KEY_ALIAS,
+  # RELEASE_KEY_PASSWORD and THE_MEAL_DB_API_KEY, and PLAY_SERVICE_ACCOUNT_JSON for Google Play.
   release:
     name: Release
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     permissions:
       contents: write
