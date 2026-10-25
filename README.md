@@ -12,6 +12,8 @@
 
 Random recipe ideas from TheMealDB, with favorites saved on your device. A Kotlin Multiplatform project targeting Android, iOS and Desktop (JVM).
 
+<a href="https://play.google.com/store/apps/details?id=io.github.fmweigl.theappthatgivesyourecipes"><img src="art/badges/google-play-badge.png" alt="Get it on Google Play" height="80"></a>
+
 * [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
   you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
 
@@ -82,3 +84,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
+
+## Trademarks
+
+Google Play and the Google Play logo are trademarks of Google LLC.
