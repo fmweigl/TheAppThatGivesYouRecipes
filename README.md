@@ -8,11 +8,11 @@
 [![Recipes by TheMealDB](https://img.shields.io/badge/recipes-TheMealDB-F2BF48)](https://www.themealdb.com)
 ![detekt](https://img.shields.io/badge/code%20style-detekt-orange)
 
+<a href="https://play.google.com/store/apps/details?id=io.github.fmweigl.theappthatgivesyourecipes"><img src="art/badges/google-play-badge.png" alt="Get it on Google Play" height="120"></a>
+
 # The App That Gives You Recipes
 
 Random recipe ideas from TheMealDB, with favorites saved on your device. A Kotlin Multiplatform project targeting Android, iOS and Desktop (JVM).
-
-<a href="https://play.google.com/store/apps/details?id=io.github.fmweigl.theappthatgivesyourecipes"><img src="art/badges/google-play-badge.png" alt="Get it on Google Play" height="120"></a>
 
 * [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
   you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
